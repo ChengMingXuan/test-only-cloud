@@ -2,6 +2,10 @@
 Selenium 测试配置文件
 AIOPS 平台跨浏览器兼容性测试
 
+双模兼容：
+- 真实模式：前端可达时直连真实 Frontend + 真实浏览器
+- Mock 模式：前端不可达 / CI / MOCK_MODE=1 时自动启动 mock_server + headless Chrome
+
 核心特性:
 - Selenium Grid 分布式执行
 - 多浏览器×多版本矩阵
@@ -10,6 +14,7 @@ AIOPS 平台跨浏览器兼容性测试
 """
 
 import pytest
+import requests as _requests
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.firefox.service import Service as FirefoxService
@@ -42,6 +47,54 @@ TEST_CONFIG = {
     "grid_url": os.getenv("SELENIUM_GRID_URL", "http://localhost:4444"),  # Selenium Grid地址
 }
 
+
+# ========== 双模检测 + Mock 自动启动 ==========
+
+def _check_frontend_available():
+    """检测前端服务是否可达"""
+    try:
+        _requests.get(TEST_CONFIG["base_url"], timeout=3)
+        return True
+    except Exception:
+        return False
+
+
+_mock_server_instance = None
+
+
+def _ensure_mock_server():
+    """前端不可达时自动启动 mock_server"""
+    global _mock_server_instance
+    if _mock_server_instance is not None:
+        return _mock_server_instance
+
+    from mock_server import MockServer
+    _mock_server_instance = MockServer(port=8000)
+    try:
+        _mock_server_instance.start()
+        TEST_CONFIG["base_url"] = _mock_server_instance.base_url
+        print(f"\n⚡ [Selenium] Mock 模式 → mock_server 已启动: {_mock_server_instance.base_url}")
+    except Exception as e:
+        # 端口被占用时尝试随机端口
+        _mock_server_instance = MockServer()
+        _mock_server_instance.start()
+        TEST_CONFIG["base_url"] = _mock_server_instance.base_url
+        print(f"\n⚡ [Selenium] Mock 模式 → mock_server 已启动（备用端口）: {_mock_server_instance.base_url}")
+    return _mock_server_instance
+
+
+# 双模判断：CI / 显式 MOCK / 前端不可达 → 自动启动 mock_server
+_force_mock = os.getenv("CI") or os.getenv("MOCK_MODE")
+_frontend_available = False if _force_mock else _check_frontend_available()
+
+if _frontend_available:
+    print(f"\n✅ [Selenium] 真实模式 → 前端 {TEST_CONFIG['base_url']} 可达，直连真实服务")
+else:
+    _ensure_mock_server()
+
+# CI / Mock 环境默认 headless
+_default_headless = bool(os.getenv("CI") or os.getenv("MOCK_MODE") or not _frontend_available)
+
 # ========== pytest Fixtures ==========
 
 @pytest.fixture(scope="session")
@@ -68,7 +121,7 @@ def driver(request):
         browser = request.node.callspec.params.get("browser", "chrome") if hasattr(request.node, "callspec") else "chrome"
     
     use_grid = request.config.getoption("--use-grid", default=False)
-    headless = request.config.getoption("--headless", default=False)
+    headless = request.config.getoption("--headless", default=False) or _default_headless
     
     if use_grid:
         _driver = _create_remote_driver(browser, headless)
@@ -96,7 +149,7 @@ def driver(request):
 def chrome_driver(request):
     """Chrome浏览器专用fixture"""
     options = ChromeOptions()
-    if request.config.getoption("--headless"):
+    if request.config.getoption("--headless") or _default_headless:
         options.add_argument("--headless")
     options.add_argument("--disable-blink-features=AutomationControlled")
     options.add_argument("--no-sandbox")
@@ -120,7 +173,7 @@ def chrome_driver(request):
 def firefox_driver(request):
     """Firefox浏览器专用fixture"""
     options = FirefoxOptions()
-    if request.config.getoption("--headless"):
+    if request.config.getoption("--headless") or _default_headless:
         options.add_argument("--headless")
     
     service = FirefoxService(GeckoDriverManager().install())
@@ -141,7 +194,7 @@ def firefox_driver(request):
 def edge_driver(request):
     """Edge浏览器专用fixture"""
     options = EdgeOptions()
-    if request.config.getoption("--headless"):
+    if request.config.getoption("--headless") or _default_headless:
         options.add_argument("--headless")
     options.add_argument("--no-sandbox")
     
@@ -339,6 +392,13 @@ def pytest_sessionfinish(session, exitstatus):
     """测试会话结束"""
     end_time = datetime.now()
     duration = (end_time - session.config.start_time).total_seconds()
+    
+    # 停止 Mock 服务器
+    global _mock_server_instance
+    if _mock_server_instance is not None:
+        _mock_server_instance.stop()
+        print('🛑 [Selenium] mock_server 已停止')
+        _mock_server_instance = None
     
     print(f"\n{'='*60}")
     print(f"Selenium 测试执行完成")

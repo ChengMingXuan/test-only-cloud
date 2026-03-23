@@ -2,6 +2,7 @@
 JGSY.AGI 全自动化测试套件 — 统一配置
 =====================================
 从 docker/services.json 读取服务配置，零硬编码
+当 services.json 不存在时（如独立测试仓库 CI），自动使用 Mock 默认配置
 """
 import os
 import json
@@ -10,12 +11,49 @@ from pathlib import Path
 # ── 项目根目录 ──
 _REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 _SERVICES_JSON = _REPO_ROOT / "docker" / "services.json"
+# 也尝试 Configuration2.0/docker/services.json
+_SERVICES_JSON_ALT = _REPO_ROOT / "Configuration2.0" / "docker" / "services.json"
+
+# ── Mock 默认服务配置（零外部依赖）──
+_MOCK_SERVICES = {
+    "Gateway": {"port": 8000, "group": "platform"},
+    "Identity": {"port": 5101, "group": "platform"},
+    "Tenant": {"port": 5102, "group": "platform"},
+    "Permission": {"port": 5103, "group": "platform"},
+    "Account": {"port": 5104, "group": "platform"},
+    "Device": {"port": 5201, "group": "business"},
+    "Station": {"port": 5202, "group": "business"},
+    "Charging": {"port": 5203, "group": "business"},
+    "Settlement": {"port": 5204, "group": "business"},
+    "Analytics": {"port": 5205, "group": "business"},
+    "WorkOrder": {"port": 5206, "group": "business"},
+    "Ingestion": {"port": 5207, "group": "business"},
+    "DigitalTwin": {"port": 5208, "group": "business"},
+    "Storage": {"port": 5301, "group": "infra"},
+    "Observability": {"port": 5302, "group": "infra"},
+    "ContentPlatform": {"port": 5303, "group": "business"},
+    "IotCloudAI": {"port": 5401, "group": "ai"},
+    "Blockchain": {"port": 5402, "group": "web3"},
+    "Mcp": {"port": 5403, "group": "ai"},
+    "Simulator": {"port": 5501, "group": "tool"},
+    "RuleEngine": {"port": 5502, "group": "business"},
+    "EnergyCore.VPP": {"port": 5601, "group": "energy"},
+    "EnergyCore.MicroGrid": {"port": 5602, "group": "energy"},
+    "EnergyCore.PVESSC": {"port": 5603, "group": "energy"},
+    "EnergyCore.Orchestrator": {"port": 5604, "group": "energy"},
+    "EnergyServices.Trading": {"port": 5701, "group": "energy"},
+    "EnergyServices.Operations": {"port": 5702, "group": "energy"},
+}
 
 
 def _load_services() -> dict:
-    """从 docker/services.json 加载服务配置"""
-    with open(_SERVICES_JSON, encoding="utf-8") as f:
-        return json.load(f)["services"]
+    """从 docker/services.json 加载服务配置，找不到文件时返回 Mock 默认配置"""
+    for path in [_SERVICES_JSON, _SERVICES_JSON_ALT]:
+        if path.exists():
+            with open(path, encoding="utf-8") as f:
+                return json.load(f)["services"]
+    # CI / 独立测试仓库：使用 Mock 默认配置
+    return _MOCK_SERVICES
 
 
 SERVICES = _load_services()

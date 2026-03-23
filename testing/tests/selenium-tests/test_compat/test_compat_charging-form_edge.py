@@ -6,7 +6,7 @@ import pytest
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
-class Test_charging-form_edge:
+class Test_charging_form_edge:
     @pytest.fixture(autouse=True)
     def setup(self):
         # 初始化浏览器

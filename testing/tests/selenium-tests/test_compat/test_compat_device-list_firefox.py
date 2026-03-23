@@ -6,7 +6,7 @@ import pytest
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
-class Test_device-list_firefox:
+class Test_device_list_firefox:
     @pytest.fixture(autouse=True)
     def setup(self):
         # 初始化浏览器

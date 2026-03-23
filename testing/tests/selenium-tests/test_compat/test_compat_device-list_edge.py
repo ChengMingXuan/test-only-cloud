@@ -6,7 +6,7 @@ import pytest
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
-class Test_device-list_edge:
+class Test_device_list_edge:
     @pytest.fixture(autouse=True)
     def setup(self):
         # 初始化浏览器

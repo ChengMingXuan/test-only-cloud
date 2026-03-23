@@ -9,6 +9,15 @@
     <IsAotCompatible>false</IsAotCompatible>
     <!-- 抑制 Grpc.Net.ClientFactory 版本兼容性警告 -->
     <SuppressCheckGrpcNetClientFactoryVersion>true</SuppressCheckGrpcNetClientFactoryVersion>
+    <!--
+      双模兼容：
+        真实模式（有源码）— 自动检测 ProjectReference 目标存在 → 引用业务项目
+        Mock 模式（CI/独立仓库）— 目标不存在 → 仅用 Moq + 纯单元测试
+      通过 Exists() 条件判断，无需手动切换
+    -->
+    <StandaloneMode Condition="!Exists('..\..\JGSY.AGI.Identity\JGSY.AGI.Identity.csproj')">true</StandaloneMode>
+    <!-- Mock 模式下定义编译常量，测试代码可用 #if STANDALONE_MODE 区分 -->
+    <DefineConstants Condition="'$(StandaloneMode)' == 'true'">$(DefineConstants);STANDALONE_MODE</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="xunit" />
@@ -27,7 +36,8 @@
     <PackageReference Include="coverlet.msbuild" PrivateAssets="all" />
     <PackageReference Include="ReportGenerator" PrivateAssets="all" />
   </ItemGroup>
-  <ItemGroup>
+  <!-- 真实模式：引用全部业务项目（源码可用时自动生效） -->
+  <ItemGroup Condition="'$(StandaloneMode)' != 'true'">
     <ProjectReference Include="..\..\JGSY.AGI.Common.Hosting\JGSY.AGI.Common.Hosting.csproj" />
     <ProjectReference Include="..\..\JGSY.AGI.Identity\JGSY.AGI.Identity.csproj" />
     <ProjectReference Include="..\..\JGSY.AGI.Storage\JGSY.AGI.Storage.csproj" />
@@ -55,6 +65,51 @@
     <ProjectReference Include="..\..\JGSY.AGI.Settlement\JGSY.AGI.Settlement.csproj" />
     <ProjectReference Include="..\..\JGSY.AGI.Gateway\JGSY.AGI.Gateway.csproj" />
     <ProjectReference Include="..\..\JGSY.AGI.Simulator\JGSY.AGI.Simulator.csproj" />
+  </ItemGroup>
+  <!-- 
+    Mock 模式（独立仓库无源码）：排除全部引用业务类型的测试文件
+    仅保留 StandaloneTests.cs（编译健康检查 + 基础验证）
+  -->
+  <ItemGroup Condition="'$(StandaloneMode)' == 'true'">
+    <Compile Remove="Account\**" />
+    <Compile Remove="Analytics\**" />
+    <Compile Remove="Auth\**" />
+    <Compile Remove="Blockchain\**" />
+    <Compile Remove="Charging\**" />
+    <Compile Remove="Common\**" />
+    <Compile Remove="ContentPlatform\**" />
+    <Compile Remove="Data\**" />
+    <Compile Remove="Device\**" />
+    <Compile Remove="DigitalTwin\**" />
+    <Compile Remove="EnergyCore\**" />
+    <Compile Remove="EnergyEff\**" />
+    <Compile Remove="EnergyServices\**" />
+    <Compile Remove="Gateway\**" />
+    <Compile Remove="Identity\**" />
+    <Compile Remove="Ingestion\**" />
+    <Compile Remove="Integration\**" />
+    <Compile Remove="IotCloudAI\**" />
+    <Compile Remove="MicroGrid\**" />
+    <Compile Remove="Middleware\**" />
+    <Compile Remove="Observability\**" />
+    <Compile Remove="Operations\**" />
+    <Compile Remove="Orchestrator\**" />
+    <Compile Remove="Permission\**" />
+    <Compile Remove="PVESSC\**" />
+    <Compile Remove="RuleEngine\**" />
+    <Compile Remove="Settlement\**" />
+    <Compile Remove="Simulator\**" />
+    <Compile Remove="Station\**" />
+    <Compile Remove="Storage\**" />
+    <Compile Remove="Tenant\**" />
+    <Compile Remove="Trading\**" />
+    <Compile Remove="User\**" />
+    <Compile Remove="VPP\**" />
+    <Compile Remove="WorkOrder\**" />
+    <Compile Remove="JGSY.AGI.Auth.Test\**" />
+    <Compile Remove="JGSY.AGI.Log.Test\**" />
+    <Compile Remove="JGSY.AGI.Monitor.Test\**" />
+    <Compile Remove="JGSY.AGI.Storage.Test\**" />
   </ItemGroup>
 
 </Project>

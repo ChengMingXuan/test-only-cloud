@@ -78,6 +78,7 @@ export default defineConfig({
   },
   
   // 浏览器项目配置
+  // CI 环境默认仅运行 Chromium 系浏览器（除非显式 PLAYWRIGHT_ALL_BROWSERS=1）
   projects: [
     // ========== Chromium (Chrome) ==========
     {
@@ -95,28 +96,26 @@ export default defineConfig({
       },
     },
     
-    // ========== Firefox ==========
-    {
+    // ========== Firefox（CI 需 PLAYWRIGHT_ALL_BROWSERS=1）==========
+    ...(!process.env.CI || process.env.PLAYWRIGHT_ALL_BROWSERS ? [{
       name: 'firefox',
       use: { 
         ...devices['Desktop Firefox'],
-        // Firefox特定配置
         launchOptions: {
           firefoxUserPrefs: {
             'media.navigator.streams.fake': true,
           },
         },
       },
-    },
+    }] : []),
     
-    // ========== WebKit (Safari) ==========
-    {
+    // ========== WebKit / Safari（CI 需 PLAYWRIGHT_ALL_BROWSERS=1）==========
+    ...(!process.env.CI || process.env.PLAYWRIGHT_ALL_BROWSERS ? [{
       name: 'webkit',
       use: { 
         ...devices['Desktop Safari'],
-        // Safari特定配置
       },
-    },
+    }] : []),
     
     // ========== Mobile Chrome ==========
     {
@@ -126,13 +125,13 @@ export default defineConfig({
       },
     },
     
-    // ========== Mobile Safari ==========
-    {
+    // ========== Mobile Safari（CI 需 PLAYWRIGHT_ALL_BROWSERS=1）==========
+    ...(!process.env.CI || process.env.PLAYWRIGHT_ALL_BROWSERS ? [{
       name: 'mobile-safari',
       use: { 
         ...devices['iPhone 13'],
       },
-    },
+    }] : []),
     
     // ========== 高分辨率桌面 ==========
     {
@@ -143,13 +142,13 @@ export default defineConfig({
       },
     },
     
-    // ========== Tablet ==========
-    {
+    // ========== Tablet（CI 需 PLAYWRIGHT_ALL_BROWSERS=1）==========
+    ...(!process.env.CI || process.env.PLAYWRIGHT_ALL_BROWSERS ? [{
       name: 'tablet',
       use: {
         ...devices['iPad (gen 7)'],
       },
-    },
+    }] : []),
   ],
   
   // Web Server配置（如果需要本地启动开发服务器）

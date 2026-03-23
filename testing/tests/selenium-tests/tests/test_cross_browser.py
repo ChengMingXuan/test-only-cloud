@@ -12,24 +12,14 @@ AIOPS 平台登录页面兼容性测试
 
 import os
 import pytest
-import requests as _requests
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
 
-def _check_frontend():
-    base_url = os.getenv("TEST_BASE_URL", "http://localhost:8000")
-    try:
-        _requests.get(base_url, timeout=5)
-        return True
-    except Exception:
-        return False
-
-
-_frontend_available = _check_frontend()
-pytestmark = pytest.mark.skipif(not _frontend_available, reason="前端服务不可用")
+# 双模兼容：conftest.py 已负责 Mock 模式自动启动
+# 不再在此处跳过测试，Mock 模式下将连接 mock_server
 
 
 class TestLoginPageCompatibility:

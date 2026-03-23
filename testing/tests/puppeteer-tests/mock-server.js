@@ -292,21 +292,46 @@ function handleRequest(req, res) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// 启动服务器
+// 启动服务器（支持 require 导入 + 直接运行两种方式）
 // ═══════════════════════════════════════════════════════════
-const server = http.createServer(handleRequest);
-server.listen(PORT, () => {
-  console.log(`✅ Mock 服务器已启动: http://localhost:${PORT}`);
-});
+let _server = null;
 
-// 优雅退出
-process.on('SIGINT', () => {
-  console.log('\n🛑 关闭 Mock 服务器...');
-  server.close();
-  process.exit(0);
-});
+function start() {
+  return new Promise((resolve, reject) => {
+    _server = http.createServer(handleRequest);
+    _server.listen(PORT, '127.0.0.1', () => {
+      console.log(`✅ [Puppeteer mock-server] 已启动: http://127.0.0.1:${PORT}`);
+      resolve(_server);
+    });
+    _server.on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        console.log(`⚠️  [Puppeteer mock-server] 端口 ${PORT} 已被占用，复用现有服务`);
+        _server = null;
+        resolve(null);
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
 
-process.on('SIGTERM', () => {
-  server.close();
-  process.exit(0);
-});
+function stop() {
+  if (_server) {
+    _server.close();
+    _server = null;
+    console.log('🛑 [Puppeteer mock-server] 已停止');
+  }
+}
+
+// 直接运行时自动启动
+if (require.main === module) {
+  start().catch(err => {
+    console.error('启动失败:', err);
+    process.exit(1);
+  });
+  // 优雅退出
+  process.on('SIGINT', () => { stop(); process.exit(0); });
+  process.on('SIGTERM', () => { stop(); process.exit(0); });
+}
+
+module.exports = { start, stop, PORT };

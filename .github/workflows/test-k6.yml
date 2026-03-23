@@ -39,6 +39,11 @@ jobs:
       - name: 📥 Checkout
         uses: actions/checkout@v4
 
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
       - name: ⚡ 安装 k6
         run: |
           sudo gpg -k
@@ -48,6 +53,19 @@ jobs:
           sudo apt-get install k6
           k6 version
 
+      - name: 🚀 启动 Mock 服务器
+        run: |
+          if [ -f testing/k6/mock-server.js ]; then
+            echo "启动 k6 Mock 服务器 (port 8000)..."
+            node testing/k6/mock-server.js &
+            MOCK_PID=$!
+            echo "MOCK_PID=$MOCK_PID" >> $GITHUB_ENV
+            sleep 2
+            curl -sf http://localhost:8000/health || echo "⚠️ Mock 服务器健康检查失败"
+          else
+            echo "⚠️ mock-server.js 不存在，跳过"
+          fi
+
       - name: 🧪 运行 k6 测试
         id: test
         continue-on-error: true
@@ -55,7 +73,7 @@ jobs:
           SCENARIO="${{ github.event.inputs.scenario || 'smoke' }}"
           mkdir -p TestResults
           
-          # 仅运行 smoke 模式（CI 安全，不施压外部服务）
+          # CI 模式：连接 Mock 服务器（localhost:8000）
           if [ -f "testing/k6/scenarios/${SCENARIO}-test.js" ]; then
             k6 run \
               --env BASE_URL=http://localhost:8000 \
@@ -65,8 +83,15 @@ jobs:
               2>&1 | tee TestResults/k6-output.txt || true
           else
             echo "场景文件不存在: testing/k6/scenarios/${SCENARIO}-test.js"
-            # 列出可用场景
             ls -la testing/k6/scenarios/ || true
+          fi
+
+      - name: 🛑 停止 Mock 服务器
+        if: always()
+        run: |
+          if [ -n "$MOCK_PID" ]; then
+            kill $MOCK_PID 2>/dev/null || true
+            echo "Mock 服务器已停止"
           fi
 
       - name: 📊 生成错误报告

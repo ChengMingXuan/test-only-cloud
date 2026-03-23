@@ -145,7 +145,7 @@ jobs:
         with:
           python-version: '3.11'
       - run: |
-          pip install selenium pytest pytest-html webdriver-manager
+          pip install selenium pytest pytest-html webdriver-manager requests
           [ -f testing/tests/selenium-tests/requirements.txt ] && pip install -r testing/tests/selenium-tests/requirements.txt || true
       - name: 运行 Selenium
         working-directory: testing/tests/selenium-tests
@@ -176,6 +176,18 @@ jobs:
           echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
           sudo apt-get update
           sudo apt-get install k6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: 启动 Mock 服务器
+        run: |
+          if [ -f testing/k6/mock-server.js ]; then
+            node testing/k6/mock-server.js &
+            MOCK_PID=$!
+            echo "MOCK_PID=$MOCK_PID" >> $GITHUB_ENV
+            sleep 2
+            curl -sf http://localhost:8000/health || echo "Mock 服务器未就绪"
+          fi
       - name: 运行 k6
         continue-on-error: true
         run: |

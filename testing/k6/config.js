@@ -1,5 +1,10 @@
 // K6 Performance Testing Configuration
 // JGSY AGI Platform Load Testing
+//
+// 双模兼容：
+//   真实模式 — BASE_URL 指向真实网关（默认 localhost:8000）
+//   Mock 模式 — CI 中先启动 mock-server.js，k6 连接同一端口
+//              node mock-server.js & k6 run scenarios/smoke-test.js
 
 export const config = {
   // Base URL
