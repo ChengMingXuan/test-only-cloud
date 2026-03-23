@@ -10,7 +10,7 @@
     "skipped": 0,
     "passRate": 0,
     "duration_s": 0,
-    "timestamp": "2026-03-23T19:32:10",
+    "timestamp": "2026-03-23T20:17:53",
     "source": "GitHub Actions CI (smoke)",
     "measurementMode": "checks",
     "comparableTotal": 0,
@@ -21,11 +21,11 @@
     "statusText": "未收集到测试结果"
   },
   "ci": {
-    "gitCommit": "07dd7c36283b798d148c935a0fcc5bd1e47debf3",
+    "gitCommit": "345f5d337c58c67b14b138437f92a8c6f8929a2a",
     "eventName": "push",
     "testLevel": "smoke",
     "runnerOS": "ubuntu-latest",
-    "timestamp": "2026-03-23 19:32:10 UTC"
+    "timestamp": "2026-03-23 20:17:53 UTC"
   },
   "fileCount": 0,
   "files": [],
