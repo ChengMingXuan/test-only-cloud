@@ -9,6 +9,8 @@
 #>
 
 param(
+    [ValidateSet("All", "BugReports", "StandardReports")]
+    [string]$Mode = "All",
     [string]$TestRepoUrl = "https://github.com/ChengMingXuan/test-only-cloud.git",
     [string]$TestRepoBranch = "main",
     [string]$TestRepoLocalPath = "D:\2026\test-only-cloud",
@@ -25,8 +27,9 @@ if (-not $OutputPath) {
     $OutputPath = Join-Path $MainProjectPath "TestResults\cloud-test-reports"
 }
 
+$modeLabel = switch ($Mode) { "BugReports" { "Bug错误报告" } "StandardReports" { "七大标准报告" } default { "全部报告" } }
 Write-Host "═══════════════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host "  拉取云端测试错误报告" -ForegroundColor Cyan
+Write-Host "  拉取云端测试报告 [$modeLabel]" -ForegroundColor Cyan
 Write-Host "═══════════════════════════════════════════════════" -ForegroundColor Cyan
 
 # ── 方式一：从本地测试仓库复制 ──
@@ -49,35 +52,43 @@ if (Test-Path $TestRepoLocalPath) {
     
     $srcReports = Join-Path $TestRepoLocalPath "test-error-reports"
     if (Test-Path $srcReports) {
-        # 复制到主项目
-        if (-not (Test-Path $OutputPath)) {
-            New-Item -ItemType Directory -Path $OutputPath -Force | Out-Null
+        # ── Bug 错误报告 ──
+        if ($Mode -in @("All", "BugReports")) {
+            if (-not (Test-Path $OutputPath)) {
+                New-Item -ItemType Directory -Path $OutputPath -Force | Out-Null
+            }
+            Copy-Item -Path "$srcReports\*" -Destination $OutputPath -Recurse -Force
+            Write-Host "  ✅ 错误报告已复制到: $OutputPath" -ForegroundColor Green
         }
-        Copy-Item -Path "$srcReports\*" -Destination $OutputPath -Recurse -Force
-        Write-Host "  ✅ 错误报告已复制到: $OutputPath" -ForegroundColor Green
 
-        # ── 同步标准格式报告到 TestResults/reports/（与本地聚合对接）──
-        $srcStdReports = Join-Path $srcReports "latest\reports"
-        if (Test-Path $srcStdReports) {
-            $dstReports = Join-Path $MainProjectPath "TestResults\reports"
-            if (-not (Test-Path $dstReports)) {
-                New-Item -ItemType Directory -Path $dstReports -Force | Out-Null
-            }
-            $tools = @("pytest", "cypress", "playwright", "puppeteer", "selenium", "k6", "integration")
-            $synced = 0
-            foreach ($tool in $tools) {
-                $jsonFile = Join-Path $srcStdReports "$tool-report.json"
-                $mdFile = Join-Path $srcStdReports "$tool-report.md"
-                if (Test-Path $jsonFile) {
-                    Copy-Item $jsonFile $dstReports -Force
-                    $synced++
+        # ── 标准格式报告（七大独立报告）──
+        if ($Mode -in @("All", "StandardReports")) {
+            $srcStdReports = Join-Path $srcReports "latest\reports"
+            if (Test-Path $srcStdReports) {
+                $dstReports = Join-Path $MainProjectPath "TestResults\reports"
+                if (-not (Test-Path $dstReports)) {
+                    New-Item -ItemType Directory -Path $dstReports -Force | Out-Null
                 }
-                if (Test-Path $mdFile) {
-                    Copy-Item $mdFile $dstReports -Force
+                $tools = @("pytest", "cypress", "playwright", "puppeteer", "selenium", "k6", "integration")
+                $synced = 0
+                foreach ($tool in $tools) {
+                    $jsonFile = Join-Path $srcStdReports "$tool-report.json"
+                    $mdFile = Join-Path $srcStdReports "$tool-report.md"
+                    if (Test-Path $jsonFile) {
+                        Copy-Item $jsonFile $dstReports -Force
+                        $synced++
+                    }
+                    if (Test-Path $mdFile) {
+                        Copy-Item $mdFile $dstReports -Force
+                    }
                 }
-            }
-            if ($synced -gt 0) {
-                Write-Host "  ✅ $synced 份标准报告已同步到 TestResults/reports/（可直接聚合）" -ForegroundColor Green
+                if ($synced -gt 0) {
+                    Write-Host "  ✅ $synced 份标准报告已同步到 TestResults/reports/（可直接聚合）" -ForegroundColor Green
+                } else {
+                    Write-Host "  ℹ️ 暂无标准格式报告" -ForegroundColor Yellow
+                }
+            } else {
+                Write-Host "  ℹ️ 暂无标准格式报告目录" -ForegroundColor Yellow
             }
         }
     } else {
@@ -94,21 +105,28 @@ else {
         
         $srcReports = Join-Path $tempDir "test-error-reports"
         if (Test-Path $srcReports) {
-            if (-not (Test-Path $OutputPath)) {
-                New-Item -ItemType Directory -Path $OutputPath -Force | Out-Null
-            }
-            Copy-Item -Path "$srcReports\*" -Destination $OutputPath -Recurse -Force
-            Write-Host "  ✅ 错误报告已复制到: $OutputPath" -ForegroundColor Green
-
-            # ── 同步标准格式报告 ──
-            $srcStdReports = Join-Path $srcReports "latest\reports"
-            if (Test-Path $srcStdReports) {
-                $dstReports = Join-Path $MainProjectPath "TestResults\reports"
-                if (-not (Test-Path $dstReports)) {
-                    New-Item -ItemType Directory -Path $dstReports -Force | Out-Null
+            # ── Bug 错误报告 ──
+            if ($Mode -in @("All", "BugReports")) {
+                if (-not (Test-Path $OutputPath)) {
+                    New-Item -ItemType Directory -Path $OutputPath -Force | Out-Null
                 }
-                Get-ChildItem $srcStdReports -Filter "*-report.*" | Copy-Item -Destination $dstReports -Force
-                Write-Host "  ✅ 标准报告已同步到 TestResults/reports/" -ForegroundColor Green
+                Copy-Item -Path "$srcReports\*" -Destination $OutputPath -Recurse -Force
+                Write-Host "  ✅ 错误报告已复制到: $OutputPath" -ForegroundColor Green
+            }
+
+            # ── 标准格式报告 ──
+            if ($Mode -in @("All", "StandardReports")) {
+                $srcStdReports = Join-Path $srcReports "latest\reports"
+                if (Test-Path $srcStdReports) {
+                    $dstReports = Join-Path $MainProjectPath "TestResults\reports"
+                    if (-not (Test-Path $dstReports)) {
+                        New-Item -ItemType Directory -Path $dstReports -Force | Out-Null
+                    }
+                    Get-ChildItem $srcStdReports -Filter "*-report.*" | Copy-Item -Destination $dstReports -Force
+                    Write-Host "  ✅ 标准报告已同步到 TestResults/reports/" -ForegroundColor Green
+                } else {
+                    Write-Host "  ℹ️ 暂无标准格式报告目录" -ForegroundColor Yellow
+                }
             }
         } else {
             Write-Host "  ℹ️ 远程仓库暂无错误报告" -ForegroundColor Yellow
