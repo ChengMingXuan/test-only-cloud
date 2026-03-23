@@ -1,0 +1,35 @@
+{
+  "tool": "cypress",
+  "displayName": "Cypress（UI交互测试）",
+  "icon": "🌲",
+  "standardCases": 9877,
+  "summary": {
+    "total": 0,
+    "passed": 0
+0,
+    "failed": 0
+0,
+    "skipped": 0,
+    "passRate": 0,
+    "duration_s": 0,
+    "timestamp": "2026-03-23T17:13:26",
+    "source": "GitHub Actions CI (smoke)",
+    "measurementMode": "cases",
+    "comparableTotal": 0,
+    "executedFiles": 0
+  },
+  "gateStatus": {
+    "canRelease": false,
+    "statusText": "未收集到测试结果"
+  },
+  "ci": {
+    "gitCommit": "6b9d56d03ad2a776e764a452a8898629462f371d",
+    "eventName": "push",
+    "testLevel": "smoke",
+    "runnerOS": "ubuntu-latest",
+    "timestamp": "2026-03-23 17:13:26 UTC"
+  },
+  "fileCount": 0,
+  "files": [],
+  "failures": []
+}
