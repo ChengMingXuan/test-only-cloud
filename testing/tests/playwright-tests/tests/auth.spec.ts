@@ -29,7 +29,10 @@ test.describe('认证模块 - 登录/登出', () => {
     const passwordInput = page.locator('input[type="password"]').first();
     if (await passwordInput.count() > 0) await passwordInput.fill('P@ssw0rd');
     const loginBtn = page.locator('button[type="submit"], button:has-text("登录")').first();
-    if (await loginBtn.count() > 0) await loginBtn.click();
+    if (await loginBtn.count() > 0) {
+      await loginBtn.scrollIntoViewIfNeeded();
+      await loginBtn.click();
+    }
     await expect(page.locator('body')).toBeVisible();
   });
 
@@ -42,7 +45,10 @@ test.describe('认证模块 - 登录/登出', () => {
     const passwordInput = page.locator('input[type="password"]').first();
     if (await passwordInput.count() > 0) await passwordInput.fill('Wrong');
     const loginBtn = page.locator('button[type="submit"], button:has-text("登录")').first();
-    if (await loginBtn.count() > 0) await loginBtn.click();
+    if (await loginBtn.count() > 0) {
+      await loginBtn.scrollIntoViewIfNeeded();
+      await loginBtn.click();
+    }
     expect(page.url()).toContain('/login');
   });
 
