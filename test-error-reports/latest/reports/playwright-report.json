@@ -4,16 +4,16 @@
   "icon": "🎭",
   "standardCases": 11093,
   "summary": {
-    "total": 35,
+    "total": 15,
     "passed": 13,
-    "failed": 22,
+    "failed": 2,
     "skipped": 0,
-    "passRate": 37.14,
-    "duration_s": 112.123606,
-    "timestamp": "2026-03-23T17:44:29",
+    "passRate": 86.67,
+    "duration_s": 70.166031,
+    "timestamp": "2026-03-23T19:29:33",
     "source": "GitHub Actions CI (smoke)",
     "measurementMode": "cases",
-    "comparableTotal": 35,
+    "comparableTotal": 15,
     "executedFiles": 0
   },
   "gateStatus": {
@@ -21,11 +21,11 @@
     "statusText": "存在失败用例 - 不可发布"
   },
   "ci": {
-    "gitCommit": "cb077e6d68140aba62e2fb412425abdc5deb0a7c",
+    "gitCommit": "07dd7c36283b798d148c935a0fcc5bd1e47debf3",
     "eventName": "push",
     "testLevel": "smoke",
     "runnerOS": "ubuntu-latest",
-    "timestamp": "2026-03-23 17:44:29 UTC"
+    "timestamp": "2026-03-23 19:29:33 UTC"
   },
   "fileCount": 0,
   "files": [],
