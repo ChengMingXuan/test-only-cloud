@@ -1,6 +1,6 @@
 # 🔬 Selenium（浏览器兼容性测试） — 测试报告
 
-> 来源：GitHub Actions CI | 级别：smoke | 2026-03-23 21:02:51 UTC
+> 来源：GitHub Actions CI | 级别：smoke | 2026-03-23 21:08:05 UTC
 
 ## 执行概要
 
@@ -12,7 +12,7 @@
 | ❌ 失败 | 0 |
 | ⏭️ 跳过 | 0 |
 | 通过率 | 0% |
-| 耗时(s) | 3.033 |
+| 耗时(s) | 2.952 |
 
 ## 发布门禁
 
@@ -23,7 +23,7 @@
 
 | 项 | 值 |
 |----|-----|
-| Git Commit | `c38f18dd5c511a8a28edd1cd693ea96c37f6af49` |
+| Git Commit | `982d1937eec60eb18fdd932357bc0407f837e120` |
 | 触发方式 | push |
 | 运行环境 | ubuntu-latest |
 | 测试级别 | smoke |
