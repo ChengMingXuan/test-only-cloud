@@ -6,7 +6,7 @@ name: 🌲 Cypress
 
 on:
   push:
-    branches: [test-only-cloud]
+    branches: [main]
     paths:
       - 'testing/tests/cypress-tests/**'
       - '.github/workflows/test-cypress.yml'

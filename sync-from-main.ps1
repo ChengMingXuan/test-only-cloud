@@ -2,15 +2,15 @@
 .SYNOPSIS
     从主项目同步测试文件到测试专用仓库（全量覆盖）
 .DESCRIPTION
-    将 d:\2026\aiops.v2 中的测试相关文件全量覆盖到 d:\2026\test-only-cloud
+    将 d:\2026\aiops.v2 中的测试相关文件全量覆盖到 d:\2026\main
     仅复制测试脚本，严禁复制业务代码、配置、密钥
 .NOTES
-    执行前确保当前目录为 d:\2026\test-only-cloud
+    执行前确保当前目录为 d:\2026\main
 #>
 
 param(
     [string]$MainProjectPath = "D:\2026\aiops.v2",
-    [string]$TestRepoPath = "D:\2026\test-only-cloud",
+    [string]$TestRepoPath = "D:\2026\main",
     [switch]$DryRun
 )
 

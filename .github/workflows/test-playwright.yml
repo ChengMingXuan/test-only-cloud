@@ -6,7 +6,7 @@ name: 🎭 Playwright
 
 on:
   push:
-    branches: [test-only-cloud]
+    branches: [main]
     paths:
       - 'testing/tests/playwright-tests/**'
       - '.github/workflows/test-playwright.yml'

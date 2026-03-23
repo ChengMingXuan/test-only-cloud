@@ -8,7 +8,7 @@ name: 🔧 Integration Test
 
 on:
   push:
-    branches: [test-only-cloud]
+    branches: [main]
     paths:
       - 'testing/JGSY.AGI.Test/**'
       - '.github/workflows/test-integration.yml'

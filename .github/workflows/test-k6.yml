@@ -6,7 +6,7 @@ name: ⚡ k6
 
 on:
   push:
-    branches: [test-only-cloud]
+    branches: [main]
     paths:
       - 'testing/k6/**'
       - '.github/workflows/test-k6.yml'

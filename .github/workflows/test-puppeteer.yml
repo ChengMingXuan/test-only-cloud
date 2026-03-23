@@ -6,7 +6,7 @@ name: 🤖 Puppeteer
 
 on:
   push:
-    branches: [test-only-cloud]
+    branches: [main]
     paths:
       - 'testing/tests/puppeteer-tests/**'
       - '.github/workflows/test-puppeteer.yml'

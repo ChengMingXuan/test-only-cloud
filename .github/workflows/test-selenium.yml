@@ -6,7 +6,7 @@ name: 🔬 Selenium
 
 on:
   push:
-    branches: [test-only-cloud]
+    branches: [main]
     paths:
       - 'testing/tests/selenium-tests/**'
       - '.github/workflows/test-selenium.yml'

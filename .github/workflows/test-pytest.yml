@@ -6,7 +6,7 @@ name: 🐍 pytest
 
 on:
   push:
-    branches: [test-only-cloud]
+    branches: [main]
     paths:
       - 'testing/tests/**/*.py'
       - 'testing/tests/pytest.ini'
