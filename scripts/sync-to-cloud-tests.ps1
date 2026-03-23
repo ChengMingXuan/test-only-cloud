@@ -160,8 +160,12 @@ try {
     git commit -m $CommitMessage 2>$null
     Write-Host "  ✅ 已提交: $CommitMessage" -ForegroundColor Green
 
+    $prevEAP = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
     $pushOutput = git push 2>&1 | Out-String
-    if ($LASTEXITCODE -eq 0) {
+    $pushExitCode = $LASTEXITCODE
+    $ErrorActionPreference = $prevEAP
+    if ($pushExitCode -eq 0) {
         Write-Host "  ✅ 推送成功" -ForegroundColor Green
     } else {
         Write-Host "  ❌ 推送失败，请检查网络或 SSH 配置" -ForegroundColor Red
