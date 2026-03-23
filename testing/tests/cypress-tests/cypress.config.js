@@ -60,26 +60,25 @@ module.exports = defineConfig({
       const mockServer = require('./mock-server');
       let mockStarted = false;
 
-      on('before:run', async () => {
-        // 创建报告目录
-        if (!fs.existsSync('reports')) fs.mkdirSync('reports', { recursive: true });
+      // 创建报告目录
+      if (!fs.existsSync('reports')) fs.mkdirSync('reports', { recursive: true });
 
-        // 双模判断：CI / 显式 Mock / 前端不可达 → 自动启动 mock-server
-        const forceMock = process.env.CI || process.env.CYPRESS_MOCK_MODE;
-        const baseUrl = config.baseUrl || 'http://localhost:8000';
-        const available = forceMock ? false : await checkFrontendAvailable(baseUrl);
+      // 双模判断：CI / 显式 Mock / 前端不可达 → 自动启动 mock-server
+      // 必须在 setupNodeEvents 中直接启动（before:run 太晚，Cypress 先验 baseUrl）
+      const forceMock = process.env.CI || process.env.CYPRESS_MOCK_MODE;
+      const baseUrl = config.baseUrl || 'http://localhost:8000';
+      const available = forceMock ? false : await checkFrontendAvailable(baseUrl);
 
-        if (!available) {
-          console.log('\n⚡ [Cypress] 前端不可达或 Mock 模式，自动启动 mock-server...');
-          await mockServer.start();
-          mockStarted = true;
-          // 确保 baseUrl 指向 mock-server
-          config.baseUrl = `http://127.0.0.1:${mockServer.PORT}`;
-          console.log(`✅ [Cypress] Mock 模式 → baseUrl = ${config.baseUrl}\n`);
-        } else {
-          console.log(`\n✅ [Cypress] 真实模式 → 前端 ${baseUrl} 可达，直连真实服务\n`);
-        }
-      });
+      if (!available) {
+        console.log('\n⚡ [Cypress] 前端不可达或 Mock 模式，自动启动 mock-server...');
+        await mockServer.start();
+        mockStarted = true;
+        // 确保 baseUrl 指向 mock-server
+        config.baseUrl = `http://127.0.0.1:${mockServer.PORT}`;
+        console.log(`✅ [Cypress] Mock 模式 → baseUrl = ${config.baseUrl}\n`);
+      } else {
+        console.log(`\n✅ [Cypress] 真实模式 → 前端 ${baseUrl} 可达，直连真实服务\n`);
+      }
 
       on('after:run', () => {
         if (mockStarted) {
