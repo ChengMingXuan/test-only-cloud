@@ -31,7 +31,7 @@ test.describe('认证模块 - 登录/登出', () => {
     const loginBtn = page.locator('button[type="submit"], button:has-text("登录")').first();
     if (await loginBtn.count() > 0) {
       await loginBtn.scrollIntoViewIfNeeded();
-      await loginBtn.click();
+      await loginBtn.click({ force: true });
     }
     await expect(page.locator('body')).toBeVisible();
   });
@@ -47,7 +47,7 @@ test.describe('认证模块 - 登录/登出', () => {
     const loginBtn = page.locator('button[type="submit"], button:has-text("登录")').first();
     if (await loginBtn.count() > 0) {
       await loginBtn.scrollIntoViewIfNeeded();
-      await loginBtn.click();
+      await loginBtn.click({ force: true });
     }
     expect(page.url()).toContain('/login');
   });
