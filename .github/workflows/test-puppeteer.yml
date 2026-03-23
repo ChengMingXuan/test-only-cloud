@@ -1,6 +1,6 @@
 # ═══════════════════════════════════════════════════════════════════
 # Puppeteer 性能基准 + 视觉回归测试工作流
-# 8,137 用例 | Node 18 + Jest
+# 8,137 用例 | Node 22 + Jest
 # ═══════════════════════════════════════════════════════════════════
 name: 🤖 Puppeteer
 
@@ -42,7 +42,7 @@ jobs:
       - name: 🟢 Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
 
       - name: 📦 安装依赖
         working-directory: testing/tests/puppeteer-tests
