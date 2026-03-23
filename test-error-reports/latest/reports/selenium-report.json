@@ -4,28 +4,29 @@
   "icon": "🔬",
   "standardCases": 6540,
   "summary": {
-    "total": 0,
-    "passed": 0,
-    "failed": 0,
-    "skipped": 0,
-    "passRate": 0,
-    "duration_s": 2.952,
-    "timestamp": "2026-03-23T21:08:05",
+    "total": 8258,
+    "passed": 7570,
+    "failed": 663,
+    "skipped": 25,
+    "passRate": 91.67,
+    "duration_s": 4193.230
+0,
+    "timestamp": "2026-03-23T22:29:31",
     "source": "GitHub Actions CI (smoke)",
     "measurementMode": "cases",
-    "comparableTotal": 0,
+    "comparableTotal": 8258,
     "executedFiles": 0
   },
   "gateStatus": {
     "canRelease": false,
-    "statusText": "未收集到测试结果"
+    "statusText": "存在失败用例 - 不可发布"
   },
   "ci": {
-    "gitCommit": "982d1937eec60eb18fdd932357bc0407f837e120",
+    "gitCommit": "75eee389b707d0c3c5489029b23ccbe8d9587442",
     "eventName": "push",
     "testLevel": "smoke",
     "runnerOS": "ubuntu-latest",
-    "timestamp": "2026-03-23 21:08:05 UTC"
+    "timestamp": "2026-03-23 22:29:31 UTC"
   },
   "fileCount": 0,
   "files": [],
