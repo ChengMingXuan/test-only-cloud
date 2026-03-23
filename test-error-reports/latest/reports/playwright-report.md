@@ -1,6 +1,6 @@
 # 🎭 Playwright（E2E端到端测试） — 测试报告
 
-> 来源：GitHub Actions CI | 级别：smoke | 2026-03-23 19:29:33 UTC
+> 来源：GitHub Actions CI | 级别：smoke | 2026-03-23 20:15:07 UTC
 
 ## 执行概要
 
@@ -12,7 +12,7 @@
 | ❌ 失败 | 2 |
 | ⏭️ 跳过 | 0 |
 | 通过率 | 86.67% |
-| 耗时(s) | 70.166031 |
+| 耗时(s) | 70.08200500000001 |
 
 ## 发布门禁
 
@@ -23,7 +23,7 @@
 
 | 项 | 值 |
 |----|-----|
-| Git Commit | `07dd7c36283b798d148c935a0fcc5bd1e47debf3` |
+| Git Commit | `345f5d337c58c67b14b138437f92a8c6f8929a2a` |
 | 触发方式 | push |
 | 运行环境 | ubuntu-latest |
 | 测试级别 | smoke |
@@ -34,13 +34,13 @@
   ✘   6 [mobile-chrome] › tests/auth.spec.ts:26:7 › 认证模块 - 登录/登出 › [P0] 正确用户名密码登录成功 @smoke @critical (15.5s)
   ✘   7 [mobile-chrome] › tests/auth.spec.ts:36:7 › 认证模块 - 登录/登出 › [P0] 错误密码登录失败 @smoke (15.5s)
   ✘   8 [mobile-chrome] › tests/auth.spec.ts:26:7 › 认证模块 - 登录/登出 › [P0] 正确用户名密码登录成功 @smoke @critical (retry #1) (15.5s)
-  ✘   9 [mobile-chrome] › tests/auth.spec.ts:36:7 › 认证模块 - 登录/登出 › [P0] 错误密码登录失败 @smoke (retry #1) (15.6s)
-  ✘  10 [mobile-chrome] › tests/auth.spec.ts:26:7 › 认证模块 - 登录/登出 › [P0] 正确用户名密码登录成功 @smoke @critical (retry #2) (15.6s)
-  ✓  12 [mobile-chrome] › tests/auth.spec.ts:59:7 › 认证模块 - 登录/登出 › [P0] 登录后成功登出 @smoke (485ms)
+  ✘   9 [mobile-chrome] › tests/auth.spec.ts:36:7 › 认证模块 - 登录/登出 › [P0] 错误密码登录失败 @smoke (retry #1) (15.5s)
+  ✘  10 [mobile-chrome] › tests/auth.spec.ts:26:7 › 认证模块 - 登录/登出 › [P0] 正确用户名密码登录成功 @smoke @critical (retry #2) (15.5s)
+  ✓  12 [mobile-chrome] › tests/auth.spec.ts:59:7 › 认证模块 - 登录/登出 › [P0] 登录后成功登出 @smoke (495ms)
   ✘  11 [mobile-chrome] › tests/auth.spec.ts:36:7 › 认证模块 - 登录/登出 › [P0] 错误密码登录失败 @smoke (retry #2) (15.6s)
-  ✓  13 [mobile-chrome] › tests/operation-audit.spec.ts:138:7 › 操作审计日志 — 完整 E2E 流程 › [P0] 操作日志列表页正常渲染 @smoke @critical (417ms)
-  ✓  15 [desktop-hd] › tests/auth.spec.ts:26:7 › 认证模块 - 登录/登出 › [P0] 正确用户名密码登录成功 @smoke @critical (456ms)
-  ✓  16 [desktop-hd] › tests/auth.spec.ts:36:7 › 认证模块 - 登录/登出 › [P0] 错误密码登录失败 @smoke (372ms)
+  ✓  13 [mobile-chrome] › tests/operation-audit.spec.ts:138:7 › 操作审计日志 — 完整 E2E 流程 › [P0] 操作日志列表页正常渲染 @smoke @critical (431ms)
+  ✓  15 [desktop-hd] › tests/auth.spec.ts:26:7 › 认证模块 - 登录/登出 › [P0] 正确用户名密码登录成功 @smoke @critical (472ms)
+  ✓  16 [desktop-hd] › tests/auth.spec.ts:36:7 › 认证模块 - 登录/登出 › [P0] 错误密码登录失败 @smoke (384ms)
 --
     TimeoutError: locator.click: Timeout 15000ms exceeded.
     Call log:

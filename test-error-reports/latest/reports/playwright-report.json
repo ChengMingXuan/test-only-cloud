@@ -9,8 +9,8 @@
     "failed": 2,
     "skipped": 0,
     "passRate": 86.67,
-    "duration_s": 70.166031,
-    "timestamp": "2026-03-23T19:29:33",
+    "duration_s": 70.08200500000001,
+    "timestamp": "2026-03-23T20:15:07",
     "source": "GitHub Actions CI (smoke)",
     "measurementMode": "cases",
     "comparableTotal": 15,
@@ -21,11 +21,11 @@
     "statusText": "存在失败用例 - 不可发布"
   },
   "ci": {
-    "gitCommit": "07dd7c36283b798d148c935a0fcc5bd1e47debf3",
+    "gitCommit": "345f5d337c58c67b14b138437f92a8c6f8929a2a",
     "eventName": "push",
     "testLevel": "smoke",
     "runnerOS": "ubuntu-latest",
-    "timestamp": "2026-03-23 19:29:33 UTC"
+    "timestamp": "2026-03-23 20:15:07 UTC"
   },
   "fileCount": 0,
   "files": [],
