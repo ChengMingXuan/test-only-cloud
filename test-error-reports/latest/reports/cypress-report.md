@@ -1,6 +1,6 @@
 # 🌲 Cypress（UI交互测试） — 测试报告
 
-> 来源：GitHub Actions CI | 级别：smoke | 2026-03-23 19:28:30 UTC
+> 来源：GitHub Actions CI | 级别：smoke | 2026-03-23 20:13:57 UTC
 
 ## 执行概要
 
@@ -23,7 +23,7 @@
 
 | 项 | 值 |
 |----|-----|
-| Git Commit | `07dd7c36283b798d148c935a0fcc5bd1e47debf3` |
+| Git Commit | `345f5d337c58c67b14b138437f92a8c6f8929a2a` |
 | 触发方式 | push |
 | 运行环境 | ubuntu-latest |
 | 测试级别 | smoke |
