@@ -10,7 +10,7 @@
     "skipped": 0,
     "passRate": 0,
     "duration_s": 0,
-    "timestamp": "2026-03-23T19:27:59",
+    "timestamp": "2026-03-23T21:07:59",
     "source": "GitHub Actions CI (full)",
     "measurementMode": "cases",
     "comparableTotal": 0,
@@ -21,11 +21,11 @@
     "statusText": "未收集到测试结果"
   },
   "ci": {
-    "gitCommit": "07dd7c36283b798d148c935a0fcc5bd1e47debf3",
+    "gitCommit": "982d1937eec60eb18fdd932357bc0407f837e120",
     "eventName": "push",
     "testLevel": "full",
     "runnerOS": "ubuntu-latest",
-    "timestamp": "2026-03-23 19:27:59 UTC"
+    "timestamp": "2026-03-23 21:07:59 UTC"
   },
   "fileCount": 0,
   "files": [],
