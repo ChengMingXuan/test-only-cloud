@@ -78,8 +78,10 @@ fi
 if [ "$TOTAL" -eq 0 ] && [ -n "$OUTPUT_FILE" ] && [ -f "$OUTPUT_FILE" ]; then
   case "$TOOL" in
     cypress)
-      PASSED=$(grep -cE '✓|passing' "$OUTPUT_FILE" 2>/dev/null || echo "0")
-      FAILED=$(grep -cE '✗|failing' "$OUTPUT_FILE" 2>/dev/null || echo "0")
+      PASSED=$(grep -cE '✓|passing' "$OUTPUT_FILE" 2>/dev/null || true)
+      FAILED=$(grep -cE '✗|failing' "$OUTPUT_FILE" 2>/dev/null || true)
+      [ -z "$PASSED" ] && PASSED=0
+      [ -z "$FAILED" ] && FAILED=0
       TOTAL=$((PASSED + FAILED))
       ;;
     playwright)
@@ -111,7 +113,8 @@ if [ "$TOTAL" -eq 0 ] && [ -n "$OUTPUT_FILE" ] && [ -f "$OUTPUT_FILE" ]; then
         FAILED=$(python3 -c "import json; d=json.load(open('$K6_SUMMARY')); print(d.get('metrics',{}).get('checks',{}).get('values',{}).get('fails',0))" 2>/dev/null || echo "0")
         TOTAL=$((PASSED + FAILED))
       else
-        PASSED=$(grep -cE '✓|✗' "$OUTPUT_FILE" 2>/dev/null || echo "0")
+        PASSED=$(grep -cE '✓|✗' "$OUTPUT_FILE" 2>/dev/null || true)
+        [ -z "$PASSED" ] && PASSED=0
         TOTAL=$PASSED
       fi
       ;;
