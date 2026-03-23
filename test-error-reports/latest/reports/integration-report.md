@@ -1,6 +1,6 @@
 # 🔧 集成测试（C# xUnit） — 测试报告
 
-> 来源：GitHub Actions CI | 级别：full | 2026-03-23 17:12:56 UTC
+> 来源：GitHub Actions CI | 级别：full | 2026-03-23 19:27:59 UTC
 
 ## 执行概要
 
@@ -23,7 +23,7 @@
 
 | 项 | 值 |
 |----|-----|
-| Git Commit | `6b9d56d03ad2a776e764a452a8898629462f371d` |
+| Git Commit | `07dd7c36283b798d148c935a0fcc5bd1e47debf3` |
 | 触发方式 | push |
 | 运行环境 | ubuntu-latest |
 | 测试级别 | full |
