@@ -1,6 +1,6 @@
 # 🤖 Puppeteer（渲染/性能测试） — 测试报告
 
-> 来源：GitHub Actions CI | 级别：smoke | 2026-03-23 18:17:56 UTC
+> 来源：GitHub Actions CI | 级别：smoke | 2026-03-23 18:21:34 UTC
 
 ## 执行概要
 
@@ -23,7 +23,7 @@
 
 | 项 | 值 |
 |----|-----|
-| Git Commit | `25b8317d30ad3e562a72e29fc0ceb26e3e364b92` |
+| Git Commit | `e4c635ccd4d516a72a537ac338f633cc048aa365` |
 | 触发方式 | push |
 | 运行环境 | ubuntu-latest |
 | 测试级别 | smoke |
