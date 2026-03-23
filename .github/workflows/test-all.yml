@@ -208,6 +208,40 @@ jobs:
           path: TestResults/
           merge-multiple: true
 
+      - name: 📊 生成标准格式报告
+        run: |
+          chmod +x .github/scripts/generate-ci-report.sh
+          LEVEL="${{ github.event.inputs.test_level }}"
+          
+          # 为每个工具生成标准格式报告
+          ./.github/scripts/generate-ci-report.sh pytest \
+            --xml TestResults/pytest-results.xml \
+            --output TestResults/pytest-output.txt \
+            --level "$LEVEL"
+          
+          ./.github/scripts/generate-ci-report.sh cypress \
+            --output TestResults/cypress-output.txt \
+            --level "$LEVEL"
+          
+          ./.github/scripts/generate-ci-report.sh playwright \
+            --xml TestResults/playwright-results.xml \
+            --output TestResults/playwright-output.txt \
+            --level "$LEVEL"
+          
+          ./.github/scripts/generate-ci-report.sh puppeteer \
+            --xml TestResults/puppeteer-results.xml \
+            --output TestResults/puppeteer-output.txt \
+            --level "$LEVEL"
+          
+          ./.github/scripts/generate-ci-report.sh selenium \
+            --xml TestResults/selenium-results.xml \
+            --output TestResults/selenium-output.txt \
+            --level "$LEVEL"
+          
+          ./.github/scripts/generate-ci-report.sh k6 \
+            --output TestResults/k6-output.txt \
+            --level "$LEVEL"
+
       - name: 📊 生成汇总报告
         run: |
           mkdir -p test-error-reports/latest
@@ -301,4 +335,5 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add test-error-reports/ || true
           git diff --cached --quiet || git commit -m "📊 全量测试报告 ${{ github.event.inputs.test_level }} $(date +%Y-%m-%d_%H%M)"
+          git pull --rebase origin main || true
           git push || true

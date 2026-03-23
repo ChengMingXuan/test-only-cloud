@@ -104,11 +104,23 @@ jobs:
             test-error-reports/
           retention-days: 30
 
-      - name: 💾 提交错误报告到仓库
+      - name: � 生成标准格式报告
+        if: always()
+        run: |
+          chmod +x .github/scripts/generate-ci-report.sh
+          ./.github/scripts/generate-ci-report.sh puppeteer \
+            --xml TestResults/puppeteer-results.xml \
+            --output TestResults/puppeteer-output.txt \
+            --level "smoke"
+
+      - name: 💾 提交报告到仓库
         if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add test-error-reports/ || true
-          git diff --cached --quiet || git commit -m "📊 Puppeteer 错误报告 $(date +%Y-%m-%d_%H%M)"
-          git push || true
+          git diff --cached --quiet || git commit -m "📊 Puppeteer 报告 $(date +%Y-%m-%d_%H%M)"
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push && break
+            sleep $((i * 5))
+          done
