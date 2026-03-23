@@ -1,0 +1,94 @@
+﻿
+node.exe : 
+At C:\nvm4w\nodejs\npx.ps1:29 char:3
++   & $NODE_EXE $NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+DevTools listening on ws://127.0.0.1:60852/devtools/browser/00faa8b2-b13e-4b3e-91ba-49965f46d6d0
+
+====================================================================================================
+
+  (Run Starting)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Cypress:        13.17.0                                                                        │
+  │ Browser:        Electron 118 (headless)                                                        │
+  │ Node Version:   v22.12.0 (C:\nvm4w\nodejs\node.exe)                                            │
+  │ Specs:          1 found (04-device.cy.js)                                                      │
+  │ Searched:       D:\2026\aiops.v2\tests\cypress-tests\e2e\04-device.cy.js                       │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                    
+  Running:  04-device.cy.js                                                                 (1 of 1)
+
+
+  设备管理 - Mock API 测试
+    √ [P0] 设备列表页面加载 (200ms)
+    √ [P0] 设备数据渲染 (84ms)
+    √ [P0] 设备状态指示器显示 (74ms)
+    (Attempt 1 of 2) [P1] 搜索设备功能
+    1) [P1] 搜索设备功能
+    (Attempt 1 of 2) [P1] 新增设备按钮
+    2) [P1] 新增设备按钮
+    √ [P1] 设备行操作按钮 (79ms)
+    √ [P2] 设备列表包含设备内容 (88ms)
+
+
+  5 passing (1m)
+  2 failing
+
+  1) 设备管理 - Mock API 测试
+       [P1] 搜索设备功能:
+     AssertionError: Timed out retrying after 15000ms: Expected to find element: `#content-device input.ant-input`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/04-device.cy.js:63:7)
+
+  2) 设备管理 - Mock API 测试
+       [P1] 新增设备按钮:
+     AssertionError: Timed out retrying after 15000ms: Expected to find element: `#btn-add-device`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/04-device.cy.js:72:7)
+
+
+
+
+  (Results)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        7                                                                                │
+  │ Passing:      5                                                                                │
+  │ Failing:      2                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  4                                                                                │
+  │ Video:        false                                                                            │
+  │ Duration:     1 minute, 1 second                                                               │
+  │ Spec Ran:     04-device.cy.js                                                                  │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+  (Screenshots)
+
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\04-device.cy.js\设备管…     (1280x720)
+     Mock API 测试 -- [P1] 搜索设备功能 (failed).png                                                
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\04-device.cy.js\设备管…     (1280x720)
+     Mock API 测试 -- [P1] 搜索设备功能 (failed) (attempt 2).png                                    
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\04-device.cy.js\设备管…     (1280x720)
+     Mock API 测试 -- [P1] 新增设备按钮 (failed).png                                                
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\04-device.cy.js\设备管…     (1280x720)
+     Mock API 测试 -- [P1] 新增设备按钮 (failed) (attempt 2).png                                    
+
+
+====================================================================================================
+
+  (Run Finished)
+
+
+       Spec                                              Tests  Passing  Failing  Pending  Skipped  
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ ×  04-device.cy.js                          01:01        7        5        2        -        - │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+    ×  1 of 1 failed (100%)                     01:01        7        5        2        -        -  
+

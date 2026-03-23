@@ -1,0 +1,108 @@
+# ═══════════════════════════════════════════════════════════════════
+# Cypress UI 交互测试工作流
+# 9,877 用例 | Node 18 | cy.intercept() 全量 Mock
+# ═══════════════════════════════════════════════════════════════════
+name: 🌲 Cypress
+
+on:
+  push:
+    branches: [test-only-cloud]
+    paths:
+      - 'testing/tests/cypress-tests/**'
+      - '.github/workflows/test-cypress.yml'
+  workflow_dispatch:
+    inputs:
+      test_level:
+        description: '测试级别'
+        required: true
+        default: 'smoke'
+        type: choice
+        options:
+          - smoke
+          - standard
+          - full
+
+concurrency:
+  group: cypress-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cypress:
+    name: 🌲 Cypress (${{ github.event.inputs.test_level || 'smoke' }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: 📦 安装依赖
+        working-directory: testing/tests/cypress-tests
+        run: npm ci || npm install
+
+      - name: 🧪 运行 Cypress
+        id: test
+        working-directory: testing/tests/cypress-tests
+        continue-on-error: true
+        run: |
+          LEVEL="${{ github.event.inputs.test_level || 'smoke' }}"
+          
+          if [ "$LEVEL" = "smoke" ]; then
+            npx cypress run --spec "e2e/smoke/**/*.cy.js" --reporter mochawesome --reporter-options reportDir=reports,overwrite=false,json=true 2>&1 | tee ../../../TestResults/cypress-output.txt || true
+          elif [ "$LEVEL" = "standard" ]; then
+            npx cypress run --reporter mochawesome --reporter-options reportDir=reports,overwrite=false,json=true 2>&1 | tee ../../../TestResults/cypress-output.txt || true
+          else
+            npx cypress run --reporter mochawesome --reporter-options reportDir=reports,overwrite=false,json=true 2>&1 | tee ../../../TestResults/cypress-output.txt || true
+          fi
+
+      - name: 📊 生成错误报告
+        if: always()
+        run: |
+          mkdir -p test-error-reports/latest
+          TIMESTAMP=$(date +%Y-%m-%d_%H%M%S)
+          
+          cat > test-error-reports/latest/cypress-errors.md << EOF
+          # 🌲 Cypress 测试错误报告
+          
+          - **执行时间**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          - **Git Commit**: ${{ github.sha }}
+          - **触发方式**: ${{ github.event_name }}
+          - **测试级别**: ${{ github.event.inputs.test_level || 'smoke' }}
+          
+          ## 失败详情
+          
+          EOF
+          
+          if [ -f TestResults/cypress-output.txt ]; then
+            echo '```' >> test-error-reports/latest/cypress-errors.md
+            grep -E "failing|✗|Error|AssertionError|CypressError" TestResults/cypress-output.txt | head -100 >> test-error-reports/latest/cypress-errors.md || true
+            echo '```' >> test-error-reports/latest/cypress-errors.md
+          fi
+          
+          mkdir -p "test-error-reports/history/$TIMESTAMP"
+          cp test-error-reports/latest/cypress-errors.md "test-error-reports/history/$TIMESTAMP/" || true
+
+      - name: 📤 上传测试结果
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cypress-results
+          path: |
+            TestResults/
+            test-error-reports/
+            testing/tests/cypress-tests/reports/
+          retention-days: 30
+
+      - name: 💾 提交错误报告到仓库
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add test-error-reports/ || true
+          git diff --cached --quiet || git commit -m "📊 Cypress 错误报告 $(date +%Y-%m-%d_%H%M)"
+          git push || true

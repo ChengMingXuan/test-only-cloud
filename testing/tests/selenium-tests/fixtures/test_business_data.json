@@ -1,0 +1,56 @@
+{
+  "_comment": "Selenium 跨浏览器兼容性测试 — 业务流程测试数据",
+
+  "device_crud": {
+    "create": {
+      "code": "SEL-DEV-{browser}-{timestamp}",
+      "name": "Selenium {browser} 测试设备",
+      "type": "charger",
+      "power": 120,
+      "stationCode": "STA-TEST-001"
+    },
+    "update": {
+      "name": "Selenium {browser} 更新设备",
+      "power": 240
+    }
+  },
+
+  "station_crud": {
+    "create": {
+      "code": "SEL-STA-{browser}-{timestamp}",
+      "name": "Selenium {browser} 测试场站",
+      "address": "测试地址"
+    }
+  },
+
+  "workorder_flow": {
+    "create": {
+      "title": "Selenium {browser} 测试工单",
+      "type": "repair",
+      "priority": "normal",
+      "description": "跨浏览器兼容性测试自动创建"
+    }
+  },
+
+  "search_keywords": [
+    "DEV-TEST",
+    "STA-TEST",
+    "充电",
+    "测试"
+  ],
+
+  "validation_flows": [
+    {
+      "name": "登录→仪表盘→设备列表→设备详情",
+      "pages": ["/user/login", "/dashboard", "/device", "/device/dev-001"]
+    },
+    {
+      "name": "登录→充电订单→订单详情",
+      "pages": ["/user/login", "/charging/orders", "/charging/orders/order-001"]
+    },
+    {
+      "name": "登录→场站管理→场站详情",
+      "pages": ["/user/login", "/station", "/station/sta-001"]
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- 测试项目禁用 AOT 分析（测试代码不需要 AOT 兼容） -->
+    <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
+    <IsAotCompatible>false</IsAotCompatible>
+    <!-- 抑制 Grpc.Net.ClientFactory 版本兼容性警告 -->
+    <SuppressCheckGrpcNetClientFactoryVersion>true</SuppressCheckGrpcNetClientFactoryVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="Npgsql" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Testcontainers" />
+    <PackageReference Include="Testcontainers.PostgreSql" />
+    <PackageReference Include="Testcontainers.Redis" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+    <PackageReference Include="coverlet.collector" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+    <PackageReference Include="coverlet.msbuild" PrivateAssets="all" />
+    <PackageReference Include="ReportGenerator" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\JGSY.AGI.Common.Hosting\JGSY.AGI.Common.Hosting.csproj" />
+    <ProjectReference Include="..\..\JGSY.AGI.Identity\JGSY.AGI.Identity.csproj" />
+    <ProjectReference Include="..\..\JGSY.AGI.Storage\JGSY.AGI.Storage.csproj" />
+    <ProjectReference Include="..\..\JGSY.AGI.Observability\JGSY.AGI.Observability.csproj" />
+    <ProjectReference Include="..\..\JGSY.AGI.WorkOrder\JGSY.AGI.WorkOrder.csproj" />
+    <ProjectReference Include="..\..\JGSY.AGI.Station\JGSY.AGI.Station.csproj" />
+    <ProjectReference Include="..\..\JGSY.AGI.Tenant\JGSY.AGI.Tenant.csproj" />
+    <ProjectReference Include="..\..\JGSY.AGI.Account\JGSY.AGI.Account.csproj" />
+    <ProjectReference Include="..\..\JGSY.AGI.Permission\JGSY.AGI.Permission.csproj" />
+    <ProjectReference Include="..\..\JGSY.AGI.Blockchain\JGSY.AGI.Blockchain.csproj" />
+    <ProjectReference Include="..\..\JGSY.AGI.Charging\JGSY.AGI.Charging.csproj" />
+    <ProjectReference Include="..\..\JGSY.AGI.Device\JGSY.AGI.Device.csproj" />
+    <ProjectReference Include="..\..\JGSY.AGI.Analytics\JGSY.AGI.Analytics.csproj" />
+    <ProjectReference Include="..\..\JGSY.AGI.ContentPlatform\JGSY.AGI.ContentPlatform.csproj" />
+    <ProjectReference Include="..\..\JGSY.AGI.DigitalTwin\JGSY.AGI.DigitalTwin.csproj" />
+    <ProjectReference Include="..\..\JGSY.AGI.EnergyCore.Orchestrator\JGSY.AGI.EnergyCore.Orchestrator.csproj" />
+    <ProjectReference Include="..\..\JGSY.AGI.EnergyCore.VPP\JGSY.AGI.EnergyCore.VPP.csproj" />
+    <ProjectReference Include="..\..\JGSY.AGI.EnergyCore.MicroGrid\JGSY.AGI.EnergyCore.MicroGrid.csproj" />
+    <ProjectReference Include="..\..\JGSY.AGI.EnergyCore.PVESSC\JGSY.AGI.EnergyCore.PVESSC.csproj" />
+    <ProjectReference Include="..\..\JGSY.AGI.EnergyServices.Trading\JGSY.AGI.EnergyServices.Trading.csproj" />
+    <ProjectReference Include="..\..\JGSY.AGI.EnergyServices.Operations\JGSY.AGI.EnergyServices.Operations.csproj" />
+    <ProjectReference Include="..\..\JGSY.AGI.Ingestion\JGSY.AGI.Ingestion.csproj" />
+    <ProjectReference Include="..\..\JGSY.AGI.IotCloudAI\JGSY.AGI.IotCloudAI.csproj" />
+    <ProjectReference Include="..\..\JGSY.AGI.RuleEngine\JGSY.AGI.RuleEngine.csproj" />
+    <ProjectReference Include="..\..\JGSY.AGI.Settlement\JGSY.AGI.Settlement.csproj" />
+    <ProjectReference Include="..\..\JGSY.AGI.Gateway\JGSY.AGI.Gateway.csproj" />
+    <ProjectReference Include="..\..\JGSY.AGI.Simulator\JGSY.AGI.Simulator.csproj" />
+  </ItemGroup>
+
+</Project>

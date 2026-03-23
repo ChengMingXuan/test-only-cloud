@@ -1,0 +1,34 @@
+# Cypress 测试输出 - 不跟踪
+cypress/videos/
+cypress/screenshots/
+cypress/downloads/
+reports/
+test-results/
+allure-results/
+mochawesome-report/
+
+# 快速测试运行器输出
+fast-test-report-*.json
+test-progress-*.txt
+cypress-fast-run-*.log
+
+# 测试运行日志
+*.log
+cy-result.txt
+run-*.txt
+qc*.txt
+cypress-output.log
+test_results.log
+test_run.log
+fast-runner-output.txt
+
+# Node
+node_modules/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 临时文件
+*.tmp
+*.temp

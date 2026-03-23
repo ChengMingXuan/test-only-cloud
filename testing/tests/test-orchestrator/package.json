@@ -1,0 +1,16 @@
+{
+  "name": "aiops-test-orchestrator",
+  "version": "1.0.0",
+  "description": "AIOPS 统一测试编排器 - 协调5大测试工具",
+  "main": "run-all-tests.js",
+  "scripts": {
+    "test:all": "node run-all-tests.js sequential",
+    "test:parallel": "node run-all-tests.js parallel",
+    "test:quick": "node run-all-tests.js sequential pytest cypress",
+    "test:e2e": "node run-all-tests.js sequential playwright selenium",
+    "test:performance": "node run-all-tests.js sequential puppeteer k6"
+  },
+  "keywords": ["orchestrator", "testing", "aiops"],
+  "author": "JGSY.AGI Team",
+  "license": "MIT"
+}

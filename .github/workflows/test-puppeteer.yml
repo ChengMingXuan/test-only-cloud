@@ -1,0 +1,111 @@
+# ═══════════════════════════════════════════════════════════════════
+# Puppeteer 性能基准 + 视觉回归测试工作流
+# 8,137 用例 | Node 18 + Jest
+# ═══════════════════════════════════════════════════════════════════
+name: 🤖 Puppeteer
+
+on:
+  push:
+    branches: [test-only-cloud]
+    paths:
+      - 'testing/tests/puppeteer-tests/**'
+      - '.github/workflows/test-puppeteer.yml'
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: '测试类型'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - performance
+          - visual
+
+concurrency:
+  group: puppeteer-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  puppeteer:
+    name: 🤖 Puppeteer (${{ github.event.inputs.test_type || 'all' }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: 📦 安装依赖
+        working-directory: testing/tests/puppeteer-tests
+        run: npm ci || npm install
+
+      - name: 🧪 运行 Puppeteer 测试
+        id: test
+        working-directory: testing/tests/puppeteer-tests
+        continue-on-error: true
+        run: |
+          TEST_TYPE="${{ github.event.inputs.test_type || 'all' }}"
+          
+          mkdir -p ../../../TestResults
+          
+          if [ "$TEST_TYPE" = "performance" ] || [ "$TEST_TYPE" = "all" ]; then
+            npx jest --testPathPattern="performance" --forceExit --ci --reporters=default --reporters=jest-junit 2>&1 | tee ../../../TestResults/puppeteer-output.txt || true
+          fi
+          
+          if [ "$TEST_TYPE" = "visual" ] || [ "$TEST_TYPE" = "all" ]; then
+            npx jest --testPathPattern="visual" --forceExit --ci --reporters=default --reporters=jest-junit 2>&1 | tee -a ../../../TestResults/puppeteer-output.txt || true
+          fi
+        env:
+          JEST_JUNIT_OUTPUT_DIR: ../../../TestResults
+          JEST_JUNIT_OUTPUT_NAME: puppeteer-results.xml
+
+      - name: 📊 生成错误报告
+        if: always()
+        run: |
+          mkdir -p test-error-reports/latest
+          TIMESTAMP=$(date +%Y-%m-%d_%H%M%S)
+          
+          cat > test-error-reports/latest/puppeteer-errors.md << EOF
+          # 🤖 Puppeteer 测试错误报告
+          
+          - **执行时间**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          - **Git Commit**: ${{ github.sha }}
+          - **触发方式**: ${{ github.event_name }}
+          
+          ## 失败详情
+          
+          EOF
+          
+          if [ -f TestResults/puppeteer-output.txt ]; then
+            echo '```' >> test-error-reports/latest/puppeteer-errors.md
+            grep -E "FAIL|✕|Error|expect\(|Timeout" TestResults/puppeteer-output.txt | head -100 >> test-error-reports/latest/puppeteer-errors.md || true
+            echo '```' >> test-error-reports/latest/puppeteer-errors.md
+          fi
+          
+          mkdir -p "test-error-reports/history/$TIMESTAMP"
+          cp test-error-reports/latest/puppeteer-errors.md "test-error-reports/history/$TIMESTAMP/" || true
+
+      - name: 📤 上传测试结果
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: puppeteer-results
+          path: |
+            TestResults/
+            test-error-reports/
+          retention-days: 30
+
+      - name: 💾 提交错误报告到仓库
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add test-error-reports/ || true
+          git diff --cached --quiet || git commit -m "📊 Puppeteer 错误报告 $(date +%Y-%m-%d_%H%M)"
+          git push || true

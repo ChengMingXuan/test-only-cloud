@@ -1,0 +1,161 @@
+﻿node.exe : FAIL tests/generated/render-062-ai-models.test.js (189.822 s)
+At C:\nvm4w\nodejs\npx.ps1:29 char:3
++   & $NODE_EXE $NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (FAIL tests/gene....js (189.822 s) 
+   :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  [渲染测试] AI模型
+    页面渲染
+      √ [R001] 页面能正常加载 (4189 ms)
+      √ [R002] 页面无白屏 (839 ms)
+      √ [R003] 根容器渲染 (3468 ms)
+      √ [R004] 标题正确设置 (3652 ms)
+      √ [R005] 样式正确加载 (3677 ms)
+      √ [R006] 主要脚本加载 (3554 ms)
+      √ [R007] 布局容器完整 (4250 ms)
+      √ [R008] 导航区域渲染 (3646 ms)
+      √ [R009] 内容区域渲染 (3556 ms)
+      √ [R010] 无图片加载失败 (4367 ms)
+      √ [R011] Favicon 存在 (4138 ms)
+      √ [R012] 字体正确加载 (3971 ms)
+      √ [R013] 响应时间合理 (606 ms)
+      √ [R014] DOM 节点数量合理 (3487 ms)
+      √ [R015] 视口正确设置 (3805 ms)
+    JS错误检测
+      × [E001] 无严重 JS 错误 (4569 ms)
+      × [E002] 无未捕获异常 (3577 ms)
+      √ [E003] 无语法错误 (3912 ms)
+      √ [E004] 无类型错误 (4226 ms)
+      √ [E005] 无引用错误 (3751 ms)
+      √ [E006] 无范围错误 (3949 ms)
+      × [E007] React 错误边界正常 (4085 ms)
+      √ [E008] 无内存泄漏警告 (3908 ms)
+      √ [E009] 无废弃 API 警告 (3852 ms)
+      √ [E010] 控制台错误数量可控 (3566 ms)
+    资源加载
+      √ [L001] CSS 文件全部加载 (4186 ms)
+      √ [L002] JS 文件全部加载 (3735 ms)
+      √ [L003] 无 404 资源 (3640 ms)
+      √ [L004] 无 500 错误 (4109 ms)
+      √ [L005] 关键资源加载顺序正确 (3580 ms)
+      √ [L006] 资源总大小合理 (4285 ms)
+      √ [L007] 无混合内容 (4323 ms)
+      √ [L008] 懒加载正常 (4035 ms)
+      √ [L009] 请求数量合理 (4285 ms)
+      √ [L010] 缓存策略正确 (3572 ms)
+    异常恢复
+      √ [X001] 网络断开恢复 (1079 ms)
+      √ [X002] 页面刷新正常 (6766 ms)
+      √ [X003] 后退前进正常 (8799 ms)
+      √ [X004] 缩放不破坏布局 (3686 ms)
+      √ [X005] 窗口大小变化正常 (4485 ms)
+      √ [X006] 慢速网络正常 (1031 ms)
+      √ [X007] 无限循环检测 (3521 ms)
+      × [X008] 内存使用合理 (4202 ms)
+      √ [X009] CPU 使用合理 (3529 ms)
+      √ [X010] 并发访问稳定 (1437 ms)
+    可访问性
+      √ [A001] 页面语言属性 (3530 ms)
+      √ [A002] 图片有 alt 属性 (3685 ms)
+      √ [A003] 表单有 label (3756 ms)
+      √ [A004] 色彩对比度 (4512 ms)
+      √ [A005] 键盘可导航 (3674 ms)
+
+  ● [渲染测试] AI模型 › JS错误检测 › [E001] 无严重 JS 错误
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 0
+    Received: 3
+
+    [0m [90m 188 |[39m       [36mawait[39m page[33m.[39mgoto([33mPAGE_U
+RL[39m[33m,[39m { waitUntil[33m:[39m [32m'networkidle2'[39m })[33m;[39
+m
+     [90m 189 |[39m       [36mconst[39m criticalErrors [33m=[39m errors[
+33m.[39mfilter(e [33m=>[39m [33m![39me[33m.[39mincludes([32m'net::'[39
+m))[33m;[39m
+    [31m[1m>[22m[39m[90m 190 |[39m       expect(criticalErrors[33m.[39m
+length)[33m.[39mtoBe([35m0[39m)[33m;[39m
+     [90m     |[39m                                     [31m[1m^[22m[39m
+     [90m 191 |[39m     })[33m;[39m
+     [90m 192 |[39m
+     [90m 193 |[39m     test([32m'[E002] 无未捕获异常'[39m[33m,[39m [36masync
+[39m () [33m=>[39m {[0m
+
+      at Object.toBe (tests/generated/render-062-ai-models.test.js:190:37)
+
+  ● [渲染测试] AI模型 › JS错误检测 › [E002] 无未捕获异常
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 0
+    Received: 2
+
+    [0m [90m 195 |[39m       page[33m.[39mon([32m'pageerror'[39m[33m,[
+39m err [33m=>[39m uncaughtErrors[33m.[39mpush(err))[33m;[39m
+     [90m 196 |[39m       [36mawait[39m page[33m.[39mgoto([33mPAGE_URL[
+39m[33m,[39m { waitUntil[33m:[39m [32m'networkidle2'[39m })[33m;[39m
+    [31m[1m>[22m[39m[90m 197 |[39m       expect(uncaughtErrors[33m.[39m
+length)[33m.[39mtoBe([35m0[39m)[33m;[39m
+     [90m     |[39m                                     [31m[1m^[22m[39m
+     [90m 198 |[39m     })[33m;[39m
+     [90m 199 |[39m
+     [90m 200 |[39m     test([32m'[E003] 无语法错误'[39m[33m,[39m [36masync[
+39m () [33m=>[39m {[0m
+
+      at Object.toBe (tests/generated/render-062-ai-models.test.js:197:37)
+
+  ● [渲染测试] AI模型 › JS错误检测 › [E007] React 错误边界正常
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+    [0m [90m 227 |[39m       [90m// 如果有错误边界UI显示，说明有问题[39m
+     [90m 228 |[39m       [36mconst[39m hasError [33m=[39m errorBoundary 
+[33m?[39m [36mawait[39m errorBoundary[33m.[39misIntersectingViewport() [
+33m:[39m [36mfalse[39m[33m;[39m
+    [31m[1m>[22m[39m[90m 229 |[39m       expect(hasError)[33m.[39mtoBe(
+[36mfalse[39m)[33m;[39m
+     [90m     |[39m                        [31m[1m^[22m[39m
+     [90m 230 |[39m     })[33m;[39m
+     [90m 231 |[39m
+     [90m 232 |[39m     test([32m'[E008] 无内存泄漏警告'[39m[33m,[39m [36masync
+[39m () [33m=>[39m {[0m
+
+      at Object.toBe (tests/generated/render-062-ai-models.test.js:229:24)
+
+  ● [渲染测试] AI模型 › 异常恢复 › [X008] 内存使用合理
+
+    expect(received).toBeLessThan(expected)
+
+    Expected: < 104857600
+    Received:   111823916
+
+    [0m [90m 410 |[39m       [36mawait[39m page[33m.[39mgoto([33mPAGE_U
+RL[39m[33m,[39m { waitUntil[33m:[39m [32m'networkidle2'[39m })[33m;[39
+m
+     [90m 411 |[39m       [36mconst[39m metrics [33m=[39m [36mawait[39m
+ page[33m.[39mmetrics()[33m;[39m
+    [31m[1m>[22m[39m[90m 412 |[39m       expect(metrics[33m.[39m[33mJS
+HeapUsedSize[39m)[33m.[39mtoBeLessThan([35m100[39m [33m*[39m [35m1024[
+39m [33m*[39m [35m1024[39m)[33m;[39m [90m// 100MB[39m
+     [90m     |[39m                                      [31m[1m^[22m[39m
+     [90m 413 |[39m     })[33m;[39m
+     [90m 414 |[39m
+     [90m 415 |[39m     test([32m'[X009] CPU 使用合理'[39m[33m,[39m [36masyn
+c[39m () [33m=>[39m {[0m
+
+      at Object.toBeLessThan (tests/generated/render-062-ai-models.test.js:412:
+38)
+
+Test Suites: 1 failed, 1 total
+Tests:       4 failed, 46 passed, 50 total
+Snapshots:   0 total
+Time:        189.874 s
+Ran all test suites matching /tests\\generated\\render-062-ai-models.test.js/i.
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect a
+sync operations that kept running after all tests finished?

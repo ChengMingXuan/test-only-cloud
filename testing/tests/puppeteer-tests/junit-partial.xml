@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="50" failures="0" errors="0" time="158.445">
+  <testsuite name="[渲染] 运维工具 - 页面渲染" errors="0" failures="0" skipped="0" timestamp="2026-03-09T14:22:49" time="158.41" tests="50">
+    <testcase classname="[渲染] 运维工具 - 页面渲染" name="[R001] 页面正常加载" time="3.446">
+    </testcase>
+    <testcase classname="[渲染] 运维工具 - 页面渲染" name="[R002] HTML结构完整" time="0.501">
+    </testcase>
+    <testcase classname="[渲染] 运维工具 - 页面渲染" name="[R003] 无白屏" time="3.079">
+    </testcase>
+    <testcase classname="[渲染] 运维工具 - 页面渲染" name="[R004] 标题不为空" time="0.492">
+    </testcase>
+    <testcase classname="[渲染] 运维工具 - 页面渲染" name="[R005] 根元素存在" time="0.568">
+    </testcase>
+    <testcase classname="[渲染] 运维工具 - 页面渲染" name="[R006] CSS已加载" time="3.104">
+    </testcase>
+    <testcase classname="[渲染] 运维工具 - 页面渲染" name="[R007] JS已执行" time="3.143">
+    </testcase>
+    <testcase classname="[渲染] 运维工具 - 页面渲染" name="[R008] favicon存在" time="0.52">
+    </testcase>
+    <testcase classname="[性能] 运维工具 - 性能基准" name="[P001] 首次加载时间 &lt; 10s" time="3.101">
+    </testcase>
+    <testcase classname="[性能] 运维工具 - 性能基准" name="[P002] DOM Ready 时间" time="0.5">
+    </testcase>
+    <testcase classname="[性能] 运维工具 - 性能基准" name="[P003] 页面大小合理" time="3.115">
+    </testcase>
+    <testcase classname="[性能] 运维工具 - 性能基准" name="[P004] DOM元素数量合理" time="3.126">
+    </testcase>
+    <testcase classname="[性能] 运维工具 - 性能基准" name="[P005] 无JS异常阻塞" time="3.721">
+    </testcase>
+    <testcase classname="[性能] 运维工具 - 性能基准" name="[P006] 资源请求数合理" time="4.498">
+    </testcase>
+    <testcase classname="[性能] 运维工具 - 性能基准" name="[P007] 内存使用合理" time="4.519">
+    </testcase>
+    <testcase classname="[视觉] 运维工具 - 视觉回归" name="[V001] 截图不为空" time="4.421">
+    </testcase>
+    <testcase classname="[视觉] 运维工具 - 视觉回归" name="[V002] 页面宽度正确(1920)" time="4.617">
+    </testcase>
+    <testcase classname="[视觉] 运维工具 - 视觉回归" name="[V003] 页面高度正确(1080)" time="4.005">
+    </testcase>
+    <testcase classname="[视觉] 运维工具 - 视觉回归" name="[V004] 移动端截图(375x667)" time="4.576">
+    </testcase>
+    <testcase classname="[视觉] 运维工具 - 视觉回归" name="[V005] 平板截图(768x1024)" time="3.915">
+    </testcase>
+    <testcase classname="[视觉] 运维工具 - 视觉回归" name="[V006] 全页面截图" time="3.994">
+    </testcase>
+    <testcase classname="[视觉] 运维工具 - 视觉回归" name="[V007] 暗色模式截图" time="3.998">
+    </testcase>
+    <testcase classname="[DOM] 运维工具 - DOM结构" name="[D001] body不为空" time="0.675">
+    </testcase>
+    <testcase classname="[DOM] 运维工具 - DOM结构" name="[D002] 有语义化标签" time="3.361">
+    </testcase>
+    <testcase classname="[DOM] 运维工具 - DOM结构" name="[D003] meta charset正确" time="0.701">
+    </testcase>
+    <testcase classname="[DOM] 运维工具 - DOM结构" name="[D004] viewport meta存在" time="0.639">
+    </testcase>
+    <testcase classname="[DOM] 运维工具 - DOM结构" name="[D005] 无broken images" time="3.236">
+    </testcase>
+    <testcase classname="[DOM] 运维工具 - DOM结构" name="[D006] 链接格式正确" time="4.309">
+    </testcase>
+    <testcase classname="[DOM] 运维工具 - DOM结构" name="[D007] 表单元素可访问" time="4.037">
+    </testcase>
+    <testcase classname="[资源] 运维工具 - 资源加载" name="[L001] CSS文件加载" time="4.154">
+    </testcase>
+    <testcase classname="[资源] 运维工具 - 资源加载" name="[L002] JS文件加载" time="4.202">
+    </testcase>
+    <testcase classname="[资源] 运维工具 - 资源加载" name="[L003] 字体加载" time="4.348">
+    </testcase>
+    <testcase classname="[资源] 运维工具 - 资源加载" name="[L004] 无404资源" time="3.702">
+    </testcase>
+    <testcase classname="[资源] 运维工具 - 资源加载" name="[L005] 无大文件阻塞" time="4.298">
+    </testcase>
+    <testcase classname="[资源] 运维工具 - 资源加载" name="[L006] Service Worker 兼容" time="4.338">
+    </testcase>
+    <testcase classname="[A11y] 运维工具 - 可访问性" name="[A001] lang属性存在" time="0.96">
+    </testcase>
+    <testcase classname="[A11y] 运维工具 - 可访问性" name="[A002] 图片有alt属性" time="3.208">
+    </testcase>
+    <testcase classname="[A11y] 运维工具 - 可访问性" name="[A003] 按钮有文本" time="4.454">
+    </testcase>
+    <testcase classname="[A11y] 运维工具 - 可访问性" name="[A004] 对比度可读" time="3.945">
+    </testcase>
+    <testcase classname="[A11y] 运维工具 - 可访问性" name="[A005] Tab导航可用" time="3.583">
+    </testcase>
+    <testcase classname="[内存] 运维工具 - 内存检查" name="[M001] 初始堆大小合理" time="3.425">
+    </testcase>
+    <testcase classname="[内存] 运维工具 - 内存检查" name="[M002] 无明显内存泄漏" time="3.43">
+    </testcase>
+    <testcase classname="[内存] 运维工具 - 内存检查" name="[M003] DOM节点未泄漏" time="3.302">
+    </testcase>
+    <testcase classname="[内存] 运维工具 - 内存检查" name="[M004] 事件监听器数量合理" time="3.162">
+    </testcase>
+    <testcase classname="[内存] 运维工具 - 内存检查" name="[M005] 布局计算次数合理" time="3.238">
+    </testcase>
+    <testcase classname="[响应式] 运维工具 - 响应式" name="[RS001] 手机端(375x667)渲染" time="3.103">
+    </testcase>
+    <testcase classname="[响应式] 运维工具 - 响应式" name="[RS002] 平板端(768x1024)渲染" time="2.999">
+    </testcase>
+    <testcase classname="[响应式] 运维工具 - 响应式" name="[RS003] 笔记本(1366x768)渲染" time="3.098">
+    </testcase>
+    <testcase classname="[响应式] 运维工具 - 响应式" name="[RS004] 桌面(1920x1080)渲染" time="3.097">
+    </testcase>
+    <testcase classname="[响应式] 运维工具 - 响应式" name="[RS005] 2K(2560x1440)渲染" time="3.124">
+    </testcase>
+  </testsuite>
+</testsuites>

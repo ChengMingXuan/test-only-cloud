@@ -1,0 +1,14 @@
+{
+    "win64_chromedriver_145.0.7632.117_for_145.0.7632": {
+        "timestamp": "17/03/2026",
+        "binary_path": "D:\\2026\\aiops.v2\\testing\\tests\\selenium-tests\\.wdm\\drivers\\chromedriver\\win64\\145.0.7632.117\\chromedriver-win32/chromedriver.exe"
+    },
+    "win64_geckodriver_v0.36.0_for_": {
+        "timestamp": "23/03/2026",
+        "binary_path": "D:\\2026\\aiops.v2\\testing\\tests\\selenium-tests\\.wdm\\drivers\\geckodriver\\win64\\v0.36.0\\geckodriver.exe"
+    },
+    "win64_chromedriver_146.0.7680.153_for_146.0.7680": {
+        "timestamp": "23/03/2026",
+        "binary_path": "D:\\2026\\aiops.v2\\testing\\tests\\selenium-tests\\.wdm\\drivers\\chromedriver\\win64\\146.0.7680.153\\chromedriver-win32/chromedriver.exe"
+    }
+}

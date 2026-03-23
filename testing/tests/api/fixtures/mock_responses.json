@@ -1,0 +1,55 @@
+{
+  "_comment": "pytest 依赖服务 Mock 响应 — 拦截跨服务 IServiceTransport 调用",
+
+  "station": {
+    "getById": {
+      "success": true, "code": "200", "message": "OK",
+      "data": {
+        "id": "sta-mock-001", "code": "STA-MOCK-001", "name": "Mock场站",
+        "address": "Mock地址", "status": "active"
+      }
+    },
+    "list": {
+      "success": true, "code": "200", "message": "OK",
+      "data": {
+        "items": [
+          { "id": "sta-mock-001", "code": "STA-MOCK-001", "name": "Mock场站" }
+        ],
+        "totalCount": 1, "total": 1, "pageIndex": 1, "pageSize": 20
+      }
+    }
+  },
+
+  "device": {
+    "getById": {
+      "success": true, "code": "200", "message": "OK",
+      "data": {
+        "id": "dev-mock-001", "code": "DEV-MOCK-001", "name": "Mock设备",
+        "type": "charger", "status": "online"
+      }
+    }
+  },
+
+  "identity": {
+    "validateToken": {
+      "success": true, "code": "200", "message": "OK",
+      "data": { "valid": true, "userId": "user-001", "tenantId": "00000000-0000-0000-0000-000000000001" }
+    }
+  },
+
+  "permission": {
+    "checkPermission": {
+      "success": true, "code": "200", "message": "OK",
+      "data": { "hasPermission": true }
+    }
+  },
+
+  "tenant": {
+    "getById": {
+      "success": true, "code": "200", "message": "OK",
+      "data": {
+        "id": "00000000-0000-0000-0000-000000000001", "code": "demo", "name": "演示租户", "status": "active"
+      }
+    }
+  }
+}

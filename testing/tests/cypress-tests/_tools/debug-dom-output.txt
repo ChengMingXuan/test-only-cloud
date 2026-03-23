@@ -1,0 +1,9 @@
+=== INPUTS (2) ===
+  [0] type=text name= id= placeholder=请输入 value=""
+  [1] type=password name= id= placeholder=密码 value=""
+=== BUTTONS (2) ===
+  [0] type=submit cls= text="编辑"
+  [1] type=submit cls= text="登录"
+=== FORM ITEMS: 0 ===
+=== LOGIN FORM: 0 ===
+=== TABS (0) ===

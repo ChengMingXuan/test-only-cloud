@@ -1,0 +1,26 @@
+# Selenium 测试产物 - 禁止提交
+
+# 测试报告
+reports/
+html-report/
+allure-results/
+
+# 截图
+screenshots/
+*.png
+*.jpg
+
+# pytest 缓存
+.pytest_cache/
+__pycache__/
+*.pyc
+*.pyo
+
+# 日志
+*.log
+*.txt
+
+# 虚拟环境
+venv/
+.venv/
+env/

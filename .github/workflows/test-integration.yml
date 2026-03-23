@@ -1,0 +1,104 @@
+# ═══════════════════════════════════════════════════════════════════
+# C# xUnit 集成测试工作流
+# 1,999 用例 | .NET 8 | Moq + FluentAssertions
+# 注意：此工作流需要完整的解决方案文件才能编译
+# 在纯测试仓库中可能无法运行（缺少业务项目引用）
+# ═══════════════════════════════════════════════════════════════════
+name: 🔧 Integration Test
+
+on:
+  push:
+    branches: [test-only-cloud]
+    paths:
+      - 'testing/JGSY.AGI.Test/**'
+      - '.github/workflows/test-integration.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: integration-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  integration:
+    name: 🔧 C# Integration Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: 📦 Restore
+        working-directory: testing/JGSY.AGI.Test
+        continue-on-error: true
+        run: dotnet restore || true
+
+      - name: 🔨 Build
+        working-directory: testing/JGSY.AGI.Test
+        continue-on-error: true
+        run: dotnet build --no-restore -c Release || true
+
+      - name: 🧪 运行测试
+        id: test
+        working-directory: testing/JGSY.AGI.Test
+        continue-on-error: true
+        run: |
+          mkdir -p ../../TestResults
+          dotnet test \
+            --no-build \
+            -c Release \
+            --logger "trx;LogFileName=../../TestResults/integration-results.trx" \
+            --logger "junit;LogFileName=../../TestResults/integration-results.xml" \
+            2>&1 | tee ../../TestResults/integration-output.txt || true
+
+      - name: 📊 生成错误报告
+        if: always()
+        run: |
+          mkdir -p test-error-reports/latest
+          TIMESTAMP=$(date +%Y-%m-%d_%H%M%S)
+          
+          cat > test-error-reports/latest/integration-errors.md << EOF
+          # 🔧 C# 集成测试错误报告
+          
+          - **执行时间**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          - **Git Commit**: ${{ github.sha }}
+          - **说明**: C# 集成测试需要完整解决方案。如果编译失败，请在私有仓库运行此测试。
+          
+          ## 构建/测试结果
+          
+          EOF
+          
+          if [ -f TestResults/integration-output.txt ]; then
+            echo '```' >> test-error-reports/latest/integration-errors.md
+            tail -50 TestResults/integration-output.txt >> test-error-reports/latest/integration-errors.md || true
+            echo '```' >> test-error-reports/latest/integration-errors.md
+          else
+            echo "未生成测试输出文件" >> test-error-reports/latest/integration-errors.md
+          fi
+          
+          mkdir -p "test-error-reports/history/$TIMESTAMP"
+          cp test-error-reports/latest/integration-errors.md "test-error-reports/history/$TIMESTAMP/" || true
+
+      - name: 📤 上传测试结果
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-results
+          path: |
+            TestResults/
+            test-error-reports/
+          retention-days: 30
+
+      - name: 💾 提交错误报告到仓库
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add test-error-reports/ || true
+          git diff --cached --quiet || git commit -m "📊 Integration 错误报告 $(date +%Y-%m-%d_%H%M)"
+          git push || true

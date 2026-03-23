@@ -1,0 +1,12 @@
+{
+  "success": true, "code": "200", "message": "OK",
+  "data": {
+    "items": [
+      { "id": "wo-001", "code": "WO20250115001", "title": "充电桩故障维修", "type": "repair", "status": "pending", "priority": "high", "deviceId": "dev-002", "deviceName": "测试充电桩B", "stationName": "测试场站A", "assignee": "张三", "description": "充电桩无法启动充电", "createTime": "2025-01-15T08:00:00Z" },
+      { "id": "wo-002", "code": "WO20250115002", "title": "日常巡检", "type": "inspection", "status": "in_progress", "priority": "normal", "deviceId": null, "deviceName": null, "stationName": "测试场站B", "assignee": "李四", "description": "场站B周例行巡检", "createTime": "2025-01-15T09:00:00Z" },
+      { "id": "wo-003", "code": "WO20250115003", "title": "设备更换", "type": "replace", "status": "completed", "priority": "normal", "deviceId": "dev-005", "deviceName": "测试光伏板", "stationName": "测试场站B", "assignee": "王五", "description": "光伏板组件更换", "createTime": "2025-01-14T10:00:00Z" }
+    ],
+    "totalCount": 3, "total": 3, "pageIndex": 1, "pageSize": 20
+  },
+  "timestamp": "2025-01-01T00:00:00Z"
+}

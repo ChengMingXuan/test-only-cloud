@@ -1,0 +1,35 @@
+[
+  {
+    "_comment": "管理员用户",
+    "username": "pytest-admin",
+    "password": "P@ssw0rd",
+    "email": "pytest-admin@jgsy.com",
+    "name": "pytest管理员",
+    "role": "SUPER_ADMIN"
+  },
+  {
+    "_comment": "普通用户",
+    "username": "pytest-user",
+    "password": "P@ssw0rd",
+    "email": "pytest-user@jgsy.com",
+    "name": "pytest普通用户",
+    "role": "OPERATOR"
+  },
+  {
+    "_comment": "只读用户",
+    "username": "pytest-readonly",
+    "password": "P@ssw0rd",
+    "email": "pytest-readonly@jgsy.com",
+    "name": "pytest只读用户",
+    "role": "READONLY"
+  },
+  {
+    "_comment": "非法用户 — 密码不符合规则",
+    "username": "pytest-invalid",
+    "password": "123",
+    "email": "pytest-invalid@jgsy.com",
+    "name": "非法密码用户",
+    "expectError": true,
+    "expectedCode": "400"
+  }
+]

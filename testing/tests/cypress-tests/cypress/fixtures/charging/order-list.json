@@ -1,0 +1,12 @@
+{
+  "success": true, "code": "200", "message": "OK",
+  "data": {
+    "items": [
+      { "id": "order-001", "orderNo": "CHG20250101001", "deviceId": "dev-001", "deviceName": "测试充电桩A", "stationName": "测试场站A", "userName": "测试用户", "status": "completed", "amount": 35.80, "startTime": "2025-01-15T08:00:00Z", "endTime": "2025-01-15T09:30:00Z", "energy": 28.5, "duration": 90 },
+      { "id": "order-002", "orderNo": "CHG20250101002", "deviceId": "dev-002", "deviceName": "测试充电桩B", "stationName": "测试场站A", "userName": "测试用户", "status": "charging", "amount": 0, "startTime": "2025-01-15T10:00:00Z", "endTime": null, "energy": 12.3, "duration": null },
+      { "id": "order-003", "orderNo": "CHG20250115003", "deviceId": "dev-001", "deviceName": "测试充电桩A", "stationName": "测试场站A", "userName": "张三", "status": "completed", "amount": 52.60, "startTime": "2025-01-15T14:00:00Z", "endTime": "2025-01-15T16:00:00Z", "energy": 41.9, "duration": 120 }
+    ],
+    "totalCount": 3, "total": 3, "pageIndex": 1, "pageSize": 20
+  },
+  "timestamp": "2025-01-01T00:00:00Z"
+}

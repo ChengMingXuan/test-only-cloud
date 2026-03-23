@@ -1,0 +1,28 @@
+[
+  {
+    "_comment": "正常充电订单",
+    "deviceCode": "DEV-TEST-001",
+    "stationCode": "STA-TEST-001",
+    "userId": "user-002",
+    "energy": 28.5,
+    "amount": 35.80,
+    "status": "completed"
+  },
+  {
+    "_comment": "进行中订单",
+    "deviceCode": "DEV-TEST-002",
+    "stationCode": "STA-TEST-001",
+    "userId": "user-002",
+    "energy": 0,
+    "amount": 0,
+    "status": "charging"
+  },
+  {
+    "_comment": "非法数据 — 设备不存在",
+    "deviceCode": "DEV-NOT-EXIST",
+    "stationCode": "STA-TEST-001",
+    "userId": "user-002",
+    "expectError": true,
+    "expectedCode": "404"
+  }
+]

@@ -1,0 +1,13 @@
+{
+  "success": true, "code": "200", "message": "OK",
+  "data": {
+    "items": [
+      { "id": "role-001", "code": "SUPER_ADMIN", "name": "超级管理员", "description": "系统超级管理员", "userCount": 1 },
+      { "id": "role-002", "code": "ADMIN", "name": "管理员", "description": "普通管理员", "userCount": 3 },
+      { "id": "role-003", "code": "OPERATOR", "name": "运维人员", "description": "运维操作人员", "userCount": 5 },
+      { "id": "role-004", "code": "READONLY", "name": "只读角色", "description": "仅查看权限", "userCount": 2 }
+    ],
+    "totalCount": 4, "total": 4, "pageIndex": 1, "pageSize": 20
+  },
+  "timestamp": "2025-01-01T00:00:00Z"
+}

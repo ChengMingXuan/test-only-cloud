@@ -1,0 +1,117 @@
+# ═══════════════════════════════════════════════════════════════════
+# Selenium 多浏览器兼容性测试工作流
+# 6,540 用例 | Python 3.11 + Chrome/Firefox
+# ═══════════════════════════════════════════════════════════════════
+name: 🔬 Selenium
+
+on:
+  push:
+    branches: [test-only-cloud]
+    paths:
+      - 'testing/tests/selenium-tests/**'
+      - '.github/workflows/test-selenium.yml'
+  workflow_dispatch:
+    inputs:
+      browser:
+        description: '浏览器'
+        required: true
+        default: 'chrome'
+        type: choice
+        options:
+          - chrome
+          - firefox
+          - all
+
+concurrency:
+  group: selenium-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  selenium:
+    name: 🔬 Selenium (${{ github.event.inputs.browser || 'chrome' }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 🌐 安装 Chrome
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable || true
+
+      - name: 📦 安装依赖
+        run: |
+          pip install --upgrade pip
+          pip install selenium pytest pytest-html webdriver-manager
+          if [ -f testing/tests/selenium-tests/requirements.txt ]; then
+            pip install -r testing/tests/selenium-tests/requirements.txt
+          fi
+
+      - name: 🧪 运行 Selenium 测试
+        id: test
+        working-directory: testing/tests/selenium-tests
+        continue-on-error: true
+        run: |
+          mkdir -p ../../../TestResults
+          
+          pytest \
+            --tb=short \
+            --no-header \
+            -q \
+            --junitxml=../../../TestResults/selenium-results.xml \
+            2>&1 | tee ../../../TestResults/selenium-output.txt || true
+        env:
+          HEADLESS: "true"
+          BROWSER: ${{ github.event.inputs.browser || 'chrome' }}
+
+      - name: 📊 生成错误报告
+        if: always()
+        run: |
+          mkdir -p test-error-reports/latest
+          TIMESTAMP=$(date +%Y-%m-%d_%H%M%S)
+          
+          cat > test-error-reports/latest/selenium-errors.md << EOF
+          # 🔬 Selenium 测试错误报告
+          
+          - **执行时间**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          - **Git Commit**: ${{ github.sha }}
+          - **浏览器**: ${{ github.event.inputs.browser || 'chrome' }}
+          
+          ## 失败详情
+          
+          EOF
+          
+          if [ -f TestResults/selenium-output.txt ]; then
+            echo '```' >> test-error-reports/latest/selenium-errors.md
+            grep -E "FAILED|ERROR|assert|selenium" TestResults/selenium-output.txt | head -100 >> test-error-reports/latest/selenium-errors.md || true
+            echo '```' >> test-error-reports/latest/selenium-errors.md
+          fi
+          
+          mkdir -p "test-error-reports/history/$TIMESTAMP"
+          cp test-error-reports/latest/selenium-errors.md "test-error-reports/history/$TIMESTAMP/" || true
+
+      - name: 📤 上传测试结果
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: selenium-results
+          path: |
+            TestResults/
+            test-error-reports/
+          retention-days: 30
+
+      - name: 💾 提交错误报告到仓库
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add test-error-reports/ || true
+          git diff --cached --quiet || git commit -m "📊 Selenium 错误报告 $(date +%Y-%m-%d_%H%M)"
+          git push || true

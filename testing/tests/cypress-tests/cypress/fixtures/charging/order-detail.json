@@ -1,0 +1,15 @@
+{
+  "success": true, "code": "200", "message": "OK",
+  "data": {
+    "id": "order-001", "orderNo": "CHG20250101001",
+    "deviceId": "dev-001", "deviceName": "测试充电桩A",
+    "stationId": "sta-001", "stationName": "测试场站A",
+    "userId": "user-002", "userName": "测试用户",
+    "status": "completed", "amount": 35.80, "energy": 28.5,
+    "startTime": "2025-01-15T08:00:00Z", "endTime": "2025-01-15T09:30:00Z",
+    "duration": 90, "powerRate": 120, "unit": "kWh", "unitPrice": 1.256,
+    "paymentMethod": "wechat", "paymentTime": "2025-01-15T09:35:00Z",
+    "createTime": "2025-01-15T08:00:00Z"
+  },
+  "timestamp": "2025-01-01T00:00:00Z"
+}

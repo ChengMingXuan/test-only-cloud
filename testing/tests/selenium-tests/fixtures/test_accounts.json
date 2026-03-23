@@ -1,0 +1,26 @@
+[
+  {
+    "_comment": "管理员 — 用于 Chrome",
+    "browser": "chrome",
+    "username": "admin",
+    "password": "P@ssw0rd",
+    "email": "admin@jgsy.com",
+    "name": "系统管理员"
+  },
+  {
+    "_comment": "管理员 — 用于 Firefox（同一账号）",
+    "browser": "firefox",
+    "username": "admin",
+    "password": "P@ssw0rd",
+    "email": "admin@jgsy.com",
+    "name": "系统管理员"
+  },
+  {
+    "_comment": "管理员 — 用于 Edge（同一账号）",
+    "browser": "edge",
+    "username": "admin",
+    "password": "P@ssw0rd",
+    "email": "admin@jgsy.com",
+    "name": "系统管理员"
+  }
+]

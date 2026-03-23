@@ -1,0 +1,99 @@
+﻿node.exe : FAIL tests/generated/supplement/render-142-finance-coupon.test.js (1
+01.99 s)
+At C:\nvm4w\nodejs\npx.ps1:29 char:3
++   & $NODE_EXE $NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (FAIL tests/gene...t.js (101.99 s) 
+   :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  [渲染] 优惠券管理 - 页面渲染
+    √ [R001] 页面正常加载 (2206 ms)
+    √ [R002] HTML结构完整 (579 ms)
+    √ [R003] 无白屏 (2179 ms)
+    √ [R004] 标题不为空 (608 ms)
+    √ [R005] 根元素存在 (624 ms)
+    √ [R006] CSS已加载 (2251 ms)
+    √ [R007] JS已执行 (2476 ms)
+    √ [R008] favicon存在 (681 ms)
+  [性能] 优惠券管理 - 性能基准
+    √ [P001] 首次加载时间 < 10s (2206 ms)
+    √ [P002] DOM Ready 时间 (582 ms)
+    √ [P003] 页面大小合理 (2216 ms)
+    √ [P004] DOM元素数量合理 (2210 ms)
+    √ [P005] 无JS异常阻塞 (2444 ms)
+    √ [P006] 资源请求数合理 (2237 ms)
+    √ [P007] 内存使用合理 (2174 ms)
+  [视觉] 优惠券管理 - 视觉回归
+    √ [V001] 截图不为空 (2430 ms)
+    √ [V002] 页面宽度正确(1920) (2395 ms)
+    √ [V003] 页面高度正确(1080) (2321 ms)
+    √ [V004] 移动端截图(375x667) (2135 ms)
+    √ [V005] 平板截图(768x1024) (2328 ms)
+    √ [V006] 全页面截图 (2421 ms)
+    √ [V007] 暗色模式截图 (2413 ms)
+  [DOM] 优惠券管理 - DOM结构
+    √ [D001] body不为空 (569 ms)
+    √ [D002] 有语义化标签 (3548 ms)
+    √ [D003] meta charset正确 (597 ms)
+    √ [D004] viewport meta存在 (631 ms)
+    √ [D005] 无broken images (2187 ms)
+    √ [D006] 链接格式正确 (2325 ms)
+    √ [D007] 表单元素可访问 (2255 ms)
+  [资源] 优惠券管理 - 资源加载
+    √ [L001] CSS文件加载 (2234 ms)
+    √ [L002] JS文件加载 (2376 ms)
+    √ [L003] 字体加载 (2213 ms)
+    √ [L004] 无404资源 (2318 ms)
+    √ [L005] 无大文件阻塞 (2205 ms)
+    √ [L006] Service Worker 兼容 (2185 ms)
+  [A11y] 优惠券管理 - 可访问性
+    √ [A001] lang属性存在 (577 ms)
+    √ [A002] 图片有alt属性 (2301 ms)
+    √ [A003] 按钮有文本 (2299 ms)
+    √ [A004] 对比度可读 (2219 ms)
+    √ [A005] Tab导航可用 (2203 ms)
+  [内存] 优惠券管理 - 内存检查
+    √ [M001] 初始堆大小合理 (2180 ms)
+    √ [M002] 无明显内存泄漏 (2375 ms)
+    √ [M003] DOM节点未泄漏 (2290 ms)
+    √ [M004] 事件监听器数量合理 (2167 ms)
+    √ [M005] 布局计算次数合理 (2206 ms)
+  [响应式] 优惠券管理 - 响应式
+    × [RS001] 手机端(375x667)渲染 (2374 ms)
+    √ [RS002] 平板端(768x1024)渲染 (2257 ms)
+    √ [RS003] 笔记本(1366x768)渲染 (2216 ms)
+    √ [RS004] 桌面(1920x1080)渲染 (2283 ms)
+    √ [RS005] 2K(2560x1440)渲染 (2384 ms)
+
+  ● [响应式] 优惠券管理 - 响应式 › [RS001] 手机端(375x667)渲染
+
+    expect(received).toBeLessThanOrEqual(expected)
+
+    Expected: <= 500
+    Received:    633
+
+    [0m [90m 416 |[39m     [36mawait[39m page[33m.[39mgoto([33mPAGE_URL
+[39m[33m,[39m { waitUntil[33m:[39m [32m'networkidle2'[39m })[33m;[39m
+     [90m 417 |[39m     [36mconst[39m bodyWidth [33m=[39m [36mawait[39m
+ page[33m.[39mevaluate(() [33m=>[39m document[33m.[39mbody[33m.[39mscro
+llWidth)[33m;[39m
+    [31m[1m>[22m[39m[90m 418 |[39m     expect(bodyWidth)[33m.[39mtoBeLe
+ssThanOrEqual([35m500[39m)[33m;[39m
+     [90m     |[39m                       [31m[1m^[22m[39m
+     [90m 419 |[39m   })[33m;[39m
+     [90m 420 |[39m
+     [90m 421 |[39m   test([32m'[RS002] 平板端(768x1024)渲染'[39m[33m,[39m [3
+6masync[39m () [33m=>[39m {[0m
+
+      at Object.toBeLessThanOrEqual (tests/generated/supplement/render-142-fina
+nce-coupon.test.js:418:23)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 49 passed, 50 total
+Snapshots:   0 total
+Time:        102.046 s
+Ran all test suites matching /tests\\generated\\supplement\\render-142-finance-
+coupon.test.js/i.
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect a
+sync operations that kept running after all tests finished?
