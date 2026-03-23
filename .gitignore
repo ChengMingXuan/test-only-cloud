@@ -10,7 +10,9 @@
 
 # ── 依赖包 ──
 **/node_modules/
-**/package-lock.json
+# package-lock.json：保留 testing 下的 lock 文件供 CI npm ci 使用
+/package-lock.json
+!testing/**/package-lock.json
 
 # ── Python 虚拟环境 ──
 **/venv/
