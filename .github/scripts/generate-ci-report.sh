@@ -78,10 +78,18 @@ fi
 if [ "$TOTAL" -eq 0 ] && [ -n "$OUTPUT_FILE" ] && [ -f "$OUTPUT_FILE" ]; then
   case "$TOOL" in
     cypress)
-      PASSED=$(grep -cE '✓|passing' "$OUTPUT_FILE" 2>/dev/null || true)
-      FAILED=$(grep -cE '✗|failing' "$OUTPUT_FILE" 2>/dev/null || true)
+      # Cypress 输出: "N passing", "N failing", "N tests" 或 "Tests  N"
+      PASSED=$(grep -oP '\d+(?= passing)' "$OUTPUT_FILE" 2>/dev/null | tail -1 || echo "0")
+      FAILED=$(grep -oP '\d+(?= failing)' "$OUTPUT_FILE" 2>/dev/null | tail -1 || echo "0")
       [ -z "$PASSED" ] && PASSED=0
       [ -z "$FAILED" ] && FAILED=0
+      # fallback: 数 ✓ 和 ✗
+      if [ "$PASSED" -eq 0 ] && [ "$FAILED" -eq 0 ]; then
+        PASSED=$(grep -c '✓\|✔\|passing' "$OUTPUT_FILE" 2>/dev/null || true)
+        FAILED=$(grep -c '✗\|✘\|failing' "$OUTPUT_FILE" 2>/dev/null || true)
+        [ -z "$PASSED" ] && PASSED=0
+        [ -z "$FAILED" ] && FAILED=0
+      fi
       TOTAL=$((PASSED + FAILED))
       ;;
     playwright)
@@ -106,17 +114,29 @@ if [ "$TOTAL" -eq 0 ] && [ -n "$OUTPUT_FILE" ] && [ -f "$OUTPUT_FILE" ]; then
       [ "$SKIPPED" -lt 0 ] && SKIPPED=0
       ;;
     k6)
-      # k6: 从 summary JSON 解析 checks
-      K6_SUMMARY="TestResults/k6-summary.json"
-      if [ -f "$K6_SUMMARY" ]; then
-        PASSED=$(python3 -c "import json; d=json.load(open('$K6_SUMMARY')); print(d.get('metrics',{}).get('checks',{}).get('values',{}).get('passes',0))" 2>/dev/null || echo "0")
-        FAILED=$(python3 -c "import json; d=json.load(open('$K6_SUMMARY')); print(d.get('metrics',{}).get('checks',{}).get('values',{}).get('fails',0))" 2>/dev/null || echo "0")
-        TOTAL=$((PASSED + FAILED))
-      else
-        PASSED=$(grep -cE '✓|✗' "$OUTPUT_FILE" 2>/dev/null || true)
-        [ -z "$PASSED" ] && PASSED=0
-        TOTAL=$PASSED
+      # k6 输出格式: checks.........................: 100.00% ✓ 3495     ✗ 0
+      # 先从输出文本直接解析 checks 行
+      if [ -n "$OUTPUT_FILE" ] && [ -f "$OUTPUT_FILE" ]; then
+        CHECKS_LINE=$(grep 'checks\.\+:' "$OUTPUT_FILE" | tail -1 || true)
+        if [ -n "$CHECKS_LINE" ]; then
+          PASSED=$(echo "$CHECKS_LINE" | grep -oP '✓\s*\K\d+' || echo "0")
+          FAILED=$(echo "$CHECKS_LINE" | grep -oP '✗\s*\K\d+' || echo "0")
+          [ -z "$PASSED" ] && PASSED=0
+          [ -z "$FAILED" ] && FAILED=0
+          TOTAL=$((PASSED + FAILED))
+        fi
       fi
+      # fallback: summary JSON
+      if [ "$TOTAL" -eq 0 ]; then
+        K6_SUMMARY="TestResults/k6-summary.json"
+        if [ -f "$K6_SUMMARY" ]; then
+          PASSED=$(python3 -c "import json; d=json.load(open('$K6_SUMMARY')); print(d.get('metrics',{}).get('checks',{}).get('values',{}).get('passes',0))" 2>/dev/null || echo "0")
+          FAILED=$(python3 -c "import json; d=json.load(open('$K6_SUMMARY')); print(d.get('metrics',{}).get('checks',{}).get('values',{}).get('fails',0))" 2>/dev/null || echo "0")
+          TOTAL=$((PASSED + FAILED))
+        fi
+      fi
+      # k6 用 checks 数作度量
+      DURATION=$(grep -oP 'http_reqs\.+:\s+\K\d+' "$OUTPUT_FILE" 2>/dev/null | tail -1 || echo "0")
       ;;
   esac
 fi

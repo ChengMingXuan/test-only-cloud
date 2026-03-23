@@ -55,7 +55,7 @@ jobs:
       - name: 📦 安装依赖
         run: |
           pip install --upgrade pip
-          pip install selenium pytest pytest-html pytest-xdist webdriver-manager requests
+          pip install selenium pytest pytest-html webdriver-manager requests
           if [ -f testing/tests/selenium-tests/requirements.txt ]; then
             pip install -r testing/tests/selenium-tests/requirements.txt
           fi
@@ -68,7 +68,6 @@ jobs:
           mkdir -p ../../../TestResults
           
           pytest \
-            -n auto \
             --tb=short \
             --no-header \
             -q \

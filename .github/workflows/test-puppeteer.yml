@@ -56,17 +56,10 @@ jobs:
         working-directory: testing/tests/puppeteer-tests
         continue-on-error: true
         run: |
-          TEST_TYPE="${{ github.event.inputs.test_type || 'all' }}"
-          
           mkdir -p ../../../TestResults
           
-          if [ "$TEST_TYPE" = "performance" ] || [ "$TEST_TYPE" = "all" ]; then
-            npx jest --testPathPattern="performance" --forceExit --ci --reporters=default --reporters=jest-junit 2>&1 | tee ../../../TestResults/puppeteer-output.txt || true
-          fi
-          
-          if [ "$TEST_TYPE" = "visual" ] || [ "$TEST_TYPE" = "all" ]; then
-            npx jest --testPathPattern="visual" --forceExit --ci --reporters=default --reporters=jest-junit 2>&1 | tee -a ../../../TestResults/puppeteer-output.txt || true
-          fi
+          # 运行全部测试（不限定 testPathPattern，匹配所有 *.test.js）
+          npx jest --forceExit --ci --reporters=default --reporters=jest-junit 2>&1 | tee ../../../TestResults/puppeteer-output.txt || true
         env:
           JEST_JUNIT_OUTPUT_DIR: ../../../TestResults
           JEST_JUNIT_OUTPUT_NAME: puppeteer-results.xml

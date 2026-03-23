@@ -148,14 +148,14 @@ jobs:
         with:
           python-version: '3.11'
       - run: |
-          pip install selenium pytest pytest-html pytest-xdist webdriver-manager requests
+          pip install selenium pytest pytest-html webdriver-manager requests
           [ -f testing/tests/selenium-tests/requirements.txt ] && pip install -r testing/tests/selenium-tests/requirements.txt || true
       - name: 运行 Selenium
         working-directory: testing/tests/selenium-tests
         continue-on-error: true
         run: |
           mkdir -p ../../../TestResults
-          pytest -n auto --tb=short -q --junitxml=../../../TestResults/selenium-results.xml 2>&1 | tee ../../../TestResults/selenium-output.txt || true
+          pytest --tb=short -q --junitxml=../../../TestResults/selenium-results.xml 2>&1 | tee ../../../TestResults/selenium-output.txt || true
         env:
           HEADLESS: "true"
       - uses: actions/upload-artifact@v4

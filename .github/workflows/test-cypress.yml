@@ -58,13 +58,9 @@ jobs:
         run: |
           LEVEL="${{ github.event.inputs.test_level || 'smoke' }}"
           
-          if [ "$LEVEL" = "smoke" ]; then
-            npx cypress run --spec "e2e/smoke/**/*.cy.js" --reporter mochawesome --reporter-options reportDir=reports,overwrite=false,json=true 2>&1 | tee ../../../TestResults/cypress-output.txt || true
-          elif [ "$LEVEL" = "standard" ]; then
-            npx cypress run --reporter mochawesome --reporter-options reportDir=reports,overwrite=false,json=true 2>&1 | tee ../../../TestResults/cypress-output.txt || true
-          else
-            npx cypress run --reporter mochawesome --reporter-options reportDir=reports,overwrite=false,json=true 2>&1 | tee ../../../TestResults/cypress-output.txt || true
-          fi
+          mkdir -p ../../../TestResults
+          # 所有 spec 在 e2e/ 根目录下，不区分 smoke/standard
+          npx cypress run --reporter mochawesome --reporter-options reportDir=reports,overwrite=false,json=true 2>&1 | tee ../../../TestResults/cypress-output.txt || true
 
       - name: 📊 生成错误报告
         if: always()
