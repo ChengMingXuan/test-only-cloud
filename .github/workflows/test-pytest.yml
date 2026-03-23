@@ -4,6 +4,9 @@
 # ═══════════════════════════════════════════════════════════════════
 name: 🐍 pytest
 
+permissions:
+  contents: write
+
 on:
   push:
     branches: [main]

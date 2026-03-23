@@ -6,6 +6,9 @@
 # ═══════════════════════════════════════════════════════════════════
 name: 🔧 Integration Test
 
+permissions:
+  contents: write
+
 on:
   push:
     branches: [main]

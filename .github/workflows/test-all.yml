@@ -4,6 +4,9 @@
 # ═══════════════════════════════════════════════════════════════════
 name: 🚀 全量测试
 
+permissions:
+  contents: write
+
 on:
   workflow_dispatch:
     inputs:
