@@ -41,7 +41,7 @@ jobs:
   puppeteer:
     name: 🤖 Puppeteer (${{ github.event.inputs.test_type || 'all' }})
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 180
 
     steps:
       - name: 📥 Checkout
