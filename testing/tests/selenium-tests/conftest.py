@@ -230,8 +230,12 @@ def mobile_chrome_driver(request):
     
     options = ChromeOptions()
     options.add_experimental_option("mobileEmulation", mobile_emulation)
+    if request.config.getoption("--headless") or _default_headless:
+        options.add_argument("--headless")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--window-size=390,844")
     chrome_binary = shutil.which("chromedriver") or shutil.which("chromedriver.exe")
     if chrome_binary:
         _driver = webdriver.Chrome(service=ChromeService(chrome_binary), options=options)
