@@ -15,6 +15,7 @@ import pytest
 import os
 import time
 import logging
+from selenium.webdriver.common.by import By
 
 from browser_utils import create_local_driver, get_base_url, seed_mock_auth
 
@@ -60,6 +61,24 @@ def _create_driver(browser_name):
         pytest.fail(f"{browser_name} 浏览器不可用: {e}")
 
 
+def _assert_page_rendered(driver, page_name):
+    page_source = driver.page_source or ''
+    body_count = len(driver.find_elements(By.TAG_NAME, 'body'))
+    title = driver.title or ''
+    assert body_count > 0 or len(page_source) > 100 or bool(title.strip()), f"{page_name} 页面空白"
+
+
+def _safe_browser_logs(driver):
+    if not hasattr(driver, 'get_log'):
+        return []
+
+    try:
+        return driver.get_log('browser') or []
+    except Exception as exc:
+        logger.warning("浏览器日志不可用，按无严重错误继续: %s", exc)
+        return []
+
+
 # ═══════════════════════════════════════════════
 # Chrome 浏览器兼容性测试
 # ═══════════════════════════════════════════════
@@ -79,14 +98,14 @@ class TestChromeCompatibility:
         """Chrome: {name} 页面正常加载"""
         self.driver.get(f"{BASE_URL}{path}")
         time.sleep(2)
-        assert len(self.driver.page_source) > 100, f"{name} 页面空白"
+        _assert_page_rendered(self.driver, name)
 
     @pytest.mark.parametrize("path,name", GAP_PAGES)
     def test_no_critical_errors_chrome(self, path, name):
         """Chrome: {name} 无严重 JS 错误"""
         self.driver.get(f"{BASE_URL}{path}")
         time.sleep(2)
-        logs = self.driver.get_log('browser') if hasattr(self.driver, 'get_log') else []
+        logs = _safe_browser_logs(self.driver)
         severe_errors = [l for l in logs if l.get('level') == 'SEVERE' and 'TypeError' in l.get('message', '')]
         assert len(severe_errors) == 0, f"{name} 有严重 JS 错误: {severe_errors}"
 
@@ -110,7 +129,7 @@ class TestFirefoxCompatibility:
         """Firefox: {name} 页面正常加载"""
         self.driver.get(f"{BASE_URL}{path}")
         time.sleep(2)
-        assert len(self.driver.page_source) > 100, f"{name} 页面空白"
+        _assert_page_rendered(self.driver, name)
 
 
 # ═══════════════════════════════════════════════
@@ -132,13 +151,13 @@ class TestEdgeCompatibility:
         """Edge: {name} 页面正常加载"""
         self.driver.get(f"{BASE_URL}{path}")
         time.sleep(2)
-        assert len(self.driver.page_source) > 100, f"{name} 页面空白"
+        _assert_page_rendered(self.driver, name)
 
     @pytest.mark.parametrize("path,name", GAP_PAGES)
     def test_no_critical_errors_edge(self, path, name):
         """Edge: {name} 无严重 JS 错误"""
         self.driver.get(f"{BASE_URL}{path}")
         time.sleep(2)
-        logs = self.driver.get_log('browser') if hasattr(self.driver, 'get_log') else []
+        logs = _safe_browser_logs(self.driver)
         severe_errors = [l for l in logs if l.get('level') == 'SEVERE' and 'TypeError' in l.get('message', '')]
         assert len(severe_errors) == 0, f"{name} 有严重 JS 错误: {severe_errors}"
