@@ -595,15 +595,12 @@ class MockApiClient:
                     "data": stored,
                     "timestamp": _TS, "traceId": f"detail-{res}",
                 }, url=url)
-            # 自动生成实体（模拟 get-or-create / always-exists 行为）
-            temp = _make_entity(svc, res)
-            if id_val:
-                temp["id"] = id_val
-            self._store[temp["id"]] = temp
-            return MockResponse(200, {
-                "success": True, "code": 200,
-                "data": temp,
-                "timestamp": _TS, "traceId": f"auto-gen-{res}",
+            # 未在 store 中的实体返回 404（与真实服务行为一致）
+            return MockResponse(404, {
+                "success": False, "code": 404,
+                "message": f"资源不存在: {res}/{id_val}",
+                "data": None,
+                "timestamp": _TS, "traceId": f"not-found-{res}",
             }, url=url)
 
         try:

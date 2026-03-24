@@ -270,7 +270,12 @@ class TestChargingOrderService:
 
     def test_update_order_status(self):
         """更新订单状态"""
-        order_id = str(uuid.uuid4())
+        # 先创建订单
+        create_resp = self.client.post(f"{self.base}", json={
+            "stationId": str(uuid.uuid4()),
+            "tenantId": _TENANT_ID,
+        })
+        order_id = create_resp.json().get("data", {}).get("id", str(uuid.uuid4()))
         resp = self.client.put(f"{self.base}/{order_id}/status", json={
             "newStatus": "Charging",
             "tenantId": _TENANT_ID
@@ -515,7 +520,12 @@ class TestUserService:
 
     def test_update_user(self):
         """更新用户信息"""
-        user_id = str(uuid.uuid4())
+        # 先创建用户
+        create_resp = self.client.post(f"{self.base}", json={
+            "username": "testuser",
+            "phone": "13800000002",
+        })
+        user_id = create_resp.json().get("data", {}).get("id", str(uuid.uuid4()))
         resp = self.client.put(f"{self.base}/{user_id}", json={
             "nickname": "新昵称",
             "email": "new@jgsy.com",
@@ -537,7 +547,12 @@ class TestUserService:
 
     def test_change_password(self):
         """修改密码"""
-        user_id = str(uuid.uuid4())
+        # 先创建用户
+        create_resp = self.client.post(f"{self.base}", json={
+            "username": "pwduser",
+            "phone": "13800000003",
+        })
+        user_id = create_resp.json().get("data", {}).get("id", str(uuid.uuid4()))
         resp = self.client.put(f"{self.base}/{user_id}/password", json={
             "oldPassword": "OldP@ssw0rd",
             "newPassword": "NewP@ssw0rd"

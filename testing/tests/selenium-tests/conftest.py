@@ -39,7 +39,7 @@ _wdm_cache = str(Path(__file__).parent.parent.parent / ".test-cache" / "webdrive
 os.environ.setdefault("WDM_LOCAL", "1")
 
 TEST_CONFIG = {
-    "base_url": os.getenv("TEST_BASE_URL", "http://localhost:8000"),
+    "base_url": os.getenv("TEST_BASE_URL") or os.getenv("BASE_URL") or "http://localhost:8000",
     "implicit_wait": 10,  # 隐式等待秒数
     "page_load_timeout": 30,  # 页面加载超时
     "screenshot_dir": "../test-reports/selenium-report/screenshots",
@@ -62,23 +62,49 @@ def _check_frontend_available():
 _mock_server_instance = None
 
 
+def _apply_mock_base_url(base_url: str):
+    normalized = base_url.rstrip("/")
+    TEST_CONFIG["base_url"] = normalized
+    os.environ["TEST_BASE_URL"] = normalized
+    os.environ["BASE_URL"] = normalized
+    os.environ["GATEWAY_URL"] = normalized
+
+
 def _ensure_mock_server():
     """前端不可达时自动启动 mock_server"""
     global _mock_server_instance
     if _mock_server_instance is not None:
         return _mock_server_instance
 
-    from mock_server import MockServer
+    from mock_server import MockServer, wait_for_mock_server
+
+    configured_url = os.getenv("TEST_BASE_URL") or os.getenv("BASE_URL")
+    if configured_url:
+        existing = wait_for_mock_server(configured_url, retries=1, delay=0)
+        if existing is not None:
+            _mock_server_instance = existing
+            _apply_mock_base_url(existing.base_url)
+            return _mock_server_instance
+
+    preferred_url = "http://127.0.0.1:8000"
     try:
-        _mock_server_instance = MockServer(port=8000)
-        _mock_server_instance.start()
-        TEST_CONFIG["base_url"] = _mock_server_instance.base_url
+        server = MockServer(port=8000)
+        server.start()
+        _mock_server_instance = server
+        _apply_mock_base_url(server.base_url)
         print(f"\n⚡ [Selenium] Mock 模式 → mock_server 已启动: {_mock_server_instance.base_url}")
     except OSError:
-        # 端口被占用时尝试随机端口
-        _mock_server_instance = MockServer()
-        _mock_server_instance.start()
-        TEST_CONFIG["base_url"] = _mock_server_instance.base_url
+        existing = wait_for_mock_server(preferred_url, retries=30, delay=0.1)
+        if existing is not None:
+            _mock_server_instance = existing
+            _apply_mock_base_url(existing.base_url)
+            print(f"\n⚡ [Selenium] Mock 模式 → 复用已有 mock_server: {_mock_server_instance.base_url}")
+            return _mock_server_instance
+
+        server = MockServer()
+        server.start()
+        _mock_server_instance = server
+        _apply_mock_base_url(server.base_url)
         print(f"\n⚡ [Selenium] Mock 模式 → mock_server 已启动（备用端口）: {_mock_server_instance.base_url}")
     return _mock_server_instance
 

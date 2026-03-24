@@ -65,6 +65,9 @@ jobs:
           pip install -r testing/tests/requirements.txt
           pip install pytest-split  # 用于测试分片（可选）
 
+      - name: 🎭 安装 Playwright 浏览器
+        run: playwright install chromium --with-deps
+
       - name: 🧪 运行 pytest（并行）
         id: test
         working-directory: testing/tests
@@ -116,11 +119,11 @@ jobs:
           echo "" >> test-error-reports/latest/pytest-errors.md
           
           if [ -f TestResults/pytest-results.xml ]; then
-            # 解析 JUnit XML
-            TOTAL=$(grep -oP 'tests="\K[0-9]+' TestResults/pytest-results.xml | head -1 || echo "0")
-            FAILURES=$(grep -oP 'failures="\K[0-9]+' TestResults/pytest-results.xml | head -1 || echo "0")
-            ERRORS=$(grep -oP 'errors="\K[0-9]+' TestResults/pytest-results.xml | head -1 || echo "0")
-            SKIPPED=$(grep -oP 'skipped="\K[0-9]+' TestResults/pytest-results.xml | head -1 || echo "0")
+            # 解析 JUnit XML（多 testsuite 场景需要 awk 求和）
+            TOTAL=$(grep -oP 'tests="\K[0-9]+' TestResults/pytest-results.xml | awk '{s+=$1} END {print s+0}')
+            FAILURES=$(grep -oP 'failures="\K[0-9]+' TestResults/pytest-results.xml | awk '{s+=$1} END {print s+0}')
+            ERRORS=$(grep -oP 'errors="\K[0-9]+' TestResults/pytest-results.xml | awk '{s+=$1} END {print s+0}')
+            SKIPPED=$(grep -oP 'skipped="\K[0-9]+' TestResults/pytest-results.xml | awk '{s+=$1} END {print s+0}')
             PASSED=$((TOTAL - FAILURES - ERRORS - SKIPPED))
             
             echo "## 统计概要" >> test-error-reports/latest/pytest-errors.md

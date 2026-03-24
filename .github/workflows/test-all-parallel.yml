@@ -12,8 +12,6 @@ permissions:
   contents: write
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
     inputs:
       test_level:
@@ -65,6 +63,9 @@ jobs:
           pip install --upgrade pip
           pip install -r testing/tests/requirements.txt
           pip install pytest-split  # 用于测试分片
+      
+      - name: 🎭 安装 Playwright 浏览器
+        run: playwright install chromium --with-deps
       
       - name: 🧪 运行 pytest 分片 ${{ matrix.shard }}/10
         working-directory: testing/tests
@@ -296,8 +297,8 @@ jobs:
           SHARD=${{ matrix.shard }}
           TOTAL_SHARDS=10
           
-          # 获取所有测试文件并分片
-          TEST_FILES=$(find cypress/e2e -name "*.cy.js" -o -name "*.cy.ts" | sort)
+          # 获取所有测试文件并分片（spec 在 e2e/ 下）
+          TEST_FILES=$(find e2e -name "*.cy.js" -o -name "*.cy.ts" | sort)
           FILE_COUNT=$(echo "$TEST_FILES" | wc -l)
           
           FILES_PER_SHARD=$(( (FILE_COUNT + TOTAL_SHARDS - 1) / TOTAL_SHARDS ))
@@ -760,9 +761,9 @@ jobs:
           
           for XML in TestResults/*-results.xml; do
             [ -f "$XML" ] || continue
-            T=$(grep -oP 'tests="\K[0-9]+' "$XML" | head -1 || echo "0")
-            F=$(grep -oP 'failures="\K[0-9]+' "$XML" | head -1 || echo "0")
-            E=$(grep -oP 'errors="\K[0-9]+' "$XML" | head -1 || echo "0")
+            T=$(grep -oP 'tests="\K[0-9]+' "$XML" | awk '{s+=$1} END {print s+0}')
+            F=$(grep -oP 'failures="\K[0-9]+' "$XML" | awk '{s+=$1} END {print s+0}')
+            E=$(grep -oP 'errors="\K[0-9]+' "$XML" | awk '{s+=$1} END {print s+0}')
             TOTAL_TESTS=$((TOTAL_TESTS + T))
             TOTAL_FAILED=$((TOTAL_FAILED + F + E))
           done

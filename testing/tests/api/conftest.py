@@ -3,11 +3,29 @@ tests/api 本地 Fixture 配置
 ===========================
 为 api/ 子目录提供专用的 fixture 和辅助工具
 """
+import os
+import sys
 import pytest
 import uuid
 import logging
 
 logger = logging.getLogger(__name__)
+
+# 确保 tests/ 在 sys.path 中，以便导入 mock_client
+_tests_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _tests_dir not in sys.path:
+    sys.path.insert(0, _tests_dir)
+
+from mock_client import MockApiClient
+
+GATEWAY_URL = os.getenv("JGSY_GATEWAY_URL", "http://localhost:18999")
+
+
+@pytest.fixture(scope="session")
+def anon_api():
+    """匿名 API 客户端（无 Token）— 供鉴权失败测试使用"""
+    return MockApiClient(GATEWAY_URL, token=None)
+
 
 # ═══════════════════════════════════════════
 # 常量

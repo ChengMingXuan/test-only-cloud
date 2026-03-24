@@ -114,7 +114,11 @@ class TestRuleChainService:
 
     def test_update_rule_chain(self):
         """更新规则链"""
-        chain_id = str(uuid.uuid4())
+        # 先创建规则链
+        create_resp = self.client.post(self.base, json={
+            "name": "待更新规则链", "code": f"UPD_{uuid.uuid4().hex[:6]}", "triggerType": "telemetry"
+        })
+        chain_id = create_resp.json().get("data", {}).get("id", str(uuid.uuid4()))
         resp = self.client.put(f"{self.base}/{chain_id}", json={
             "name": "更新后的规则链",
             "isEnabled": False
@@ -124,7 +128,11 @@ class TestRuleChainService:
 
     def test_delete_rule_chain(self):
         """软删除规则链（级联删除连线+节点）"""
-        chain_id = str(uuid.uuid4())
+        # 先创建规则链
+        create_resp = self.client.post(self.base, json={
+            "name": "待删除规则链", "code": f"DEL_{uuid.uuid4().hex[:6]}", "triggerType": "telemetry"
+        })
+        chain_id = create_resp.json().get("data", {}).get("id", str(uuid.uuid4()))
         resp = self.client.delete(f"{self.base}/{chain_id}")
         assert resp.status_code == 200
         logger.info("软删除规则链 ✓")

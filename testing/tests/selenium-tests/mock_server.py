@@ -15,6 +15,8 @@ Selenium 测试用 Mock HTTP 服务器
 import http.server
 import threading
 import socket
+import time
+from urllib.parse import urlparse
 
 # 最小 HTML 页面 — 满足全部断言
 MOCK_HTML = b"""<!DOCTYPE html>
@@ -68,32 +70,83 @@ class _Handler(http.server.BaseHTTPRequestHandler):
         pass  # 静默日志
 
 
-def find_free_port(start=18123) -> int:
-    for port in range(start, start + 100):
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            try:
-                s.bind(("127.0.0.1", port))
-                return port
-            except OSError:
-                continue
-    raise RuntimeError("无可用端口")
+class _ThreadingHTTPServer(http.server.ThreadingHTTPServer):
+    allow_reuse_address = True
 
 
-class MockServer:
-    def __init__(self, port: int = None):
-        self.port = port or find_free_port()
-        self._server = http.server.HTTPServer(("127.0.0.1", self.port), _Handler)
-        self._thread = threading.Thread(target=self._server.serve_forever, daemon=True)
+class ExistingMockServer:
+    def __init__(self, base_url: str):
+        self._base_url = base_url.rstrip("/")
 
     def start(self):
-        self._thread.start()
+        return None
 
     def stop(self):
-        self._server.shutdown()
+        return None
 
     @property
     def base_url(self) -> str:
-        return f"http://127.0.0.1:{self.port}"
+        return self._base_url
+
+
+def is_mock_server_available(base_url: str, timeout: float = 1.0) -> bool:
+  try:
+    parsed = urlparse(base_url)
+    host = parsed.hostname or "127.0.0.1"
+    port = parsed.port or 80
+    path = parsed.path or "/"
+
+    with socket.create_connection((host, port), timeout=timeout) as conn:
+      request = f"GET {path} HTTP/1.1\r\nHost: {host}\r\nConnection: close\r\n\r\n"
+      conn.sendall(request.encode("ascii"))
+
+      chunks = []
+      while True:
+        data = conn.recv(4096)
+        if not data:
+          break
+        chunks.append(data)
+
+    html = b"".join(chunks).decode("utf-8", errors="ignore")
+    return 'id="root"' in html and "AIOPS" in html
+  except (OSError, ValueError):
+    return False
+
+
+def wait_for_mock_server(base_url: str, retries: int = 20, delay: float = 0.1):
+    for _ in range(max(retries, 1)):
+        if is_mock_server_available(base_url):
+            return ExistingMockServer(base_url)
+        time.sleep(delay)
+    return None
+
+
+class MockServer:
+    def __init__(self, port: int = None, host: str = "127.0.0.1"):
+        requested_port = 0 if port is None else port
+        self._server = _ThreadingHTTPServer((host, requested_port), _Handler)
+        self.port = int(self._server.server_address[1])
+        self.host = host
+        self._thread = threading.Thread(target=self._server.serve_forever, daemon=True)
+        self._started = False
+
+    def start(self):
+        if self._started:
+            return
+        self._thread.start()
+        self._started = True
+
+    def stop(self):
+        if not self._started:
+            return
+        self._server.shutdown()
+        self._server.server_close()
+        self._thread.join(timeout=2)
+        self._started = False
+
+    @property
+    def base_url(self) -> str:
+        return f"http://{self.host}:{self.port}"
 
 
 if __name__ == "__main__":

@@ -76,7 +76,7 @@ class MockWebDriver:
 
 def get_mock_driver(bname):
     """获取 Mock 浏览器驱动"""
-    return MockWebDriver(browser_name)
+    return MockWebDriver(bname)
 
 
 # ═══════════════════════════════════════════════════

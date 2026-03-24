@@ -1,10 +1,10 @@
 # ═══════════════════════════════════════════════════════════════════
-# 全量自动化测试工作流
-# 推送到 main 分支自动触发，7 类工具并行全量执行
-# 生成统一格式报告 → 提交到仓库 → 可被主仓库拉取
+# 云端自动化测试工作流
+# 推送到 main 分支自动触发，按选择清单执行 6 类中的指定工具
+# 每个工具分别生成独立报告 → 提交到仓库 → 主仓库按工具覆盖拉取
 # 优化：各工具内部启用并行执行（pytest-xdist, Jest workers 等）
 # ═══════════════════════════════════════════════════════════════════
-name: "\U0001F680 全量测试"
+name: "🚀 云端测试"
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -26,15 +26,124 @@ on:
           - smoke
           - standard
           - full
+      run_mode:
+        description: '执行模式'
+        required: false
+        default: 'full'
+        type: choice
+        options:
+          - full
+          - unpassed
+      selected_tools:
+        description: '要执行的云端工具，逗号分隔；all=全部'
+        required: false
+        default: 'all'
 
 concurrency:
   group: all-tests-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  # ─── pytest（57,774 用例）- 内部并行 ───
+  detect-selection:
+    name: "🧭 解析测试选择"
+    runs-on: ubuntu-latest
+    outputs:
+      selected_tools: ${{ steps.selection.outputs.selected_tools }}
+      run_mode: ${{ steps.selection.outputs.run_mode }}
+      run_pytest: ${{ steps.selection.outputs.run_pytest }}
+      run_cypress: ${{ steps.selection.outputs.run_cypress }}
+      run_playwright: ${{ steps.selection.outputs.run_playwright }}
+      run_puppeteer: ${{ steps.selection.outputs.run_puppeteer }}
+      run_selenium: ${{ steps.selection.outputs.run_selenium }}
+      run_k6: ${{ steps.selection.outputs.run_k6 }}
+      execute_pytest: ${{ steps.selection.outputs.execute_pytest }}
+      execute_cypress: ${{ steps.selection.outputs.execute_cypress }}
+      execute_playwright: ${{ steps.selection.outputs.execute_playwright }}
+      execute_puppeteer: ${{ steps.selection.outputs.execute_puppeteer }}
+      execute_selenium: ${{ steps.selection.outputs.execute_selenium }}
+      execute_k6: ${{ steps.selection.outputs.execute_k6 }}
+      skipped_pytest: ${{ steps.selection.outputs.skipped_pytest }}
+      skipped_cypress: ${{ steps.selection.outputs.skipped_cypress }}
+      skipped_playwright: ${{ steps.selection.outputs.skipped_playwright }}
+      skipped_puppeteer: ${{ steps.selection.outputs.skipped_puppeteer }}
+      skipped_selenium: ${{ steps.selection.outputs.skipped_selenium }}
+      skipped_k6: ${{ steps.selection.outputs.skipped_k6 }}
+      any_executed: ${{ steps.selection.outputs.any_executed }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: selection
+        shell: bash
+        run: |
+          python3 <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          all_tools = ["pytest", "cypress", "playwright", "puppeteer", "selenium", "k6"]
+          dispatch_value = "${{ github.event.inputs.selected_tools || '' }}".strip()
+          dispatch_run_mode = "${{ github.event.inputs.run_mode || '' }}".strip().lower()
+          selected = []
+          manifest = {}
+
+          if dispatch_value and dispatch_value.lower() != "all":
+              selected = [item.strip() for item in dispatch_value.split(',') if item.strip() in all_tools]
+          elif os.path.exists('.github/cloud-test-selection.json'):
+              try:
+                  manifest = json.load(open('.github/cloud-test-selection.json', encoding='utf-8'))
+                  selected = [item for item in manifest.get('selectedTools', []) if item in all_tools]
+              except Exception:
+                  selected = []
+                  manifest = {}
+
+          if not selected:
+              selected = all_tools
+
+          run_mode = dispatch_run_mode if dispatch_run_mode in {"full", "unpassed"} else str(manifest.get('runMode', 'full')).lower()
+          if run_mode not in {"full", "unpassed"}:
+              run_mode = "full"
+
+          def previous_report_passed(tool: str) -> bool:
+              report_path = Path('test-error-reports/latest/reports') / f'{tool}-report.json'
+              if not report_path.exists():
+                  return False
+              try:
+                  data = json.load(open(report_path, encoding='utf-8'))
+                  summary = data.get('summary', {})
+                  total = int(summary.get('total', 0) or 0)
+                  failed = int(summary.get('failed', 0) or 0)
+                  return total > 0 and failed == 0
+              except Exception:
+                  return False
+
+          execution = {}
+          skipped = {}
+          any_executed = False
+          for tool in all_tools:
+              is_selected = tool in selected
+              already_passed = previous_report_passed(tool) if is_selected and run_mode == 'unpassed' else False
+              should_execute = is_selected and not already_passed
+              execution[tool] = should_execute
+              skipped[tool] = is_selected and already_passed
+              any_executed = any_executed or should_execute
+
+          selected_csv = ','.join(selected)
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as fh:
+              fh.write(f"selected_tools={selected_csv}\n")
+              fh.write(f"run_mode={run_mode}\n")
+              fh.write(f"any_executed={'true' if any_executed else 'false'}\n")
+              for tool in all_tools:
+                  fh.write(f"run_{tool}={'true' if tool in selected else 'false'}\n")
+                  fh.write(f"execute_{tool}={'true' if execution[tool] else 'false'}\n")
+                  fh.write(f"skipped_{tool}={'true' if skipped[tool] else 'false'}\n")
+
+          print(f"selected_tools={selected_csv}")
+          print(f"run_mode={run_mode}")
+          PY
+
   pytest:
-    name: "\U0001F40D pytest"
+    name: "🐍 pytest"
+    needs: detect-selection
+    if: needs.detect-selection.outputs.execute_pytest == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
@@ -53,7 +162,6 @@ jobs:
         run: |
           mkdir -p ../../TestResults
           LEVEL="${{ github.event.inputs.test_level || 'full' }}"
-          # -n auto 启用 pytest-xdist 并行执行
           ARGS="--tb=short --no-header -q --junitxml=../../TestResults/pytest-results.xml -n auto"
           if [ "$LEVEL" = "smoke" ]; then
             ARGS="$ARGS -m smoke --maxfail=10"
@@ -69,9 +177,10 @@ jobs:
           path: TestResults/
           retention-days: 7
 
-  # ─── Cypress（9,877 用例）- 禁用视频加速 ───
   cypress:
-    name: "\U0001F332 Cypress"
+    name: "🌲 Cypress"
+    needs: detect-selection
+    if: needs.detect-selection.outputs.execute_cypress == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
@@ -86,7 +195,6 @@ jobs:
         continue-on-error: true
         run: |
           mkdir -p ../../../TestResults
-          # 禁用视频和截图以加速执行
           export CYPRESS_VIDEO=false
           export CYPRESS_SCREENSHOT_ON_RUN_FAILURE=false
           npx cypress run --reporter mochawesome 2>&1 | tee ../../../TestResults/cypress-output.txt || true
@@ -97,9 +205,10 @@ jobs:
           path: TestResults/
           retention-days: 7
 
-  # ─── Playwright（11,093 用例）- 并行 Workers ───
   playwright:
-    name: "\U0001F3AD Playwright"
+    name: "🎭 Playwright"
+    needs: detect-selection
+    if: needs.detect-selection.outputs.execute_playwright == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
@@ -117,8 +226,6 @@ jobs:
         run: |
           mkdir -p ../../../TestResults
           LEVEL="${{ github.event.inputs.test_level || 'full' }}"
-          # --workers=4 启用多 Worker 并行
-          # 同时输出 list（控制台可读） + junit（XML 可靠解析）
           ARGS="--reporter=list,junit --workers=4"
           if [ "$LEVEL" = "smoke" ]; then ARGS="$ARGS --grep @smoke"; fi
           echo "🚀 并行执行 | Workers: 4 | Reporter: list+junit"
@@ -131,9 +238,10 @@ jobs:
           path: TestResults/
           retention-days: 7
 
-  # ─── Puppeteer（8,137 用例）- Jest maxWorkers ───
   puppeteer:
-    name: "\U0001F916 Puppeteer"
+    name: "🤖 Puppeteer"
+    needs: detect-selection
+    if: needs.detect-selection.outputs.execute_puppeteer == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
@@ -148,7 +256,6 @@ jobs:
         continue-on-error: true
         run: |
           mkdir -p ../../../TestResults
-          # --maxWorkers=4 启用 Jest 并行执行
           echo "🚀 并行执行 | maxWorkers: 4"
           npx jest --ci --forceExit --maxWorkers=4 2>&1 | tee ../../../TestResults/puppeteer-output.txt || true
       - uses: actions/upload-artifact@v4
@@ -158,9 +265,10 @@ jobs:
           path: TestResults/
           retention-days: 7
 
-  # ─── Selenium（6,540 用例）- pytest-xdist 并行 ───
   selenium:
-    name: "\U0001F52C Selenium"
+    name: "🔬 Selenium"
+    needs: detect-selection
+    if: needs.detect-selection.outputs.execute_selenium == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
@@ -170,9 +278,7 @@ jobs:
           python-version: '3.11'
       - name: 安装 Chrome + ChromeDriver
         run: |
-          # ubuntu-latest 已预装 Chrome，确认版本
           google-chrome --version || true
-          # 安装 chromedriver 匹配版本
           CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+' | head -1)
           echo "Chrome: $CHROME_VERSION"
       - run: |
@@ -183,11 +289,10 @@ jobs:
         continue-on-error: true
         run: |
           mkdir -p ../../../TestResults
-          # 单进程执行，避免 mock_server 端口冲突和浏览器资源竞争
           echo "🚀 单进程执行 | pytest (headless Chrome)"
           pytest --tb=short -q --junitxml=../../../TestResults/selenium-results.xml 2>&1 | tee ../../../TestResults/selenium-output.txt || true
         env:
-          HEADLESS: "true"
+          HEADLESS: 'true'
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -195,9 +300,10 @@ jobs:
           path: TestResults/
           retention-days: 7
 
-  # ─── k6（3,651 检查点，场景并行执行）───
   k6:
-    name: "\u26A1 k6"
+    name: "⚡ k6"
+    needs: detect-selection
+    if: needs.detect-selection.outputs.execute_k6 == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
@@ -243,15 +349,12 @@ jobs:
               echo "" >> "$COMBINED_OUTPUT"
               echo "──── 场景: $SCENARIO_NAME ────" >> "$COMBINED_OUTPUT"
 
-              # CI 中限制每个场景最多 30s，避免 51 场景串行总超时
               k6 run --env BASE_URL=http://localhost:8000 \
                 --duration 30s \
                 --summary-export="TestResults/k6-${SCENARIO_NAME}-summary.json" \
                 "$SCENARIO" 2>&1 | tee "TestResults/k6-${SCENARIO_NAME}-output.txt"
-              # 同时追加到汇总输出
               cat "TestResults/k6-${SCENARIO_NAME}-output.txt" >> "$COMBINED_OUTPUT" || true
 
-              # 从单场景输出提取 checks 统计（避免累计文件重复匹配）
               CHECKS_LINE=$(grep -E 'checks.+:' "TestResults/k6-${SCENARIO_NAME}-output.txt" | tail -1 || true)
               if [ -n "$CHECKS_LINE" ]; then
                 P=$(echo "$CHECKS_LINE" | grep -oP '✓\s*\K\d+' || echo "0")
@@ -268,9 +371,8 @@ jobs:
           echo "═══════════════════════════════════════" >> "$COMBINED_OUTPUT"
           echo "全量统计: $SCENARIO_COUNT 个场景, checks: ✓ $TOTAL_PASS  ✗ $TOTAL_FAIL" >> "$COMBINED_OUTPUT"
 
-          # 合并所有 k6 summary JSON
           python3 -c "
-          import json, glob, os
+          import json, glob
           summaries = glob.glob('TestResults/k6-*-summary.json')
           total_pass = 0
           total_fail = 0
@@ -280,12 +382,12 @@ jobs:
                   checks = d.get('metrics', {}).get('checks', {}).get('values', {})
                   total_pass += int(checks.get('passes', 0))
                   total_fail += int(checks.get('fails', 0))
-              except: pass
+              except Exception:
+                  pass
           combined = {'metrics': {'checks': {'values': {'passes': total_pass, 'fails': total_fail}}}}
           json.dump(combined, open('TestResults/k6-summary.json', 'w'), indent=2)
           print(f'Combined: {len(summaries)} summaries, passes={total_pass}, fails={total_fail}')
           " 2>/dev/null || true
-
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -293,77 +395,112 @@ jobs:
           path: TestResults/
           retention-days: 7
 
-  # ─── C# 集成测试在本地执行，云端不跑（依赖业务项目源码编译）───
-  # 详见 testing/JGSY.AGI.Test/ - 本地通过 dotnet test 运行
-  # 报告通过 pull 脚本合并到 TestResults/reports/integration-report.json
-
-  # ─── 汇总报告（等云端 6 类完成后生成）───
   summary:
-    name: "\U0001F4CA 汇总报告"
-    needs: [pytest, cypress, playwright, puppeteer, selenium, k6]
+    name: "📊 独立报告整理"
+    needs: [detect-selection, pytest, cypress, playwright, puppeteer, selenium, k6]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 15
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: "\U0001F4E5 下载所有测试结果"
+      - name: "📥 下载所有测试结果"
+        if: needs.detect-selection.outputs.any_executed == 'true'
         uses: actions/download-artifact@v4
         with:
           pattern: all-*
           path: TestResults/
           merge-multiple: true
 
-      - name: "\U0001F4CA 生成 7 份标准格式报告"
+      - name: "📊 生成选中工具的独立报告"
+        if: needs.detect-selection.outputs.any_executed == 'true'
+        env:
+          EXECUTE_PYTEST: ${{ needs.detect-selection.outputs.execute_pytest }}
+          EXECUTE_CYPRESS: ${{ needs.detect-selection.outputs.execute_cypress }}
+          EXECUTE_PLAYWRIGHT: ${{ needs.detect-selection.outputs.execute_playwright }}
+          EXECUTE_PUPPETEER: ${{ needs.detect-selection.outputs.execute_puppeteer }}
+          EXECUTE_SELENIUM: ${{ needs.detect-selection.outputs.execute_selenium }}
+          EXECUTE_K6: ${{ needs.detect-selection.outputs.execute_k6 }}
         run: |
           chmod +x .github/scripts/generate-ci-report.sh
           LEVEL="${{ github.event.inputs.test_level || 'full' }}"
 
-          # 为每个工具生成标准格式报告（与本地 generate-tool-reports.ps1 格式一致）
-          ./.github/scripts/generate-ci-report.sh pytest \
-            --xml TestResults/pytest-results.xml \
-            --output TestResults/pytest-output.txt \
-            --level "$LEVEL"
+          tool_executed() {
+            case "$1" in
+              pytest) [ "$EXECUTE_PYTEST" = "true" ] ;;
+              cypress) [ "$EXECUTE_CYPRESS" = "true" ] ;;
+              playwright) [ "$EXECUTE_PLAYWRIGHT" = "true" ] ;;
+              puppeteer) [ "$EXECUTE_PUPPETEER" = "true" ] ;;
+              selenium) [ "$EXECUTE_SELENIUM" = "true" ] ;;
+              k6) [ "$EXECUTE_K6" = "true" ] ;;
+              *) return 1 ;;
+            esac
+          }
 
-          ./.github/scripts/generate-ci-report.sh cypress \
-            --output TestResults/cypress-output.txt \
-            --level "$LEVEL"
+          rm -f TestResults/*-report.json TestResults/*-report.md
 
-          ./.github/scripts/generate-ci-report.sh playwright \
-            --xml TestResults/playwright-results.xml \
-            --output TestResults/playwright-output.txt \
-            --level "$LEVEL"
+          if tool_executed pytest; then
+            ./.github/scripts/generate-ci-report.sh pytest --xml TestResults/pytest-results.xml --output TestResults/pytest-output.txt --level "$LEVEL"
+          fi
+          if tool_executed cypress; then
+            ./.github/scripts/generate-ci-report.sh cypress --output TestResults/cypress-output.txt --level "$LEVEL"
+          fi
+          if tool_executed playwright; then
+            ./.github/scripts/generate-ci-report.sh playwright --xml TestResults/playwright-results.xml --output TestResults/playwright-output.txt --level "$LEVEL"
+          fi
+          if tool_executed puppeteer; then
+            ./.github/scripts/generate-ci-report.sh puppeteer --output TestResults/puppeteer-output.txt --level "$LEVEL"
+          fi
+          if tool_executed selenium; then
+            ./.github/scripts/generate-ci-report.sh selenium --xml TestResults/selenium-results.xml --output TestResults/selenium-output.txt --level "$LEVEL"
+          fi
+          if tool_executed k6; then
+            ./.github/scripts/generate-ci-report.sh k6 --output TestResults/k6-output.txt --level "$LEVEL"
+          fi
 
-          ./.github/scripts/generate-ci-report.sh puppeteer \
-            --output TestResults/puppeteer-output.txt \
-            --level "$LEVEL"
-
-          ./.github/scripts/generate-ci-report.sh selenium \
-            --xml TestResults/selenium-results.xml \
-            --output TestResults/selenium-output.txt \
-            --level "$LEVEL"
-
-          ./.github/scripts/generate-ci-report.sh k6 \
-            --output TestResults/k6-output.txt \
-            --level "$LEVEL"
-
-          # integration 在本地执行，云端不生成报告
-
-      - name: "\U0001F4CA 生成汇总报告"
+      - name: "📦 整理本次独立报告"
+        env:
+          SKIPPED_PYTEST: ${{ needs.detect-selection.outputs.skipped_pytest }}
+          SKIPPED_CYPRESS: ${{ needs.detect-selection.outputs.skipped_cypress }}
+          SKIPPED_PLAYWRIGHT: ${{ needs.detect-selection.outputs.skipped_playwright }}
+          SKIPPED_PUPPETEER: ${{ needs.detect-selection.outputs.skipped_puppeteer }}
+          SKIPPED_SELENIUM: ${{ needs.detect-selection.outputs.skipped_selenium }}
+          SKIPPED_K6: ${{ needs.detect-selection.outputs.skipped_k6 }}
         run: |
+          SELECTED_TOOLS="${{ needs.detect-selection.outputs.selected_tools }}"
+          RUN_MODE="${{ needs.detect-selection.outputs.run_mode }}"
+          PRESERVE_DIR=$(mktemp -d)
+
+          tool_skipped_passed() {
+            case "$1" in
+              pytest) [ "$SKIPPED_PYTEST" = "true" ] ;;
+              cypress) [ "$SKIPPED_CYPRESS" = "true" ] ;;
+              playwright) [ "$SKIPPED_PLAYWRIGHT" = "true" ] ;;
+              puppeteer) [ "$SKIPPED_PUPPETEER" = "true" ] ;;
+              selenium) [ "$SKIPPED_SELENIUM" = "true" ] ;;
+              k6) [ "$SKIPPED_K6" = "true" ] ;;
+              *) return 1 ;;
+            esac
+          }
+
+          for TOOL in $(echo "$SELECTED_TOOLS" | tr ',' ' '); do
+            if tool_skipped_passed "$TOOL"; then
+              cp "test-error-reports/latest/reports/${TOOL}-report.json" "$PRESERVE_DIR/" 2>/dev/null || true
+              cp "test-error-reports/latest/reports/${TOOL}-report.md" "$PRESERVE_DIR/" 2>/dev/null || true
+            fi
+          done
+
+          rm -rf test-error-reports/latest/reports
           mkdir -p test-error-reports/latest/reports
           TIMESTAMP=$(date +%Y-%m-%d_%H%M%S)
 
-          # 复制标准报告到提交目录
-          if [ -d "test-error-reports/latest/reports" ]; then
-            cp TestResults/*-report.json test-error-reports/latest/reports/ 2>/dev/null || true
-            cp TestResults/*-report.md test-error-reports/latest/reports/ 2>/dev/null || true
-          fi
+          find test-error-reports/latest -maxdepth 1 -type f \( -name '*-errors.md' -o -name 'summary.md' \) -delete 2>/dev/null || true
+          cp TestResults/*-report.json test-error-reports/latest/reports/ 2>/dev/null || true
+          cp TestResults/*-report.md test-error-reports/latest/reports/ 2>/dev/null || true
+          cp "$PRESERVE_DIR"/* test-error-reports/latest/reports/ 2>/dev/null || true
 
-          # 生成汇总 summary.md
           cat > test-error-reports/latest/summary.md << 'HEADER'
-          # 全量测试汇总报告
+          # 云端独立报告执行摘要
           HEADER
 
           echo "" >> test-error-reports/latest/summary.md
@@ -371,14 +508,14 @@ jobs:
           echo "- **Git Commit**: ${{ github.sha }}" >> test-error-reports/latest/summary.md
           echo "- **测试级别**: ${{ github.event.inputs.test_level || 'full' }}" >> test-error-reports/latest/summary.md
           echo "- **触发方式**: ${{ github.event_name }}" >> test-error-reports/latest/summary.md
+          echo "- **执行模式**: ${RUN_MODE}" >> test-error-reports/latest/summary.md
+          echo "- **所选工具**: ${SELECTED_TOOLS}" >> test-error-reports/latest/summary.md
           echo "" >> test-error-reports/latest/summary.md
-
-          echo "## 各工具执行状态" >> test-error-reports/latest/summary.md
+          echo "## 本次独立报告状态" >> test-error-reports/latest/summary.md
           echo "" >> test-error-reports/latest/summary.md
           echo "| 工具 | 标准用例 | 状态 | 说明 |" >> test-error-reports/latest/summary.md
           echo "|------|----------|------|------|" >> test-error-reports/latest/summary.md
 
-          # 检查各工具结果
           declare -A TOOL_CASES=(
             [pytest]=57774 [cypress]=9877 [playwright]=11093
             [puppeteer]=8137 [selenium]=6540 [k6]=3651
@@ -387,10 +524,21 @@ jobs:
           TOTAL_PASS=0
           TOTAL_FAIL=0
 
-          for TOOL in pytest cypress playwright puppeteer selenium k6; do
+          for TOOL in $(echo "$SELECTED_TOOLS" | tr ',' ' '); do
             CASES="${TOOL_CASES[$TOOL]}"
             REPORT_JSON="test-error-reports/latest/reports/${TOOL}-report.json"
-            if [ -f "$REPORT_JSON" ]; then
+            if tool_skipped_passed "$TOOL"; then
+              if [ -f "$REPORT_JSON" ]; then
+                T=$(python3 -c "import json; d=json.load(open('$REPORT_JSON')); print(d['summary']['total'])" 2>/dev/null || echo "0")
+                P=$(python3 -c "import json; d=json.load(open('$REPORT_JSON')); print(d['summary']['passed'])" 2>/dev/null || echo "0")
+                F=$(python3 -c "import json; d=json.load(open('$REPORT_JSON')); print(d['summary']['failed'])" 2>/dev/null || echo "0")
+                TOTAL_PASS=$((TOTAL_PASS + P))
+                TOTAL_FAIL=$((TOTAL_FAIL + F))
+                echo "| $TOOL | $CASES | ⏭️ | 已通过，未通过模式下跳过；沿用上次报告（执行 $T, 通过 $P, 失败 $F） |" >> test-error-reports/latest/summary.md
+              else
+                echo "| $TOOL | $CASES | ⚠️ | 标记应跳过，但历史报告缺失 |" >> test-error-reports/latest/summary.md
+              fi
+            elif [ -f "$REPORT_JSON" ]; then
               T=$(python3 -c "import json; d=json.load(open('$REPORT_JSON')); print(d['summary']['total'])" 2>/dev/null || echo "0")
               P=$(python3 -c "import json; d=json.load(open('$REPORT_JSON')); print(d['summary']['passed'])" 2>/dev/null || echo "0")
               F=$(python3 -c "import json; d=json.load(open('$REPORT_JSON')); print(d['summary']['failed'])" 2>/dev/null || echo "0")
@@ -420,12 +568,11 @@ jobs:
             echo "- **通过率**: ${RATE}%" >> test-error-reports/latest/summary.md
           fi
 
-          # 各工具错误详情
           echo "" >> test-error-reports/latest/summary.md
           echo "## 失败详情" >> test-error-reports/latest/summary.md
           echo "" >> test-error-reports/latest/summary.md
 
-          for TOOL in pytest cypress playwright puppeteer selenium k6; do
+          for TOOL in $(echo "$SELECTED_TOOLS" | tr ',' ' '); do
             OUTPUT="TestResults/${TOOL}-output.txt"
             if [ -f "$OUTPUT" ]; then
               FAIL_LINES=$(grep -E "FAILED|FAIL|✗|✘|Error|assert" "$OUTPUT" 2>/dev/null | head -20 || true)
@@ -436,7 +583,6 @@ jobs:
                 echo '```' >> test-error-reports/latest/summary.md
                 echo "" >> test-error-reports/latest/summary.md
 
-                # 生成独立错误报告
                 cat > "test-error-reports/latest/${TOOL}-errors.md" << TOOLEOF
           # ${TOOL} 测试错误报告
 
@@ -453,18 +599,17 @@ jobs:
             fi
           done
 
-          # 归档到历史
           mkdir -p "test-error-reports/history/$TIMESTAMP"
           cp test-error-reports/latest/* "test-error-reports/history/$TIMESTAMP/" 2>/dev/null || true
           cp -r test-error-reports/latest/reports "test-error-reports/history/$TIMESTAMP/" 2>/dev/null || true
 
           echo ""
           echo "═══════════════════════════════════════"
-          echo "📊 汇总报告已生成"
+          echo "📊 选中工具独立报告已生成"
           echo "  通过: $TOTAL_PASS / 失败: $TOTAL_FAIL"
           cat test-error-reports/latest/summary.md
 
-      - name: "\U0001F4E4 上传汇总报告"
+      - name: "📤 上传汇总报告"
         uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -472,13 +617,13 @@ jobs:
           path: test-error-reports/
           retention-days: 30
 
-      - name: "\U0001F4BE 提交报告到仓库"
+      - name: "💾 提交报告到仓库"
         if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add test-error-reports/ || true
-          git diff --cached --quiet || git commit -m "📊 全量测试报告 ${{ github.event.inputs.test_level || 'full' }} $(date +%Y-%m-%d_%H%M) [skip ci]"
+          git diff --cached --quiet || git commit -m "📊 云端独立报告 ${{ needs.detect-selection.outputs.selected_tools }} ${{ needs.detect-selection.outputs.run_mode }} ${{ github.event.inputs.test_level || 'full' }} $(date +%Y-%m-%d_%H%M) [skip ci]"
           for i in 1 2 3; do
             git stash --include-untracked || true
             git pull --rebase origin main || true

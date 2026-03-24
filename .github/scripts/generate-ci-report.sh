@@ -63,12 +63,52 @@ STD_CASES="${STANDARD_CASES[$TOOL]:-0}"
 TOTAL=0; PASSED=0; FAILED=0; SKIPPED=0; ERRORS=0; DURATION=0
 
 # 方法1：从 JUnit XML 解析（pytest、selenium、integration）
+# 使用 Python 解析 XML，避免 grep|awk 管道在单行超长 XML 上失败
 if [ -n "$XML_FILE" ] && [ -f "$XML_FILE" ]; then
-  TOTAL=$(grep -oP -m 1 'tests="\K[0-9]+' "$XML_FILE" || echo "0")
-  FAILURES=$(grep -oP -m 1 'failures="\K[0-9]+' "$XML_FILE" || echo "0")
-  ERRORS=$(grep -oP -m 1 'errors="\K[0-9]+' "$XML_FILE" || echo "0")
-  SKIPPED=$(grep -oP -m 1 'skipped="\K[0-9]+' "$XML_FILE" || echo "0")
-  DURATION=$(grep -oP -m 1 'time="\K[0-9.]+' "$XML_FILE" || echo "0")
+  XML_STATS=$(python3 -c "
+import xml.etree.ElementTree as ET, sys
+try:
+    tree = ET.parse('$XML_FILE')
+    root = tree.getroot()
+    total=0; failures=0; errors=0; skipped=0; duration=0.0
+    # 遍历所有 <testsuite> 元素（可能有多个：xdist/per-class/per-file）
+    for ts in ([root] if root.tag == 'testsuite' else root.iter('testsuite')):
+        total += int(ts.get('tests', 0))
+        failures += int(ts.get('failures', 0))
+        errors += int(ts.get('errors', 0))
+        skipped += int(ts.get('skipped', 0))
+        duration += float(ts.get('time', 0))
+    # 如果 root 是 <testsuites>，只取直接子 <testsuite> 避免重复计数
+    if root.tag == 'testsuites':
+        total=0; failures=0; errors=0; skipped=0; duration=0.0
+        for ts in root.findall('testsuite'):
+            total += int(ts.get('tests', 0))
+            failures += int(ts.get('failures', 0))
+            errors += int(ts.get('errors', 0))
+            skipped += int(ts.get('skipped', 0))
+            duration += float(ts.get('time', 0))
+    print(f'TOTAL={total}')
+    print(f'FAILURES={failures}')
+    print(f'ERRORS={errors}')
+    print(f'SKIPPED={skipped}')
+    print(f'DURATION={duration:.1f}')
+except Exception as e:
+    print('TOTAL=0', file=sys.stdout)
+    print('FAILURES=0', file=sys.stdout)
+    print('ERRORS=0', file=sys.stdout)
+    print('SKIPPED=0', file=sys.stdout)
+    print('DURATION=0.0', file=sys.stdout)
+    print(f'XML解析错误: {e}', file=sys.stderr)
+" 2>/dev/null || printf 'TOTAL=0\nFAILURES=0\nERRORS=0\nSKIPPED=0\nDURATION=0.0\n')
+  while IFS='=' read -r key value; do
+    case "$key" in
+      TOTAL) TOTAL="$value" ;;
+      FAILURES) FAILURES="$value" ;;
+      ERRORS) ERRORS="$value" ;;
+      SKIPPED) SKIPPED="$value" ;;
+      DURATION) DURATION="$value" ;;
+    esac
+  done <<< "$XML_STATS"
   FAILED=$((FAILURES + ERRORS))
   PASSED=$((TOTAL - FAILED - SKIPPED))
   [ "$PASSED" -lt 0 ] && PASSED=0
@@ -109,11 +149,19 @@ if [ "$TOTAL" -eq 0 ] && [ -n "$OUTPUT_FILE" ] && [ -f "$OUTPUT_FILE" ]; then
       [ ! -f "$PW_XML" ] && PW_XML="TestResults/playwright-results.xml"
       if [ -f "$PW_XML" ]; then
         echo "[DEBUG] 使用 Playwright JUnit XML: $PW_XML" >&2
-        TOTAL=$(grep -oP -m 1 'tests="\K[0-9]+' "$PW_XML" || echo "0")
-        FAILURES=$(grep -oP -m 1 'failures="\K[0-9]+' "$PW_XML" || echo "0")
-        ERRORS=$(grep -oP -m 1 'errors="\K[0-9]+' "$PW_XML" || echo "0")
-        SKIPPED=$(grep -oP -m 1 'skipped="\K[0-9]+' "$PW_XML" || echo "0")
-        DURATION=$(grep -oP -m 1 'time="\K[0-9.]+' "$PW_XML" || echo "0")
+        PW_STATS=$(python3 -c "
+import xml.etree.ElementTree as ET
+try:
+    root = ET.parse('$PW_XML').getroot()
+    t=0;f=0;e=0;s=0;d=0.0
+    for ts in (root.findall('testsuite') if root.tag=='testsuites' else [root]):
+        t+=int(ts.get('tests',0));f+=int(ts.get('failures',0))
+        e+=int(ts.get('errors',0));s+=int(ts.get('skipped',0))
+        d+=float(ts.get('time',0))
+    print(f'{t} {f} {e} {s} {d:.1f}')
+except: print('0 0 0 0 0.0')
+" 2>/dev/null || echo "0 0 0 0 0.0")
+        read TOTAL FAILURES ERRORS SKIPPED DURATION <<< "$PW_STATS"
         FAILED=$((FAILURES + ERRORS))
         PASSED=$((TOTAL - FAILED - SKIPPED))
         [ "$PASSED" -lt 0 ] && PASSED=0
@@ -186,6 +234,15 @@ if [ "$TOTAL" -eq 0 ] && [ -n "$OUTPUT_FILE" ] && [ -f "$OUTPUT_FILE" ]; then
   rm -f "$CLEAN_FILE"
 fi
 
+# ── 安全网：确保所有数值变量都是单行数字（防止管道异常导致多行值）──
+sanitize_num() { printf '%s\n' "$1" | grep -Eo '[0-9]+([.][0-9]+)?' | tail -1; }
+TOTAL=$(sanitize_num "$TOTAL"); [ -z "$TOTAL" ] && TOTAL=0
+PASSED=$(sanitize_num "$PASSED"); [ -z "$PASSED" ] && PASSED=0
+FAILED=$(sanitize_num "$FAILED"); [ -z "$FAILED" ] && FAILED=0
+SKIPPED=$(sanitize_num "$SKIPPED"); [ -z "$SKIPPED" ] && SKIPPED=0
+ERRORS=$(sanitize_num "$ERRORS"); [ -z "$ERRORS" ] && ERRORS=0
+DURATION=$(sanitize_num "$DURATION"); [ -z "$DURATION" ] && DURATION=0
+
 # 计算通过率
 if [ "$TOTAL" -gt 0 ]; then
   PASS_RATE=$(python3 -c "print(round($PASSED / $TOTAL * 100, 2))" 2>/dev/null || echo "0")
@@ -210,8 +267,37 @@ fi
 
 # 提取失败详情
 FAILURE_DETAILS=""
-if [ "$FAILED" -gt 0 ] && [ -n "$OUTPUT_FILE" ] && [ -f "$OUTPUT_FILE" ]; then
-  FAILURE_DETAILS=$(grep -A 3 "FAILED\|FAIL\|Error\|✗\|✘\|AssertionError\|assert" "$OUTPUT_FILE" 2>/dev/null | head -200 || true)
+FAILURES_JSON="[]"
+if [ "$FAILED" -gt 0 ]; then
+  # 从 JUnit XML 提取失败用例（pytest/selenium/playwright）
+  if [ -n "$XML_FILE" ] && [ -f "$XML_FILE" ]; then
+    FAILURES_JSON=$(python3 -c "
+import xml.etree.ElementTree as ET, json, sys
+try:
+    tree = ET.parse('$XML_FILE')
+    root = tree.getroot()
+    failures = []
+    for tc in root.iter('testcase'):
+        fail = tc.find('failure')
+        err = tc.find('error')
+        node = fail if fail is not None else err
+        if node is not None:
+            failures.append({
+                'name': tc.get('name',''),
+                'classname': tc.get('classname',''),
+                'status': 'failed' if fail is not None else 'error',
+                'duration_s': float(tc.get('time','0')),
+                'error': (node.get('message','') or node.text or '')[:500]
+            })
+    print(json.dumps(failures, ensure_ascii=False))
+except Exception as e:
+    print('[]', file=sys.stdout)
+" 2>/dev/null || echo "[]")
+  fi
+  # 从输出文本提取失败信息（Cypress/Puppeteer/k6）
+  if [ "$FAILURES_JSON" = "[]" ] && [ -n "$OUTPUT_FILE" ] && [ -f "$OUTPUT_FILE" ]; then
+    FAILURE_DETAILS=$(grep -A 3 "FAILED\|FAIL\|Error\|✗\|✘\|AssertionError\|assert" "$OUTPUT_FILE" 2>/dev/null | head -200 || true)
+  fi
 fi
 
 # ─── 生成 JSON 报告（与本地 generate-tool-reports.ps1 格式一致）───
@@ -250,7 +336,7 @@ cat > "$REPORT_DIR/${TOOL}-report.json" << JSONEOF
   },
   "fileCount": 0,
   "files": [],
-  "failures": []
+  "failures": $FAILURES_JSON
 }
 JSONEOF
 
