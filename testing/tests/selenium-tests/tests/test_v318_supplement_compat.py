@@ -5,80 +5,33 @@ v3.18 增量补充 - 移动端/备品备件/导出 浏览器兼容性测试
 """
 import pytest
 import logging
-import shutil
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.options import Options as ChromeOptions
-from selenium.webdriver.firefox.options import Options as FirefoxOptions
-from selenium.webdriver.edge.options import Options as EdgeOptions
-from selenium.webdriver.chrome.service import Service as ChromeService
-from selenium.webdriver.firefox.service import Service as FirefoxService
-from selenium.webdriver.edge.service import Service as EdgeService
 from selenium.common.exceptions import TimeoutException
-from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.firefox import GeckoDriverManager
-from webdriver_manager.microsoft import EdgeChromiumDriverManager
-import os
+
+from browser_utils import create_local_driver, get_base_url, seed_mock_auth
 
 logger = logging.getLogger(__name__)
 
-BASE_URL = os.getenv('TEST_BASE_URL') or os.getenv('BASE_URL') or 'http://localhost:8000'
+BASE_URL = get_base_url()
 TIMEOUT = 10
 
 
 def get_chrome_driver():
-    options = ChromeOptions()
-    options.add_argument('--headless=new')
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
-    options.add_argument('--window-size=1920,1080')
-    chrome_binary = shutil.which('chromedriver') or shutil.which('chromedriver.exe')
-    if chrome_binary:
-        return webdriver.Chrome(service=ChromeService(chrome_binary), options=options)
-    try:
-        return webdriver.Chrome(options=options)
-    except Exception:
-        return webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
+    return create_local_driver('chrome')
 
 
 def get_firefox_driver():
-    options = FirefoxOptions()
-    options.add_argument('-headless')
-    options.add_argument('--width=1920')
-    options.add_argument('--height=1080')
-    gecko_binary = shutil.which('geckodriver') or shutil.which('geckodriver.exe')
-    if gecko_binary:
-        return webdriver.Firefox(service=FirefoxService(gecko_binary), options=options)
-    try:
-        return webdriver.Firefox(options=options)
-    except Exception:
-        return webdriver.Firefox(service=FirefoxService(GeckoDriverManager().install()), options=options)
+    return create_local_driver('firefox')
 
 
 def get_edge_driver():
-    options = EdgeOptions()
-    options.add_argument('--headless=new')
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
-    options.add_argument('--window-size=1920,1080')
-    edge_binary = shutil.which('msedgedriver') or shutil.which('msedgedriver.exe')
-    if edge_binary:
-        return webdriver.Edge(service=EdgeService(edge_binary), options=options)
-    try:
-        return webdriver.Edge(options=options)
-    except Exception:
-        return webdriver.Edge(service=EdgeService(EdgeChromiumDriverManager().install()), options=options)
+    return create_local_driver('edge')
 
 
 def apply_mock_auth(target_driver):
-    target_driver.get(BASE_URL)
-    target_driver.execute_script("""
-        localStorage.setItem('token', 'mock_token');
-        localStorage.setItem('user', JSON.stringify({id: 'user-001', name: 'admin'}));
-    """)
-    return target_driver
+    return seed_mock_auth(target_driver, BASE_URL)
 
 
 @pytest.fixture(params=['chrome', 'firefox', 'edge'])
@@ -95,8 +48,7 @@ def driver(request):
             pytest.skip(f"不支持的浏览器: {browser}")
             return
     except Exception as e:
-        pytest.skip(f"无法启动{browser}浏览器: {e}")
-        return
+        pytest.fail(f"无法启动{browser}浏览器: {e}")
     drv.implicitly_wait(TIMEOUT)
     yield drv
     drv.quit()

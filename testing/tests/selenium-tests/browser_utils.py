@@ -48,6 +48,20 @@ def get_gateway_url(default=DEFAULT_BASE_URL):
     return os.getenv("GATEWAY_URL") or get_base_url(default)
 
 
+def seed_mock_auth(driver, base_url=None, token="mock_token"):
+    target_url = base_url or get_base_url()
+    driver.get(target_url)
+    driver.execute_script(
+        """
+        localStorage.setItem('token', arguments[0]);
+        localStorage.setItem('access_token', arguments[0]);
+        localStorage.setItem('user', JSON.stringify({id: 'user-001', name: 'admin'}));
+        """,
+        token,
+    )
+    return driver
+
+
 def is_mock_mode(url=None):
     mode = os.getenv("JGSY_TEST_DATA_MODE", "").lower()
     if mode == "mock":

@@ -15,11 +15,12 @@ import pytest
 import os
 import time
 import logging
-import shutil
+
+from browser_utils import create_local_driver, get_base_url, seed_mock_auth
 
 logger = logging.getLogger(__name__)
 
-BASE_URL = os.getenv('TEST_BASE_URL', 'http://localhost:8000')
+BASE_URL = get_base_url()
 MOCK_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test'
 
 # 补全缺口页面
@@ -54,60 +55,9 @@ GAP_PAGES = [
 def _create_driver(browser_name):
     """创建 WebDriver（Mock 模式下跳过实际浏览器）"""
     try:
-        if browser_name == 'chrome':
-            from selenium import webdriver
-            from selenium.webdriver.chrome.options import Options
-            from selenium.webdriver.chrome.service import Service as ChromeService
-            from webdriver_manager.chrome import ChromeDriverManager
-            opts = Options()
-            opts.add_argument('--headless=new')
-            opts.add_argument('--no-sandbox')
-            opts.add_argument('--disable-dev-shm-usage')
-            opts.add_argument('--disable-gpu')
-            opts.add_argument('--window-size=1920,1080')
-            chrome_binary = shutil.which('chromedriver') or shutil.which('chromedriver.exe')
-            if chrome_binary:
-                return webdriver.Chrome(service=ChromeService(chrome_binary), options=opts)
-            try:
-                return webdriver.Chrome(options=opts)
-            except Exception:
-                return webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=opts)
-        elif browser_name == 'firefox':
-            from selenium import webdriver
-            from selenium.webdriver.firefox.options import Options
-            from selenium.webdriver.firefox.service import Service as FirefoxService
-            from webdriver_manager.firefox import GeckoDriverManager
-            opts = Options()
-            opts.add_argument('-headless')
-            opts.add_argument('--width=1920')
-            opts.add_argument('--height=1080')
-            gecko_binary = shutil.which('geckodriver') or shutil.which('geckodriver.exe')
-            if gecko_binary:
-                return webdriver.Firefox(service=FirefoxService(gecko_binary), options=opts)
-            try:
-                return webdriver.Firefox(options=opts)
-            except Exception:
-                return webdriver.Firefox(service=FirefoxService(GeckoDriverManager().install()), options=opts)
-        elif browser_name == 'edge':
-            from selenium import webdriver
-            from selenium.webdriver.edge.options import Options
-            from selenium.webdriver.edge.service import Service as EdgeService
-            from webdriver_manager.microsoft import EdgeChromiumDriverManager
-            opts = Options()
-            opts.add_argument('--headless=new')
-            opts.add_argument('--no-sandbox')
-            opts.add_argument('--disable-dev-shm-usage')
-            opts.add_argument('--window-size=1920,1080')
-            edge_binary = shutil.which('msedgedriver') or shutil.which('msedgedriver.exe')
-            if edge_binary:
-                return webdriver.Edge(service=EdgeService(edge_binary), options=opts)
-            try:
-                return webdriver.Edge(options=opts)
-            except Exception:
-                return webdriver.Edge(service=EdgeService(EdgeChromiumDriverManager().install()), options=opts)
+        return create_local_driver(browser_name)
     except Exception as e:
-        pytest.skip(f"{browser_name} 浏览器不可用: {e}")
-        return None
+        pytest.fail(f"{browser_name} 浏览器不可用: {e}")
 
 
 # ═══════════════════════════════════════════════
@@ -120,23 +70,13 @@ class TestChromeCompatibility:
     @pytest.fixture(autouse=True)
     def setup_driver(self):
         self.driver = _create_driver('chrome')
-        if self.driver:
-            # 注入 Mock Token
-            self.driver.get(BASE_URL)
-            time.sleep(1)
-            self.driver.execute_script(
-                f"localStorage.setItem('access_token', '{MOCK_TOKEN}');"
-                f"localStorage.setItem('token', '{MOCK_TOKEN}');"
-            )
+        seed_mock_auth(self.driver, BASE_URL, MOCK_TOKEN)
         yield
-        if self.driver:
-            self.driver.quit()
+        self.driver.quit()
 
     @pytest.mark.parametrize("path,name", GAP_PAGES)
     def test_page_loads_in_chrome(self, path, name):
         """Chrome: {name} 页面正常加载"""
-        if not self.driver:
-            pytest.skip("Chrome 不可用")
         self.driver.get(f"{BASE_URL}{path}")
         time.sleep(2)
         assert len(self.driver.page_source) > 100, f"{name} 页面空白"
@@ -144,8 +84,6 @@ class TestChromeCompatibility:
     @pytest.mark.parametrize("path,name", GAP_PAGES)
     def test_no_critical_errors_chrome(self, path, name):
         """Chrome: {name} 无严重 JS 错误"""
-        if not self.driver:
-            pytest.skip("Chrome 不可用")
         self.driver.get(f"{BASE_URL}{path}")
         time.sleep(2)
         logs = self.driver.get_log('browser') if hasattr(self.driver, 'get_log') else []
@@ -163,22 +101,13 @@ class TestFirefoxCompatibility:
     @pytest.fixture(autouse=True)
     def setup_driver(self):
         self.driver = _create_driver('firefox')
-        if self.driver:
-            self.driver.get(BASE_URL)
-            time.sleep(1)
-            self.driver.execute_script(
-                f"localStorage.setItem('access_token', '{MOCK_TOKEN}');"
-                f"localStorage.setItem('token', '{MOCK_TOKEN}');"
-            )
+        seed_mock_auth(self.driver, BASE_URL, MOCK_TOKEN)
         yield
-        if self.driver:
-            self.driver.quit()
+        self.driver.quit()
 
     @pytest.mark.parametrize("path,name", GAP_PAGES)
     def test_page_loads_in_firefox(self, path, name):
         """Firefox: {name} 页面正常加载"""
-        if not self.driver:
-            pytest.skip("Firefox 不可用")
         self.driver.get(f"{BASE_URL}{path}")
         time.sleep(2)
         assert len(self.driver.page_source) > 100, f"{name} 页面空白"
@@ -194,22 +123,13 @@ class TestEdgeCompatibility:
     @pytest.fixture(autouse=True)
     def setup_driver(self):
         self.driver = _create_driver('edge')
-        if self.driver:
-            self.driver.get(BASE_URL)
-            time.sleep(1)
-            self.driver.execute_script(
-                f"localStorage.setItem('access_token', '{MOCK_TOKEN}');"
-                f"localStorage.setItem('token', '{MOCK_TOKEN}');"
-            )
+        seed_mock_auth(self.driver, BASE_URL, MOCK_TOKEN)
         yield
-        if self.driver:
-            self.driver.quit()
+        self.driver.quit()
 
     @pytest.mark.parametrize("path,name", GAP_PAGES)
     def test_page_loads_in_edge(self, path, name):
         """Edge: {name} 页面正常加载"""
-        if not self.driver:
-            pytest.skip("Edge 不可用")
         self.driver.get(f"{BASE_URL}{path}")
         time.sleep(2)
         assert len(self.driver.page_source) > 100, f"{name} 页面空白"
@@ -217,8 +137,6 @@ class TestEdgeCompatibility:
     @pytest.mark.parametrize("path,name", GAP_PAGES)
     def test_no_critical_errors_edge(self, path, name):
         """Edge: {name} 无严重 JS 错误"""
-        if not self.driver:
-            pytest.skip("Edge 不可用")
         self.driver.get(f"{BASE_URL}{path}")
         time.sleep(2)
         logs = self.driver.get_log('browser') if hasattr(self.driver, 'get_log') else []
