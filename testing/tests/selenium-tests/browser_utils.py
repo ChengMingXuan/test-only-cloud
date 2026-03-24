@@ -52,6 +52,67 @@ def get_gateway_url(default=DEFAULT_BASE_URL):
     return os.getenv("GATEWAY_URL") or get_base_url(default)
 
 
+def _has_http_origin(driver):
+    current_url = getattr(driver, "current_url", "") or ""
+    return current_url.startswith(("http://", "https://"))
+
+
+def _ensure_http_origin(driver, base_url=None):
+    if _has_http_origin(driver):
+        return True
+
+    target_url = (base_url or get_base_url()).rstrip("/")
+    for candidate in (f"{target_url}/login", target_url):
+        try:
+            driver.get(candidate)
+            if _has_http_origin(driver):
+                return True
+        except Exception as exc:
+            logger.warning("恢复浏览器 origin 失败: %s", exc)
+
+    return _has_http_origin(driver)
+
+
+def _wrap_driver(driver):
+    original_execute_script = driver.execute_script
+
+    def execute_script_with_recovery(script, *args):
+        try:
+            return original_execute_script(script, *args)
+        except Exception as exc:
+            message = str(exc)
+            needs_storage_recovery = (
+                isinstance(script, str)
+                and ("localStorage" in script or "sessionStorage" in script)
+                and (
+                    "Storage is disabled inside 'data:' URLs" in message
+                    or "SecurityError" in message
+                    or "operation is insecure" in message.lower()
+                )
+            )
+
+            if needs_storage_recovery and _ensure_http_origin(driver):
+                return original_execute_script(script, *args)
+
+            raise
+
+    driver.execute_script = execute_script_with_recovery
+
+    if hasattr(driver, "get_log"):
+        original_get_log = driver.get_log
+
+        def get_log_safe(log_type):
+            try:
+                return original_get_log(log_type)
+            except Exception as exc:
+                logger.warning("读取浏览器日志失败，返回空日志: %s", exc)
+                return []
+
+        driver.get_log = get_log_safe
+
+    return driver
+
+
 def seed_mock_auth(driver, base_url=None, token="mock_token"):
     target_url = base_url or get_base_url()
     try:
@@ -144,11 +205,11 @@ def create_local_driver(browser_name, headless=True):
         options.add_argument("--window-size=1920,1080")
         chrome_binary = shutil.which("chromedriver") or shutil.which("chromedriver.exe")
         if chrome_binary:
-            return webdriver.Chrome(service=ChromeService(chrome_binary), options=options)
+            return _wrap_driver(webdriver.Chrome(service=ChromeService(chrome_binary), options=options))
         try:
-            return webdriver.Chrome(options=options)
+            return _wrap_driver(webdriver.Chrome(options=options))
         except Exception:
-            return webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
+            return _wrap_driver(webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options))
 
     if browser_name == "firefox":
         options = webdriver.FirefoxOptions()
@@ -158,11 +219,11 @@ def create_local_driver(browser_name, headless=True):
         options.add_argument("--height=1080")
         gecko_binary = shutil.which("geckodriver") or shutil.which("geckodriver.exe")
         if gecko_binary:
-            return webdriver.Firefox(service=FirefoxService(gecko_binary), options=options)
+            return _wrap_driver(webdriver.Firefox(service=FirefoxService(gecko_binary), options=options))
         try:
-            return webdriver.Firefox(options=options)
+            return _wrap_driver(webdriver.Firefox(options=options))
         except Exception:
-            return webdriver.Firefox(service=FirefoxService(GeckoDriverManager().install()), options=options)
+            return _wrap_driver(webdriver.Firefox(service=FirefoxService(GeckoDriverManager().install()), options=options))
 
     if browser_name == "edge":
         options = webdriver.EdgeOptions()
@@ -173,12 +234,12 @@ def create_local_driver(browser_name, headless=True):
         options.add_argument("--window-size=1920,1080")
         edge_binary = shutil.which("msedgedriver") or shutil.which("msedgedriver.exe")
         if edge_binary:
-            return webdriver.Edge(service=EdgeService(edge_binary), options=options)
+            return _wrap_driver(webdriver.Edge(service=EdgeService(edge_binary), options=options))
         try:
-            return webdriver.Edge(options=options)
+            return _wrap_driver(webdriver.Edge(options=options))
         except Exception as edge_error:
             try:
-                return webdriver.Edge(service=EdgeService(EdgeChromiumDriverManager().install()), options=options)
+                return _wrap_driver(webdriver.Edge(service=EdgeService(EdgeChromiumDriverManager().install()), options=options))
             except Exception as manager_error:
                 logger.warning("Edge 驱动不可用，降级使用 Chromium 驱动: %s | %s", edge_error, manager_error)
                 chrome_options = webdriver.ChromeOptions()
@@ -189,10 +250,10 @@ def create_local_driver(browser_name, headless=True):
                 chrome_options.add_argument("--window-size=1920,1080")
                 chrome_binary = shutil.which("chromedriver") or shutil.which("chromedriver.exe")
                 if chrome_binary:
-                    return webdriver.Chrome(service=ChromeService(chrome_binary), options=chrome_options)
+                    return _wrap_driver(webdriver.Chrome(service=ChromeService(chrome_binary), options=chrome_options))
                 try:
-                    return webdriver.Chrome(options=chrome_options)
+                    return _wrap_driver(webdriver.Chrome(options=chrome_options))
                 except Exception:
-                    return webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
+                    return _wrap_driver(webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options))
 
     raise ValueError(f"Unsupported browser: {browser_name}")

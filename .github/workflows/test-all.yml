@@ -526,17 +526,18 @@ jobs:
           warmup(lambda: webdriver.Edge(options=edge_options), 'edge')
           PY
       - run: |
-          pip install selenium pytest pytest-html webdriver-manager requests
+          pip install selenium pytest pytest-html webdriver-manager requests pytest-xdist
           [ -f testing/tests/selenium-tests/requirements.txt ] && pip install -r testing/tests/selenium-tests/requirements.txt || true
-      - name: 运行 Selenium（单进程避免端口冲突）
+      - name: 运行 Selenium（并行批量执行）
         working-directory: testing/tests/selenium-tests
         continue-on-error: true
         run: |
           mkdir -p ../../../TestResults
-          echo "🚀 单进程执行 | pytest (headless Chrome)"
-          pytest --tb=short -q --junitxml=../../../TestResults/selenium-results.xml 2>&1 | tee ../../../TestResults/selenium-output.txt || true
+          echo "🚀 并行执行 | pytest -n auto --dist loadfile"
+          pytest --tb=short -q -n auto --dist loadfile --junitxml=../../../TestResults/selenium-results.xml 2>&1 | tee ../../../TestResults/selenium-output.txt || true
         env:
           HEADLESS: 'true'
+          CI: 'true'
       - uses: actions/upload-artifact@v4
         if: always()
         with:
