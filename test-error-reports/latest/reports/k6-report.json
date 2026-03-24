@@ -1,0 +1,33 @@
+{
+  "tool": "k6",
+  "displayName": "k6（性能压测）",
+  "icon": "⚡",
+  "standardCases": 3651,
+  "summary": {
+    "total": 0,
+    "passed": 0,
+    "failed": 0,
+    "skipped": 0,
+    "passRate": 0,
+    "duration_s": 0,
+    "timestamp": "2026-03-24T17:05:22",
+    "source": "GitHub Actions CI (full)",
+    "measurementMode": "checks",
+    "comparableTotal": 0,
+    "executedFiles": 0
+  },
+  "gateStatus": {
+    "canRelease": false,
+    "statusText": "未收集到测试结果"
+  },
+  "ci": {
+    "gitCommit": "5da12ac4490564a6f5c79f45b9c8035f4833e345",
+    "eventName": "push",
+    "testLevel": "full",
+    "runnerOS": "ubuntu-latest",
+    "timestamp": "2026-03-24 17:05:22 UTC"
+  },
+  "fileCount": 0,
+  "files": [],
+  "failures": []
+}
