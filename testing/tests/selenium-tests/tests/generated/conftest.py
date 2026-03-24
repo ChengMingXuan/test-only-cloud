@@ -1,24 +1,36 @@
 """
 generated/ 目录专用 conftest — 覆盖 driver fixture：
-  - scope="module" 每个测试文件共享一个 Chrome 实例（大幅提速）
+  - 按测试标记选择对应浏览器，避免跨浏览器用例被错误地全部跑成 Chrome
   - 默认 headless（无头）模式
-  - 使用 data: URL 做 base URL 注入兼容性测试所需 DOM 结构
+  - 每条用例独立驱动，避免大批 generated 用例状态串扰
 """
 import os
 import pytest
-from browser_utils import create_local_driver
+from browser_utils import create_local_driver, get_base_url, seed_mock_auth
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def driver(request):
     """
-    Session 级 headless Chrome 驱动。
-    整个测试会话共用一个浏览器实例（最快）。
+  按测试标记动态创建 headless 浏览器驱动。
     """
-    _driver = create_local_driver("chrome")
+  browser_marker = request.node.get_closest_marker("browser")
+  if browser_marker and browser_marker.args:
+    browser_name = browser_marker.args[0]
+  else:
+    marker_names = {marker.name for marker in request.node.iter_markers()}
+    if "firefox" in marker_names:
+      browser_name = "firefox"
+    elif "edge" in marker_names:
+      browser_name = "edge"
+    else:
+      browser_name = "chrome"
+
+  _driver = create_local_driver(browser_name)
 
     _driver.implicitly_wait(3)
     _driver.set_page_load_timeout(20)
+  seed_mock_auth(_driver, get_base_url())
 
     yield _driver
 
