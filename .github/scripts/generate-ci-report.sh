@@ -64,11 +64,11 @@ TOTAL=0; PASSED=0; FAILED=0; SKIPPED=0; ERRORS=0; DURATION=0
 
 # 方法1：从 JUnit XML 解析（pytest、selenium、integration）
 if [ -n "$XML_FILE" ] && [ -f "$XML_FILE" ]; then
-  TOTAL=$(grep -oP 'tests="\K[0-9]+' "$XML_FILE" | head -1 || echo "0")
-  FAILURES=$(grep -oP 'failures="\K[0-9]+' "$XML_FILE" | head -1 || echo "0")
-  ERRORS=$(grep -oP 'errors="\K[0-9]+' "$XML_FILE" | head -1 || echo "0")
-  SKIPPED=$(grep -oP 'skipped="\K[0-9]+' "$XML_FILE" | head -1 || echo "0")
-  DURATION=$(grep -oP 'time="\K[0-9.]+' "$XML_FILE" | head -1 || echo "0")
+  TOTAL=$(grep -oP -m 1 'tests="\K[0-9]+' "$XML_FILE" || echo "0")
+  FAILURES=$(grep -oP -m 1 'failures="\K[0-9]+' "$XML_FILE" || echo "0")
+  ERRORS=$(grep -oP -m 1 'errors="\K[0-9]+' "$XML_FILE" || echo "0")
+  SKIPPED=$(grep -oP -m 1 'skipped="\K[0-9]+' "$XML_FILE" || echo "0")
+  DURATION=$(grep -oP -m 1 'time="\K[0-9.]+' "$XML_FILE" || echo "0")
   FAILED=$((FAILURES + ERRORS))
   PASSED=$((TOTAL - FAILED - SKIPPED))
   [ "$PASSED" -lt 0 ] && PASSED=0

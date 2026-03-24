@@ -488,15 +488,11 @@ class MockApiClient:
                         "success": True, "code": 200,
                         "data": ent, "timestamp": _TS, "traceId": f"upd-200-{res}",
                     }, url=url)
-                # 自动 upsert：不存在时创建并更新
-                ent = _make_entity(svc, res)
-                if id_val:
-                    ent["id"] = id_val
-                ent.update(body)
-                self._store[ent["id"]] = ent
-                return MockResponse(200, {
-                    "success": True, "code": 200,
-                    "data": ent, "timestamp": _TS, "traceId": f"upsert-200-{res}",
+                # 不存在的资源 → 404
+                return MockResponse(404, {
+                    "success": False, "code": 404,
+                    "message": "资源不存在", "data": None,
+                    "timestamp": _TS, "traceId": f"upd-404-{res}",
                 }, url=url)
             if has_id:
                 # PUT/PATCH 无 body 但有 ID（状态变更等）

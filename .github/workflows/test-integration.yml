@@ -54,7 +54,8 @@ jobs:
             --no-build \
             -c Release \
             --logger "trx;LogFileName=../../TestResults/integration-results.trx" \
-            --logger "junit;LogFileName=../../TestResults/integration-results.xml" \
+            --logger "junit;LogFilePath=../../TestResults/integration-results.xml" \
+            --results-directory ../../TestResults \
             2>&1 | tee ../../TestResults/integration-output.txt || true
 
       - name: 📊 生成错误报告
