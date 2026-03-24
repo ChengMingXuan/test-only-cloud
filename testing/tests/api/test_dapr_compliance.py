@@ -137,12 +137,12 @@ class TestDockerComposeDapr:
 
     def test_compose_store_has_dapr(self):
         """验证 docker-compose.store.yml 存在"""
-        path = WORKSPACE_ROOT / "docker" / "docker-compose.store.yml"
+        path = WORKSPACE_ROOT / "Configuration2.0" / "docker" / "docker-compose.store.yml"
         assert path.exists(), "docker-compose.store.yml 不存在"
 
     def test_compose_addon_exists(self):
         """验证 docker-compose.addon.yml 存在"""
-        path = WORKSPACE_ROOT / "docker" / "docker-compose.addon.yml"
+        path = WORKSPACE_ROOT / "Configuration2.0" / "docker" / "docker-compose.addon.yml"
         assert path.exists(), "docker-compose.addon.yml 不存在"
 
     def test_no_development_appsettings(self):
