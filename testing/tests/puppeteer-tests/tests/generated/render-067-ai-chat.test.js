@@ -309,7 +309,7 @@ describe('[渲染测试] AI智能对话', () => {
       const rejections = [];
       page.on('pageerror', err => rejections.push(err.message));
       await page.goto(PAGE_URL, { waitUntil: 'networkidle2', timeout: 10000 });
-      await page.waitForTimeout(2000);
+      await new Promise(r => setTimeout(r, 2000));
       expect(rejections.length).toBeLessThanOrEqual(3);
     });
 
@@ -321,7 +321,7 @@ describe('[渲染测试] AI智能对话', () => {
     test('[E004] 网络断开不崩溃', async () => {
       await page.goto(PAGE_URL, { waitUntil: 'networkidle2', timeout: 10000 });
       await page.setOfflineMode(true);
-      await page.waitForTimeout(1000);
+      await new Promise(r => setTimeout(r, 1000));
       const bodyExists = await page.$('body');
       expect(bodyExists).toBeTruthy();
       await page.setOfflineMode(false);

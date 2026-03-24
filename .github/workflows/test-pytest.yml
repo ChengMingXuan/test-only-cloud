@@ -1,6 +1,7 @@
 # ═══════════════════════════════════════════════════════════════════
 # pytest 自动化测试工作流
 # 57,774 用例 | Python 3.11 | 100% Mock（零外部依赖）
+# 支持并行执行：-n auto 使用 pytest-xdist 内部并行
 # ═══════════════════════════════════════════════════════════════════
 name: 🐍 pytest
 
@@ -26,6 +27,16 @@ on:
         description: 'pytest marker 过滤（可选，如 p0, api, account）'
         required: false
         default: ''
+      parallel_workers:
+        description: '并行 Worker 数量'
+        required: false
+        default: 'auto'
+        type: choice
+        options:
+          - '1'
+          - '4'
+          - '8'
+          - 'auto'
 
 concurrency:
   group: pytest-${{ github.ref }}
@@ -52,18 +63,26 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r testing/tests/requirements.txt
+          pip install pytest-split  # 用于测试分片（可选）
 
-      - name: 🧪 运行 pytest
+      - name: 🧪 运行 pytest（并行）
         id: test
         working-directory: testing/tests
         continue-on-error: true
         run: |
           LEVEL="${{ github.event.inputs.test_level || 'full' }}"
           MARKER="${{ github.event.inputs.marker }}"
+          WORKERS="${{ github.event.inputs.parallel_workers || 'auto' }}"
           TIMESTAMP=$(date +%Y%m%d_%H%M%S)
           
           ARGS="--tb=short --no-header -q"
           ARGS="$ARGS --junitxml=../../TestResults/pytest-results.xml"
+          
+          # 添加并行执行参数
+          if [ "$WORKERS" != "1" ]; then
+            ARGS="$ARGS -n $WORKERS"
+            echo "🚀 并行执行: $WORKERS workers"
+          fi
           
           if [ "$LEVEL" = "smoke" ]; then
             ARGS="$ARGS -m smoke --maxfail=10"

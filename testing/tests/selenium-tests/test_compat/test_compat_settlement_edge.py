@@ -1,4 +1,4 @@
-﻿"""
+"""
 Selenium 浏览器兼容性测试 - settlement (edge)
 """
 
@@ -12,7 +12,7 @@ class Test_settlement_edge:
         # 初始化浏览器
         self.driver = webdriver.Remote(
             command_executor='http://localhost:4444',
-            desired_capabilities={'browserName': 'edge'}
+            options=webdriver.EdgeOptions()
         )
         yield
         self.driver.quit()

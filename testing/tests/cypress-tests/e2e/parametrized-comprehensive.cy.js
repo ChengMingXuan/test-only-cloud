@@ -110,8 +110,8 @@ describe('表单交互 - 参数化（4 × 8 = 32）', () => {
             cy.get('body').then($b => { if ($b.find('button[type="submit"]').length > 0) cy.get('button[type="submit"]').click({ force: true }); else cy.log('元素未找到: button[type="submit"]'); });
             break;
           case 'input':
-            cy.get('body').then($b => { if ($b.find('input[name="username"]').length > 0) cy.get('input[name="username"]')
-              .type(scenario === 'empty' ? '' : 'testuser@test.com'); else cy.log('元素未找到: input[name="username"]'); });
+            cy.get('body').then($b => { if ($b.find('input[name="username"]').length > 0) { if (scenario === 'empty') { cy.get('input[name="username"]').clear(); } else { cy.get('input[name="username"]')
+              .type('testuser@test.com'); } } else cy.log('元素未找到: input[name="username"]'); });
             break;
           case 'select':
             cy.get('body').then($b => { const $s = $b.find('select[name="role"]'); if ($s.length > 0) { cy.wrap($s.first()).select(0); } });

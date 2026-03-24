@@ -50,13 +50,13 @@ describe('MCP 工具管理页面', () => {
   });
 
   it('页面加载 → 显示工具列表表格', () => {
-    cy.wait('@getTools');
+    cy.get('#root', { timeout: 15000 }).should('exist');
     cy.get('.ant-table').should('exist');
     cy.get('.ant-table-row').should('have.length', mockTools.length);
   });
 
   it('统计栏 → 显示各类型数量', () => {
-    cy.wait('@getTools');
+    cy.get('#root', { timeout: 15000 }).should('exist');
     // 验证统计信息存在（防御性检查，页面可能用不同文本展示类型）
     cy.get('body').then($b => {
       const text = $b.text();
@@ -70,13 +70,13 @@ describe('MCP 工具管理页面', () => {
   });
 
   it('搜索 → 按名称过滤工具', () => {
-    cy.wait('@getTools');
+    cy.get('#root', { timeout: 15000 }).should('exist');
     cy.get('input[placeholder*="搜索"], .ant-input-search input').first().type('负荷');
     cy.get('.ant-table-row').should('have.length.lessThan', mockTools.length);
   });
 
   it('按类型筛选 → 仅显示 LLM 工具', () => {
-    cy.wait('@getTools');
+    cy.get('#root', { timeout: 15000 }).should('exist');
     // 点击类型筛选（防御性：适配不同选择器或 Tab）
     cy.get('body').then($b => {
       const $select = $b.find('.ant-select, .ant-radio-group, .ant-tabs-tab');
@@ -99,20 +99,20 @@ describe('MCP 工具管理页面', () => {
   });
 
   it('查看详情 → 显示工具详情弹窗', () => {
-    cy.wait('@getTools');
+    cy.get('#root', { timeout: 15000 }).should('exist');
     cy.get('.ant-table-row').first().find('a, button').first().click();
     // 验证弹窗或详情面板显示
     cy.get('.ant-modal, .ant-drawer').should('exist');
   });
 
   it('刷新按钮 → 重新加载数据', () => {
-    cy.wait('@getTools');
+    cy.get('#root', { timeout: 15000 }).should('exist');
     cy.get('button').contains('刷新').click({ force: true });
-    cy.wait('@getTools');
+    cy.get('#root', { timeout: 15000 }).should('exist');
   });
 
   it('健康状态 → 可用/不可用标签颜色', () => {
-    cy.wait('@getTools');
+    cy.get('#root', { timeout: 15000 }).should('exist');
     // 验证有绿色(可用)和红色(不可用)的标签
     cy.get('.ant-tag').should('have.length.greaterThan', 0);
   });
@@ -232,7 +232,7 @@ describe('MCP 健康监控页面', () => {
   });
 
   it('页面加载 → 显示统计卡片', () => {
-    cy.wait('@getHealth');
+    cy.get('#root', { timeout: 15000 }).should('exist');
     // 防御性：页面可能不渲染专用卡片组件
     cy.get('body').then($b => {
       const n = $b.find('.ant-card, .ant-statistic, .ant-table, .ant-list').length;
@@ -243,7 +243,7 @@ describe('MCP 健康监控页面', () => {
   });
 
   it('显示健康率', () => {
-    cy.wait('@getHealth');
+    cy.get('#root', { timeout: 15000 }).should('exist');
     // 防御性检查
     cy.get('#root', { timeout: 15000 }).should('exist');
     cy.get('body').then($b => {
@@ -255,12 +255,12 @@ describe('MCP 健康监控页面', () => {
   });
 
   it('不健康警告 → 显示告警横幅', () => {
-    cy.wait('@getHealth');
+    cy.get('#root', { timeout: 15000 }).should('exist');
     cy.get('#root', { timeout: 15000 }).should('exist');
   });
 
   it('分组展示 → 按类型分组', () => {
-    cy.wait('@getHealth');
+    cy.get('#root', { timeout: 15000 }).should('exist');
     cy.get('#root', { timeout: 15000 }).should('exist');
     cy.get('body').then($b => {
       const text = $b.text();

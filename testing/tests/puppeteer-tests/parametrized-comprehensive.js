@@ -181,7 +181,7 @@ async function runParametrizedTests() {
           });
           
           // 等待页面完全加载
-          await newPage.waitForTimeout(1000);
+          await new Promise(r => setTimeout(r, 1000));
           
           // 采集性能指标
           const metrics = await collectPerformanceMetrics(newPage);

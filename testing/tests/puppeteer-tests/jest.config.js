@@ -12,6 +12,10 @@ module.exports = {
   testTimeout: 30000,
   maxWorkers: 2,
   forceExit: true,
+  // chai → Jest expect 兼容映射，无需安装 chai 包
+  moduleNameMapper: {
+    '^chai$': path.join(__dirname, 'chai-jest-shim.js'),
+  },
   // 全局设置：检测前端 → 可达直连 / 不可达自动启动 mock-server
   globalSetup: path.join(__dirname, 'global-setup.js'),
   globalTeardown: path.join(__dirname, 'global-teardown.js'),

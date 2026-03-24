@@ -1,6 +1,6 @@
 ﻿# ═══════════════════════════════════════════════════════════════════
 # Puppeteer 性能基准 + 视觉回归测试工作流
-# 8,137 用例 | Node 22 + Jest
+# 8,137 用例 | Node 22 + Jest | 支持 --maxWorkers 并行
 # ═══════════════════════════════════════════════════════════════════
 name: 🤖 Puppeteer
 
@@ -22,6 +22,16 @@ on:
           - all
           - performance
           - visual
+      max_workers:
+        description: '并行 Worker 数量'
+        required: false
+        default: '4'
+        type: choice
+        options:
+          - '1'
+          - '2'
+          - '4'
+          - '50%'
 
 concurrency:
   group: puppeteer-${{ github.ref }}
@@ -46,15 +56,23 @@ jobs:
         working-directory: testing/tests/puppeteer-tests
         run: npm ci || npm install
 
-      - name: 🧪 运行 Puppeteer 测试
+      - name: 🧪 运行 Puppeteer 测试（并行）
         id: test
         working-directory: testing/tests/puppeteer-tests
         continue-on-error: true
         run: |
           mkdir -p ../../../TestResults
+          WORKERS="${{ github.event.inputs.max_workers || '4' }}"
           
-          # 运行全部测试（不限定 testPathPattern，匹配所有 *.test.js）
-          npx jest --forceExit --ci --reporters=default --reporters=jest-junit 2>&1 | tee ../../../TestResults/puppeteer-output.txt || true
+          echo "🚀 并行执行: $WORKERS workers"
+          # 运行全部测试，使用 Jest maxWorkers 并行执行
+          npx jest \
+            --forceExit \
+            --ci \
+            --maxWorkers=$WORKERS \
+            --reporters=default \
+            --reporters=jest-junit \
+            2>&1 | tee ../../../TestResults/puppeteer-output.txt || true
         env:
           JEST_JUNIT_OUTPUT_DIR: ../../../TestResults
           JEST_JUNIT_OUTPUT_NAME: puppeteer-results.xml

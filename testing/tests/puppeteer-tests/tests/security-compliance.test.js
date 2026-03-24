@@ -189,7 +189,7 @@ describe('[SEC-P02] 登录页安全渲染检测', () => {
     const submitBtn = await page.$('button[type="submit"]');
     if (submitBtn) {
       await submitBtn.click();
-      await page.waitForTimeout(1000);
+      await new Promise(r => setTimeout(r, 1000));
     }
 
     // 检查页面文本：不应包含"用户不存在"或"该账户未注册"
@@ -425,7 +425,7 @@ describe('[SEC-P06] XSS 防护渲染验证', () => {
       document.body.appendChild(img);
     });
 
-    await page.waitForTimeout(500);
+    await new Promise(r => setTimeout(r, 500));
     const xssTriggered = await page.evaluate(() => window.__xssTriggered || false);
     // onerror 在同源 inline 中是允许的，但不应导致 alert
     expect(alertTriggered).toBe(false);

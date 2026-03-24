@@ -1,6 +1,6 @@
 # ═══════════════════════════════════════════════════════════════════
 # Playwright E2E 端到端测试工作流
-# 11,093 用例 | Node 18 | 5浏览器矩阵
+# 11,093 用例 | Node 18 | 支持内置 --shard 分片并行
 # ═══════════════════════════════════════════════════════════════════
 name: 🎭 Playwright
 
@@ -32,6 +32,16 @@ on:
           - chromium
           - firefox
           - webkit
+      parallel_workers:
+        description: '并行 Worker 数量'
+        required: false
+        default: '4'
+        type: choice
+        options:
+          - '1'
+          - '2'
+          - '4'
+          - '8'
 
 concurrency:
   group: playwright-${{ github.ref }}
@@ -58,15 +68,16 @@ jobs:
           npm ci || npm install
           npx playwright install --with-deps chromium
 
-      - name: 🧪 运行 Playwright
+      - name: 🧪 运行 Playwright（并行）
         id: test
         working-directory: testing/tests/playwright-tests
         continue-on-error: true
         run: |
           LEVEL="${{ github.event.inputs.test_level || 'full' }}"
           PROJECT="${{ github.event.inputs.project }}"
+          WORKERS="${{ github.event.inputs.parallel_workers || '4' }}"
           
-          ARGS="--reporter=list,junit"
+          ARGS="--reporter=list,junit --workers=$WORKERS"
           
           if [ -n "$PROJECT" ]; then
             ARGS="$ARGS --project=$PROJECT"
@@ -76,6 +87,7 @@ jobs:
             ARGS="$ARGS --grep @smoke"
           fi
           
+          echo "🚀 并行执行: $WORKERS workers"
           export PLAYWRIGHT_JUNIT_OUTPUT_NAME=../../../TestResults/playwright-results.xml
           npx playwright test $ARGS 2>&1 | tee ../../../TestResults/playwright-output.txt || true
 

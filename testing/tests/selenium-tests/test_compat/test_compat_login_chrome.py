@@ -1,4 +1,4 @@
-﻿"""
+"""
 Selenium 浏览器兼容性测试 - login (chrome)
 """
 
@@ -12,7 +12,7 @@ class Test_login_chrome:
         # 初始化浏览器
         self.driver = webdriver.Remote(
             command_executor='http://localhost:4444',
-            desired_capabilities={'browserName': 'chrome'}
+            options=webdriver.ChromeOptions()
         )
         yield
         self.driver.quit()

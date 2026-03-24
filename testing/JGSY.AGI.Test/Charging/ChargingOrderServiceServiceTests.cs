@@ -7,9 +7,11 @@ using JGSY.AGI.Charging.Data;
 using JGSY.AGI.Charging.Entities;
 using JGSY.AGI.Charging.Service;
 using JGSY.AGI.Common.Core.Data.Dapper;
+using JGSY.AGI.Common.Core.Interfaces;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 using Xunit;
 
 namespace JGSY.AGI.Test.Charging;
@@ -47,7 +49,9 @@ public class ChargingOrderServiceServiceTests : IAsyncLifetime
         await SeedOrderAsync(orderId, tenantId, consumePower: 10m, orderType: "3002");
         await SeedCustomPriceAsync(pileId: null, priceId: Guid.NewGuid(), chargeType: "3002", price: 2.0m);
 
-        var service = new ChargingOrderService(_factory!, NullLogger<ChargingOrderService>.Instance, new ServiceCollection().BuildServiceProvider());
+        var mockTenantContext = new Mock<ITenantContext>();
+        mockTenantContext.Setup(t => t.TenantId).Returns(tenantId);
+        var service = new ChargingOrderService(_factory!, NullLogger<ChargingOrderService>.Instance, new ServiceCollection().BuildServiceProvider(), mockTenantContext.Object);
 
         var result = await service.CalculateOrderFeeAsync(orderId, tenantId);
 
@@ -65,7 +69,9 @@ public class ChargingOrderServiceServiceTests : IAsyncLifetime
         await SeedOrderAsync(orderId, tenantId, consumePower: 0m, orderType: "3001", start: DateTime.UtcNow.AddHours(-4), end: DateTime.UtcNow);
         await SeedCustomPriceAsync(pileId: null, priceId: Guid.NewGuid(), chargeType: "3001", price: 1.5m, hours: 1.5m, granterNum: "2", granterPrice: "3");
 
-        var service = new ChargingOrderService(_factory!, NullLogger<ChargingOrderService>.Instance, new ServiceCollection().BuildServiceProvider());
+        var mockTenantContext2 = new Mock<ITenantContext>();
+        mockTenantContext2.Setup(t => t.TenantId).Returns(tenantId);
+        var service = new ChargingOrderService(_factory!, NullLogger<ChargingOrderService>.Instance, new ServiceCollection().BuildServiceProvider(), mockTenantContext2.Object);
 
         var result = await service.CalculateOrderFeeAsync(orderId, tenantId);
 

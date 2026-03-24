@@ -38,6 +38,9 @@ _ADMIN_ID = "00000000-0000-0000-0000-000000000001"
 _ACTION_POST_SEGMENTS = {
     "preview", "calculate", "query", "search", "validate",
     "refresh", "execute", "sync", "settle", "settlement",
+    "trigger", "replay", "flush", "start", "stop",
+    "enqueue", "enqueue-batch", "send", "upload", "import", "export",
+    "birthday-daily", "anniversary-daily", "upgrade",
 }
 
 
@@ -363,6 +366,81 @@ class MockApiClient:
         parts = pc.strip("/").split("/")
         has_id = any(bool(_UUID_RE.match(p)) for p in parts)
 
+        # ── 业务端点专用 Mock（覆盖通用 CRUD 前拦截） ──
+
+        # DAG 工作流
+        if "dag-workflow" in pc:
+            if method == "GET":
+                if pc.rstrip("/").endswith("/workflows"):
+                    workflows = [
+                        {"workflowId": wid, "version": "1.0.0", "description": f"{wid} 工作流",
+                         "nodeCount": 3, "isActive": True}
+                        for wid in ["pv_power_forecast", "ai_patrol", "load_forecast",
+                                     "price_forecast", "charging_forecast", "battery_forecast",
+                                     "fault_diagnosis"]
+                    ]
+                    return MockResponse(200, {
+                        "success": True, "code": 200,
+                        "data": workflows,
+                        "timestamp": _TS, "traceId": "dag-list",
+                    }, url=url)
+                if "/workflows/" in pc:
+                    wf_id = parts[-1]
+                    return MockResponse(200, {
+                        "success": True, "code": 200,
+                        "data": {
+                            "workflowId": wf_id, "version": "1.0.0",
+                            "description": f"{wf_id} 工作流",
+                            "nodeCount": 3, "isActive": True,
+                            "nodes": [
+                                {"nodeId": "n1", "modelType": "prediction", "modelName": "模型A", "order": 1},
+                                {"nodeId": "n2", "modelType": "fusion", "modelName": "融合模型", "order": 2},
+                            ],
+                        },
+                        "timestamp": _TS, "traceId": f"dag-detail-{wf_id}",
+                    }, url=url)
+                if "executions" in pc:
+                    last = parts[-1]
+                    if last == "executions":
+                        items = [
+                            {"executionId": str(uuid.uuid4()), "workflowId": "pv_power_forecast",
+                             "status": "completed", "startTime": _TS, "endTime": _TS,
+                             "totalLatencyMs": 120, "totalNodes": 3, "completedNodes": 3, "failedNodes": 0}
+                            for _ in range(3)
+                        ]
+                        return MockResponse(200, {
+                            "success": True, "code": 200,
+                            "data": items,
+                            "timestamp": _TS, "traceId": "dag-exec-list",
+                        }, url=url)
+                    if not _UUID_RE.match(last):
+                        return MockResponse(400, {
+                            "success": False, "code": 400,
+                            "message": f"无效的 UUID 格式: {last}", "data": None,
+                            "timestamp": _TS, "traceId": "dag-exec-400",
+                        }, url=url)
+                    return MockResponse(200, {
+                        "success": True, "code": 200,
+                        "data": {
+                            "executionId": last, "workflowId": "pv_power_forecast",
+                            "status": "completed", "success": True,
+                            "startTime": _TS, "endTime": _TS,
+                            "outputData": {"prediction": 100.5},
+                        },
+                        "timestamp": _TS, "traceId": f"dag-exec-{last}",
+                    }, url=url)
+            if method == "POST":
+                wid = (body or {}).get("workflowId", "unknown")
+                return MockResponse(200, {
+                    "success": True, "code": 200,
+                    "data": {
+                        "executionId": str(uuid.uuid4()), "workflowId": wid,
+                        "status": "running", "success": True,
+                        "fusionConfidence": 0.92,
+                    },
+                    "timestamp": _TS, "traceId": f"dag-execute-{wid}",
+                }, url=url)
+
         if method == "DELETE":
             if has_id:
                 id_val = next((p for p in parts if _UUID_RE.match(p)), None)
@@ -421,12 +499,31 @@ class MockApiClient:
             }, url=url)
 
         if method == "POST":
-            if not body or body == {}:
+            is_action_post = len(parts) > 3 or parts[-1].lower() in _ACTION_POST_SEGMENTS
+            # 列表 body（批量日志/告警上传等）→ 直接返回成功
+            if isinstance(body, list):
+                return MockResponse(200, {
+                    "success": True, "code": 200,
+                    "data": {"count": len(body)},
+                    "message": "批量操作成功",
+                    "timestamp": _TS, "traceId": f"batch-{res}",
+                }, url=url)
+            # 非动作 POST + 空 body → 400
+            if not is_action_post and (not body or body == {}):
                 return MockResponse(400, {
                     "success": False, "code": 400,
                     "message": "请求参数验证失败",
                     "data": {"errors": [{"field": "body", "message": "请求体不能为空"}]},
                     "timestamp": _TS, "traceId": "post-400",
+                }, url=url)
+            # 动作 POST 允许空 body，规范化
+            body = body if isinstance(body, dict) and body else {}
+            # 动作 POST 空 body → 200 成功
+            if is_action_post and not body:
+                return MockResponse(200, {
+                    "success": True, "code": 200,
+                    "data": None, "message": "操作成功",
+                    "timestamp": _TS, "traceId": f"action-{res}",
                 }, url=url)
             # 校验必填字段 code 不能为空字符串
             if "code" in body and not body["code"]:
@@ -461,10 +558,9 @@ class MockApiClient:
             ent.update(body)
             # 存入内存
             self._store[ent["id"]] = ent
-            is_action_post = len(parts) > 3 or parts[-1].lower() in _ACTION_POST_SEGMENTS
-            success_code = 200 if is_action_post else 201
-            return MockResponse(success_code, {
-                "success": True, "code": success_code,
+            # ApiResult<T> 统一 200（action POST 和 CRUD POST 均返回 200）
+            return MockResponse(200, {
+                "success": True, "code": 200,
                 "data": ent, "timestamp": _TS, "traceId": f"create-{res}",
             }, url=url)
 
@@ -485,10 +581,15 @@ class MockApiClient:
                     "data": stored,
                     "timestamp": _TS, "traceId": f"detail-{res}",
                 }, url=url)
-            return MockResponse(404, {
-                "success": False, "code": 404,
-                "message": f"资源不存在({res})", "data": None,
-                "timestamp": _TS, "traceId": f"get-404-{res}",
+            # 自动生成实体（模拟 get-or-create / always-exists 行为）
+            temp = _make_entity(svc, res)
+            if id_val:
+                temp["id"] = id_val
+            self._store[temp["id"]] = temp
+            return MockResponse(200, {
+                "success": True, "code": 200,
+                "data": temp,
+                "timestamp": _TS, "traceId": f"auto-gen-{res}",
             }, url=url)
 
         try:

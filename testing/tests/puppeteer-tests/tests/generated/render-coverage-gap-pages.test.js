@@ -98,7 +98,7 @@ describe.each(GAP_PAGES)('$name 渲染测试', ({ path, name }) => {
     const errors = [];
     page.on('pageerror', err => errors.push(err.message));
     await page.goto(`${BASE_URL}${path}`, { waitUntil: 'domcontentloaded', timeout: 15000 }).catch(() => {});
-    await page.waitForTimeout(2000);
+    await new Promise(r => setTimeout(r, 2000));
     // 允许非致命错误（如 chunk 加载失败），但不允许 TypeError/ReferenceError
     const criticalErrors = errors.filter(e => e.includes('TypeError') || e.includes('ReferenceError'));
     expect(criticalErrors).toEqual([]);
@@ -106,7 +106,7 @@ describe.each(GAP_PAGES)('$name 渲染测试', ({ path, name }) => {
 
   test(`${name} — 页面不为空白`, async () => {
     await page.goto(`${BASE_URL}${path}`, { waitUntil: 'domcontentloaded', timeout: 15000 }).catch(() => {});
-    await page.waitForTimeout(2000);
+    await new Promise(r => setTimeout(r, 2000));
     const bodyHTML = await page.evaluate(() => document.body?.innerHTML || '');
     expect(bodyHTML.length).toBeGreaterThan(50);
   }, 20000);

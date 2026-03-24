@@ -15,6 +15,10 @@ from mock_client import MockApiClient, MOCK_TOKEN
 
 WORKSPACE_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
+# CI 环境（test-only-cloud 仓库）无源码 → 跳过需要源码文件的测试
+_HAS_SOURCE = os.path.exists(os.path.join(WORKSPACE_ROOT, "AIOPS.sln"))
+_SKIP_NO_SOURCE = pytest.mark.skipif(not _HAS_SOURCE, reason="CI 测试仓库无源码文件")
+
 # 全部 31 个微服务的项目目录名
 ALL_SERVICES = [
     "JGSY.AGI.Account", "JGSY.AGI.Analytics", "JGSY.AGI.Blockchain",
@@ -90,6 +94,7 @@ class TestDaprConfigCompliance:
 # ============================================================
 @pytest.mark.api
 @pytest.mark.servicemesh
+@_SKIP_NO_SOURCE
 class TestServiceTransportRegistration:
     """ServiceTransportExtensions 注册逻辑验证"""
 
@@ -144,6 +149,7 @@ class TestServiceTransportRegistration:
 # ============================================================
 @pytest.mark.api
 @pytest.mark.servicemesh
+@_SKIP_NO_SOURCE
 class TestDockerComposeDapr:
     """Docker Compose 文件 Dapr 配置验证"""
 
@@ -174,6 +180,7 @@ class TestDockerComposeDapr:
 # ============================================================
 @pytest.mark.api
 @pytest.mark.servicemesh
+@_SKIP_NO_SOURCE
 class TestNewMicroserviceScript:
     """new-microservice.ps1 Dapr 模式验证"""
 

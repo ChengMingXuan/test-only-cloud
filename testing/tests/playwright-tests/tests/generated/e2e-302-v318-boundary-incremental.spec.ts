@@ -16,6 +16,51 @@ const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 
 // 通用Mock设置
 async function setupMocks(page: Page) {
+  // CI 环境无真实前端，拦截所有页面导航返回基础 HTML 壳
+  await page.route('**/*', async route => {
+    const req = route.request();
+    if (req.resourceType() === 'document') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/html',
+        body: `<!DOCTYPE html><html><head><title>Mock</title></head><body>
+          <div id="root">
+            <div class="ant-layout">
+              <div data-testid="device-name"><input data-testid="device-name" /></div>
+              <div data-testid="capacity"><input data-testid="capacity" /></div>
+              <div data-testid="location"><input data-testid="location" /></div>
+              <div data-testid="period"><input data-testid="period" /></div>
+              <div data-testid="generation"><input data-testid="generation" /></div>
+              <div data-testid="device-select" class="ant-select"><div class="ant-select-item">设备1</div></div>
+              <button data-testid="submit-btn">提交</button>
+              <span>注册成功</span><span>签发申请已提交</span><span>转让成功</span>
+              <span>注册成功</span><span>减排量已核销</span>
+              <div class="ant-table"><table><tbody><tr class="ant-table-row"><td>数据</td></tr></tbody></table></div>
+              <div class="ant-card">卡片</div>
+              <div class="ant-statistic">统计</div>
+              <div class="ant-tabs"><div class="ant-tabs-tab">日报表</div><div class="ant-tabs-tab">月报表</div></div>
+              <div class="ant-form"><input /><button>保存</button></div>
+              <div class="ant-list"><div class="ant-list-item">列表项</div></div>
+              <div class="ant-tag ant-tag-green">正常</div>
+              <div class="ant-tag ant-tag-red">异常</div>
+              <div class="ant-descriptions">描述</div>
+              <div class="ant-alert">告警</div>
+              <span>查看详情</span><span>偏差分析</span>
+            </div>
+          </div>
+        </body></html>`
+      });
+    } else if (req.url().includes('/api/')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ code: 200, data: null, message: 'ok' })
+      });
+    } else {
+      await route.fulfill({ status: 200, body: '' });
+    }
+  });
+
   await page.route('**/api/identity/auth/login', async route => {
     await route.fulfill({
       status: 200,

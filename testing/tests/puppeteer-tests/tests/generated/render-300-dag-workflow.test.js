@@ -144,7 +144,7 @@ describe('[渲染测试] DAG 工作流编排', () => {
     if (!serviceAvailable) return;
     const errors = [];
     page.on('pageerror', (err) => errors.push(err.message));
-    await page.waitForTimeout(2000);
+    await new Promise(r => setTimeout(r, 2000));
     // 容错：可能有第三方库警告
     expect(errors.length).toBeLessThanOrEqual(5);
   });

@@ -2,6 +2,7 @@
 # 全量自动化测试工作流
 # 推送到 main 分支自动触发，7 类工具并行全量执行
 # 生成统一格式报告 → 提交到仓库 → 可被主仓库拉取
+# 优化：各工具内部启用并行执行（pytest-xdist, Jest workers 等）
 # ═══════════════════════════════════════════════════════════════════
 name: "\U0001F680 全量测试"
 
@@ -31,7 +32,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # ─── pytest（57,774 用例）───
+  # ─── pytest（57,774 用例）- 内部并行 ───
   pytest:
     name: "\U0001F40D pytest"
     runs-on: ubuntu-latest
@@ -46,20 +47,20 @@ jobs:
       - run: |
           pip install --upgrade pip
           pip install -r testing/tests/requirements.txt
-      - name: 运行 pytest（全量）
+      - name: 运行 pytest（并行）
         working-directory: testing/tests
         continue-on-error: true
         run: |
           mkdir -p ../../TestResults
           LEVEL="${{ github.event.inputs.test_level || 'full' }}"
-          ARGS="--tb=short --no-header -q --junitxml=../../TestResults/pytest-results.xml"
+          # -n auto 启用 pytest-xdist 并行执行
+          ARGS="--tb=short --no-header -q --junitxml=../../TestResults/pytest-results.xml -n auto"
           if [ "$LEVEL" = "smoke" ]; then
             ARGS="$ARGS -m smoke --maxfail=10"
           elif [ "$LEVEL" = "standard" ]; then
             ARGS="$ARGS -m 'p0 or p1' --maxfail=50"
           fi
-          # full 模式：不加任何过滤，执行全部用例
-          echo "级别: $LEVEL | 参数: pytest $ARGS"
+          echo "🚀 并行执行 | 级别: $LEVEL | 参数: pytest $ARGS"
           pytest $ARGS 2>&1 | tee ../../TestResults/pytest-output.txt || true
       - uses: actions/upload-artifact@v4
         if: always()
@@ -68,7 +69,7 @@ jobs:
           path: TestResults/
           retention-days: 7
 
-  # ─── Cypress（9,877 用例）───
+  # ─── Cypress（9,877 用例）- 禁用视频加速 ───
   cypress:
     name: "\U0001F332 Cypress"
     runs-on: ubuntu-latest
@@ -80,11 +81,14 @@ jobs:
           node-version: '18'
       - working-directory: testing/tests/cypress-tests
         run: npm ci || npm install
-      - name: 运行 Cypress（全量）
+      - name: 运行 Cypress（优化）
         working-directory: testing/tests/cypress-tests
         continue-on-error: true
         run: |
           mkdir -p ../../../TestResults
+          # 禁用视频和截图以加速执行
+          export CYPRESS_VIDEO=false
+          export CYPRESS_SCREENSHOT_ON_RUN_FAILURE=false
           npx cypress run --reporter mochawesome 2>&1 | tee ../../../TestResults/cypress-output.txt || true
       - uses: actions/upload-artifact@v4
         if: always()
@@ -93,7 +97,7 @@ jobs:
           path: TestResults/
           retention-days: 7
 
-  # ─── Playwright（11,093 用例）───
+  # ─── Playwright（11,093 用例）- 并行 Workers ───
   playwright:
     name: "\U0001F3AD Playwright"
     runs-on: ubuntu-latest
@@ -107,15 +111,16 @@ jobs:
         run: |
           npm ci || npm install
           npx playwright install --with-deps chromium
-      - name: 运行 Playwright（全量）
+      - name: 运行 Playwright（并行）
         working-directory: testing/tests/playwright-tests
         continue-on-error: true
         run: |
           mkdir -p ../../../TestResults
           LEVEL="${{ github.event.inputs.test_level || 'full' }}"
-          ARGS="--reporter=list"
+          # --workers=4 启用多 Worker 并行
+          ARGS="--reporter=list --workers=4"
           if [ "$LEVEL" = "smoke" ]; then ARGS="$ARGS --grep @smoke"; fi
-          # full/standard 模式：不加过滤，执行全部用例
+          echo "🚀 并行执行 | Workers: 4"
           npx playwright test $ARGS 2>&1 | tee ../../../TestResults/playwright-output.txt || true
       - uses: actions/upload-artifact@v4
         if: always()
@@ -124,7 +129,7 @@ jobs:
           path: TestResults/
           retention-days: 7
 
-  # ─── Puppeteer（8,137 用例）───
+  # ─── Puppeteer（8,137 用例）- Jest maxWorkers ───
   puppeteer:
     name: "\U0001F916 Puppeteer"
     runs-on: ubuntu-latest
@@ -136,12 +141,14 @@ jobs:
           node-version: '18'
       - working-directory: testing/tests/puppeteer-tests
         run: npm ci || npm install
-      - name: 运行 Puppeteer（全量）
+      - name: 运行 Puppeteer（并行）
         working-directory: testing/tests/puppeteer-tests
         continue-on-error: true
         run: |
           mkdir -p ../../../TestResults
-          npx jest --ci --forceExit 2>&1 | tee ../../../TestResults/puppeteer-output.txt || true
+          # --maxWorkers=4 启用 Jest 并行执行
+          echo "🚀 并行执行 | maxWorkers: 4"
+          npx jest --ci --forceExit --maxWorkers=4 2>&1 | tee ../../../TestResults/puppeteer-output.txt || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -149,7 +156,7 @@ jobs:
           path: TestResults/
           retention-days: 7
 
-  # ─── Selenium（6,540 用例）───
+  # ─── Selenium（6,540 用例）- pytest-xdist 并行 ───
   selenium:
     name: "\U0001F52C Selenium"
     runs-on: ubuntu-latest
@@ -160,14 +167,16 @@ jobs:
         with:
           python-version: '3.11'
       - run: |
-          pip install selenium pytest pytest-html webdriver-manager requests
+          pip install selenium pytest pytest-html webdriver-manager requests pytest-xdist
           [ -f testing/tests/selenium-tests/requirements.txt ] && pip install -r testing/tests/selenium-tests/requirements.txt || true
-      - name: 运行 Selenium（全量）
+      - name: 运行 Selenium（并行）
         working-directory: testing/tests/selenium-tests
         continue-on-error: true
         run: |
           mkdir -p ../../../TestResults
-          pytest --tb=short -q --junitxml=../../../TestResults/selenium-results.xml 2>&1 | tee ../../../TestResults/selenium-output.txt || true
+          # -n auto 启用 pytest-xdist 并行执行
+          echo "🚀 并行执行 | pytest -n auto"
+          pytest --tb=short -q -n auto --junitxml=../../../TestResults/selenium-results.xml 2>&1 | tee ../../../TestResults/selenium-output.txt || true
         env:
           HEADLESS: "true"
       - uses: actions/upload-artifact@v4
@@ -177,7 +186,7 @@ jobs:
           path: TestResults/
           retention-days: 7
 
-  # ─── k6（3,651 检查点，51 个场景全量执行）───
+  # ─── k6（3,651 检查点，场景并行执行）───
   k6:
     name: "\u26A1 k6"
     runs-on: ubuntu-latest
@@ -273,7 +282,7 @@ jobs:
           path: TestResults/
           retention-days: 7
 
-  # ─── C# 集成测试（1,999 用例）───
+  # ─── C# 集成测试（1,999 用例）- 启用并行 ───
   integration:
     name: "\U0001F527 集成测试"
     runs-on: ubuntu-latest
@@ -283,14 +292,18 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
-      - name: 运行集成测试（全量）
+      - name: 运行集成测试（并行）
         working-directory: testing/JGSY.AGI.Test
         continue-on-error: true
         run: |
           mkdir -p ../../TestResults
           dotnet restore || true
           dotnet build --no-restore -c Release || true
-          dotnet test --no-build -c Release --logger "trx;LogFileName=../../TestResults/integration-results.trx" \
+          # -- RunConfiguration.MaxCpuCount=0 启用最大并行
+          echo "🚀 并行执行 | dotnet test --parallel"
+          dotnet test --no-build -c Release --parallel \
+            -- RunConfiguration.MaxCpuCount=0 \
+            --logger "trx;LogFileName=../../TestResults/integration-results.trx" \
             --logger "junit;LogFilePath=../../TestResults/integration-results.xml" \
             --results-directory ../../TestResults \
             2>&1 | tee ../../TestResults/integration-output.txt || true

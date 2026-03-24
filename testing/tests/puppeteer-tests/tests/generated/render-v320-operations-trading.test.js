@@ -122,7 +122,7 @@ describe('[渲染测试] V3.2.0 能源整合 + 安全增强', () => {
                     timeout: 15000
                 }).catch(() => {});
 
-                await page.waitForTimeout(2000);
+                await new Promise(r => setTimeout(r, 2000));
                 // 允许部分非关键 JS 错误
                 const criticalErrors = errors.filter(e =>
                     !e.includes('ResizeObserver') &&
@@ -156,7 +156,7 @@ describe('[渲染测试] V3.2.0 能源整合 + 安全增强', () => {
                     timeout: 15000
                 }).catch(() => {});
 
-                await page.waitForTimeout(2000);
+                await new Promise(r => setTimeout(r, 2000));
                 // 允许最多 5 个非关键控制台错误
                 expect(severeErrors.length).toBeLessThan(5);
             }, 20000);

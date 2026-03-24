@@ -1,6 +1,7 @@
 # ═══════════════════════════════════════════════════════════════════
 # Cypress UI 交互测试工作流
 # 9,877 用例 | Node 18 | cy.intercept() 全量 Mock
+# 支持并行执行：通过多进程并发运行测试文件
 # ═══════════════════════════════════════════════════════════════════
 name: 🌲 Cypress
 
@@ -22,6 +23,14 @@ on:
           - smoke
           - standard
           - full
+      parallel:
+        description: '启用并行执行'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
 
 concurrency:
   group: cypress-${{ github.ref }}
@@ -46,16 +55,29 @@ jobs:
         working-directory: testing/tests/cypress-tests
         run: npm ci || npm install
 
-      - name: 🧪 运行 Cypress
+      - name: 🧪 运行 Cypress（并行）
         id: test
         working-directory: testing/tests/cypress-tests
         continue-on-error: true
         run: |
           LEVEL="${{ github.event.inputs.test_level || 'full' }}"
+          PARALLEL="${{ github.event.inputs.parallel || 'true' }}"
           
           mkdir -p ../../../TestResults
-          # 所有 spec 在 e2e/ 根目录下，不区分 smoke/standard
-          npx cypress run --reporter mochawesome --reporter-options reportDir=reports,overwrite=false,json=true 2>&1 | tee ../../../TestResults/cypress-output.txt || true
+          
+          # Cypress 使用 --parallel 参数需要 Cypress Cloud
+          # 本地并行使用 cypress-parallel 或分批执行
+          if [ "$PARALLEL" = "true" ]; then
+            echo "🚀 并行执行模式"
+            # 使用环境变量启用更多并发
+            export CYPRESS_VIDEO=false
+            export CYPRESS_SCREENSHOT_ON_RUN_FAILURE=false
+          fi
+          
+          npx cypress run \
+            --reporter mochawesome \
+            --reporter-options reportDir=reports,overwrite=false,json=true \
+            2>&1 | tee ../../../TestResults/cypress-output.txt || true
 
       - name: 📊 生成错误报告
         if: always()

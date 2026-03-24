@@ -1,6 +1,6 @@
 ﻿# ═══════════════════════════════════════════════════════════════════
 # Selenium 多浏览器兼容性测试工作流
-# 6,540 用例 | Python 3.11 + Chrome/Firefox
+# 6,540 用例 | Python 3.11 + Chrome/Firefox | 支持 pytest-xdist 并行
 # ═══════════════════════════════════════════════════════════════════
 name: 🔬 Selenium
 
@@ -22,6 +22,16 @@ on:
           - chrome
           - firefox
           - all
+      parallel_workers:
+        description: '并行 Worker 数量'
+        required: false
+        default: 'auto'
+        type: choice
+        options:
+          - '1'
+          - '4'
+          - '8'
+          - 'auto'
 
 concurrency:
   group: selenium-${{ github.ref }}
@@ -50,22 +60,25 @@ jobs:
       - name: 📦 安装依赖
         run: |
           pip install --upgrade pip
-          pip install selenium pytest pytest-html webdriver-manager requests
+          pip install selenium pytest pytest-html webdriver-manager requests pytest-xdist
           if [ -f testing/tests/selenium-tests/requirements.txt ]; then
             pip install -r testing/tests/selenium-tests/requirements.txt
           fi
 
-      - name: 🧪 运行 Selenium 测试
+      - name: 🧪 运行 Selenium 测试（并行）
         id: test
         working-directory: testing/tests/selenium-tests
         continue-on-error: true
         run: |
           mkdir -p ../../../TestResults
+          WORKERS="${{ github.event.inputs.parallel_workers || 'auto' }}"
           
+          echo "🚀 并行执行: $WORKERS workers"
           pytest \
             --tb=short \
             --no-header \
             -q \
+            -n $WORKERS \
             --junitxml=../../../TestResults/selenium-results.xml \
             2>&1 | tee ../../../TestResults/selenium-output.txt || true
         env:

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 工单处理 - Puppeteer 渲染/异常测试
  * 符合规范：100% Mock，不连真实数据库
  * 用例数：50 条
@@ -402,7 +402,7 @@ describe('[渲染测试] 工单处理', () => {
     test('[X005] 窗口大小变化正常', async () => {
       await page.goto(PAGE_URL, { waitUntil: 'networkidle2' });
       await page.setViewport({ width: 800, height: 600 });
-      await page.waitForTimeout(500);
+      await new Promise(r => setTimeout(r, 500));
       const body = await page.$('body');
       expect(body).not.toBeNull();
     });

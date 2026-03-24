@@ -1,4 +1,4 @@
-﻿"""
+"""
 Selenium 浏览器兼容性测试 - charging-form (firefox)
 """
 
@@ -12,7 +12,7 @@ class Test_charging_form_firefox:
         # 初始化浏览器
         self.driver = webdriver.Remote(
             command_executor='http://localhost:4444',
-            desired_capabilities={'browserName': 'firefox'}
+            options=webdriver.FirefoxOptions()
         )
         yield
         self.driver.quit()
