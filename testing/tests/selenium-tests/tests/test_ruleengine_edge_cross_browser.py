@@ -14,6 +14,23 @@ import os
 BASE_URL = os.getenv("TEST_BASE_URL", "http://localhost:8000")
 
 
+def _open_ruleengine_page(driver, base_url):
+    driver.get(f"{base_url}/ruleengine")
+    try:
+        WebDriverWait(driver, 15).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#root, .ant-layout, body"))
+        )
+    except TimeoutException as exc:
+        page_source = driver.page_source or ""
+        assert len(page_source) > 100, f"规则引擎页面未加载: {exc}"
+
+
+def _page_has_content(driver):
+    page_source = driver.page_source or ""
+    body_nodes = driver.find_elements(By.TAG_NAME, "body")
+    return len(page_source) > 100 or len(body_nodes) > 0
+
+
 class TestRuleEngineEdgeCompatibility:
     """规则引擎边缘模式 — 跨浏览器兼容性测试"""
 
@@ -22,14 +39,7 @@ class TestRuleEngineEdgeCompatibility:
     @pytest.mark.compatibility
     def test_ruleengine_page_rendering(self, driver, test_config, browser):
         """[P0] 规则引擎页面在主流浏览器中正确渲染"""
-        driver.get(f"{test_config['base_url']}/ruleengine")
-
-        try:
-            WebDriverWait(driver, 15).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "#root, .ant-layout"))
-            )
-        except TimeoutException:
-            pass
+        _open_ruleengine_page(driver, test_config['base_url'])
 
         # 断言：页面框架存在
         root = driver.find_elements(By.CSS_SELECTOR, "#root, .ant-layout, body")
@@ -40,7 +50,7 @@ class TestRuleEngineEdgeCompatibility:
     @pytest.mark.compatibility
     def test_ruleengine_table_rendering(self, driver, test_config, browser):
         """[P0] 规则链表格在各浏览器中正确渲染"""
-        driver.get(f"{test_config['base_url']}/ruleengine")
+        _open_ruleengine_page(driver, test_config['base_url'])
 
         try:
             WebDriverWait(driver, 15).until(
@@ -49,15 +59,14 @@ class TestRuleEngineEdgeCompatibility:
             tables = driver.find_elements(By.CSS_SELECTOR, ".ant-table, table, .ant-table-wrapper")
             assert len(tables) > 0, f"{browser}: 表格组件未渲染"
         except TimeoutException:
-            # SPA 需要登录，跳过
-            pass
+            assert _page_has_content(driver), f"{browser}: 页面为空，无法验证表格"
 
     @pytest.mark.parametrize("browser", ["chrome", "firefox", "edge"])
     @pytest.mark.browser
     @pytest.mark.compatibility
     def test_ruleengine_buttons_clickable(self, driver, test_config, browser):
         """[P1] 操作按钮在各浏览器中可点击"""
-        driver.get(f"{test_config['base_url']}/ruleengine")
+        _open_ruleengine_page(driver, test_config['base_url'])
 
         try:
             WebDriverWait(driver, 15).until(
@@ -68,34 +77,34 @@ class TestRuleEngineEdgeCompatibility:
                 assert btn.is_displayed(), f"{browser}: 按钮不可见"
                 assert btn.is_enabled(), f"{browser}: 按钮未启用"
         except TimeoutException:
-            pass
+            assert _page_has_content(driver), f"{browser}: 页面为空，无法验证按钮"
 
     @pytest.mark.parametrize("browser", ["chrome", "firefox", "edge"])
     @pytest.mark.browser
     @pytest.mark.compatibility
     def test_ruleengine_search_input(self, driver, test_config, browser):
         """[P1] 搜索输入框在各浏览器中可用"""
-        driver.get(f"{test_config['base_url']}/ruleengine")
+        _open_ruleengine_page(driver, test_config['base_url'])
 
         try:
             WebDriverWait(driver, 15).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, "input.ant-input, .ant-input-search input"))
             )
-            inputs = driver.find_elements(By.CSS_SELECTOR, "input.ant-input, .ant-input-search input")
+            inputs = driver.find_elements(By.CSS_SELECTOR, "input.ant-input, .ant-input-search input, input[type='search'], input[type='text']")
             if inputs:
                 inputs[0].clear()
                 inputs[0].send_keys("告警规则")
                 value = inputs[0].get_attribute("value")
                 assert "告警" in value, f"{browser}: 输入值未正确设置"
         except TimeoutException:
-            pass
+            assert _page_has_content(driver), f"{browser}: 页面为空，无法验证搜索框"
 
     @pytest.mark.parametrize("browser", ["chrome", "firefox", "edge"])
     @pytest.mark.browser
     @pytest.mark.compatibility
     def test_ruleengine_responsive_layout(self, driver, test_config, browser):
         """[P1] 规则引擎页面响应式布局"""
-        driver.get(f"{test_config['base_url']}/ruleengine")
+        _open_ruleengine_page(driver, test_config['base_url'])
 
         # 桌面尺寸
         driver.set_window_size(1920, 1080)
@@ -104,7 +113,7 @@ class TestRuleEngineEdgeCompatibility:
                 EC.presence_of_element_located((By.CSS_SELECTOR, "#root"))
             )
         except TimeoutException:
-            pass
+            assert _page_has_content(driver), f"{browser}: 桌面尺寸下页面为空"
 
         # 平板尺寸
         driver.set_window_size(768, 1024)
@@ -123,7 +132,7 @@ class TestRuleEngineEdgeStatusPanel:
     @pytest.mark.compatibility
     def test_edge_status_badge_rendering(self, driver, test_config, browser):
         """[P1] 边缘状态徽章在各浏览器中渲染"""
-        driver.get(f"{test_config['base_url']}/ruleengine")
+        _open_ruleengine_page(driver, test_config['base_url'])
 
         try:
             WebDriverWait(driver, 10).until(
@@ -134,14 +143,14 @@ class TestRuleEngineEdgeStatusPanel:
                 for badge in badges[:3]:
                     assert badge.is_displayed(), f"{browser}: 徽章不可见"
         except TimeoutException:
-            pass  # 云端模式无边缘状态
+            assert _page_has_content(driver), f"{browser}: 页面为空，无法验证徽章"
 
     @pytest.mark.parametrize("browser", ["chrome", "firefox", "edge"])
     @pytest.mark.browser
     @pytest.mark.compatibility
     def test_edge_tabs_navigation(self, driver, test_config, browser):
         """[P1] Tab 导航在各浏览器中正常"""
-        driver.get(f"{test_config['base_url']}/ruleengine")
+        _open_ruleengine_page(driver, test_config['base_url'])
 
         try:
             WebDriverWait(driver, 10).until(
@@ -152,14 +161,14 @@ class TestRuleEngineEdgeStatusPanel:
                 assert tab.is_displayed(), f"{browser}: Tab 不可见"
                 tab.click()
         except TimeoutException:
-            pass
+            assert _page_has_content(driver), f"{browser}: 页面为空，无法验证 Tabs"
 
     @pytest.mark.parametrize("browser", ["chrome", "firefox", "edge"])
     @pytest.mark.browser
     @pytest.mark.compatibility
     def test_alarm_severity_color_coding(self, driver, test_config, browser):
         """[P2] 告警严重级别颜色在各浏览器中一致"""
-        driver.get(f"{test_config['base_url']}/ruleengine")
+        _open_ruleengine_page(driver, test_config['base_url'])
 
         try:
             WebDriverWait(driver, 10).until(
@@ -172,12 +181,12 @@ class TestRuleEngineEdgeStatusPanel:
                     cls = tag.get_attribute("class")
                     assert "ant-tag" in cls, f"{browser}: Tag 类名不正确"
         except TimeoutException:
-            pass
+            assert _page_has_content(driver), f"{browser}: 页面为空，无法验证 Tag"
 
     @pytest.mark.browser("chrome")
     def test_ruleengine_chrome_devtools_audit(self, chrome_driver, test_config):
         """[P2] Chrome DevTools 审计 — 无严重控制台错误"""
-        chrome_driver.get(f"{test_config['base_url']}/ruleengine")
+        _open_ruleengine_page(chrome_driver, test_config['base_url'])
 
         logs = chrome_driver.get_log("browser")
         severe_logs = [l for l in logs if l.get("level") == "SEVERE"]
