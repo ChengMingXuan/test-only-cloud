@@ -1,6 +1,6 @@
 ﻿{
     "selectedTools":  [
-                          "selenium"
+                          "cypress"
                       ],
     "integrationLocalOnly":  true,
     "executionTarget":  "cloud",
@@ -8,5 +8,5 @@
     "defaultLocalDataMode":  "real",
     "syncMode":  "Push",
     "runMode":  "full",
-    "generatedAt":  "2026-03-25T07:08:42"
+    "generatedAt":  "2026-03-25T07:11:17"
 }

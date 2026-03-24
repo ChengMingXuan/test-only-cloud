@@ -42,7 +42,7 @@ on:
         default: 'all'
 
 concurrency:
-  group: all-tests-${{ github.ref }}-${{ github.sha }}
+  group: all-tests-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
