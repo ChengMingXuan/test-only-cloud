@@ -29,7 +29,7 @@ on:
 
 concurrency:
   group: all-tests-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   # ─── pytest（57,774 用例）- 内部并行 ───
