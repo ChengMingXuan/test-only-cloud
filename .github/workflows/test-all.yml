@@ -184,35 +184,109 @@ jobs:
           path: TestResults/
           retention-days: 7
 
-  cypress:
-    name: "🌲 Cypress"
+  cypress-matrix:
+    name: "🌲 Cypress [${{ matrix.shard }}/10]"
     needs: detect-selection
     if: needs.detect-selection.outputs.execute_cypress == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
-      - working-directory: testing/tests/cypress-tests
+      - name: 📦 安装依赖
+        working-directory: testing/tests/cypress-tests
         run: npm ci || npm install
-      - name: 运行 Cypress（优化）
+      - name: 🧪 运行 Cypress 分片 ${{ matrix.shard }}/10
         working-directory: testing/tests/cypress-tests
         continue-on-error: true
         run: |
-          rm -rf ../../../TestResults
-          mkdir -p ../../../TestResults reports
+          mkdir -p ../../../TestResults/cypress-shards
+          mkdir -p reports
           export CYPRESS_VIDEO=false
           export CYPRESS_SCREENSHOT_ON_RUN_FAILURE=false
-          npx cypress run \
-            --reporter mochawesome \
-            --reporter-options "reportDir=reports,overwrite=true,html=false,json=true" \
-            2>&1 | tee ../../../TestResults/cypress-output.txt || true
+          SHARD=${{ matrix.shard }}
+          TOTAL_SHARDS=10
 
-          if [ -f reports/mochawesome.json ]; then
-            cp reports/mochawesome.json ../../../TestResults/cypress-results.json
+          TEST_FILES=$(find e2e -name "*.cy.js" -o -name "*.cy.ts" | sort)
+          FILE_COUNT=$(echo "$TEST_FILES" | wc -l)
+          FILES_PER_SHARD=$(( (FILE_COUNT + TOTAL_SHARDS - 1) / TOTAL_SHARDS ))
+          START_IDX=$(( (SHARD - 1) * FILES_PER_SHARD + 1 ))
+          END_IDX=$(( SHARD * FILES_PER_SHARD ))
+
+          SHARD_FILES=$(echo "$TEST_FILES" | sed -n "${START_IDX},${END_IDX}p" | tr '\n' ',' | sed 's/,$//')
+
+          if [ -n "$SHARD_FILES" ]; then
+            echo "分片 $SHARD: 执行文件 $START_IDX 到 $END_IDX"
+            npx cypress run \
+              --spec "$SHARD_FILES" \
+              --reporter mochawesome \
+              --reporter-options "reportDir=reports/shard-${SHARD},overwrite=true,html=false,json=true" \
+              2>&1 | tee ../../../TestResults/cypress-shards/cypress-shard-${SHARD}-output.txt || true
+
+            if [ -f "reports/shard-${SHARD}/mochawesome.json" ]; then
+              cp "reports/shard-${SHARD}/mochawesome.json" ../../../TestResults/cypress-shards/cypress-shard-${SHARD}-results.json
+            fi
+          else
+            echo "分片 $SHARD: 无测试文件"
+            echo '{"stats":{"tests":0,"passes":0,"failures":0,"pending":0,"duration":0},"results":[]}' > ../../../TestResults/cypress-shards/cypress-shard-${SHARD}-results.json
           fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cypress-shard-${{ matrix.shard }}
+          path: TestResults/cypress-shards/
+          retention-days: 7
+
+  cypress:
+    name: "🌲 Cypress"
+    needs: [detect-selection, cypress-matrix]
+    if: always() && needs.detect-selection.outputs.execute_cypress == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: cypress-shard-*
+          path: TestResults/cypress-shards/
+          merge-multiple: true
+      - name: 📊 聚合 Cypress 结果
+        run: |
+          mkdir -p TestResults
+          python3 << 'EOF'
+          import glob
+          import json
+
+          files = glob.glob('TestResults/cypress-shards/**/cypress-shard-*-results.json', recursive=True)
+          aggregate = {
+            'stats': {'tests': 0, 'passes': 0, 'failures': 0, 'pending': 0, 'duration': 0},
+            'results': []
+          }
+
+          for file in sorted(files):
+            try:
+              data = json.load(open(file, encoding='utf-8'))
+              stats = data.get('stats', {})
+              aggregate['stats']['tests'] += int(stats.get('tests', 0) or 0)
+              aggregate['stats']['passes'] += int(stats.get('passes', 0) or 0)
+              aggregate['stats']['failures'] += int(stats.get('failures', 0) or 0)
+              aggregate['stats']['pending'] += int(stats.get('pending', 0) or 0)
+              aggregate['stats']['duration'] += float(stats.get('duration', 0) or 0)
+              aggregate['results'].append(data)
+            except Exception as error:
+              print(f'警告: 无法解析 {file}: {error}')
+
+          with open('TestResults/cypress-results.json', 'w', encoding='utf-8') as handle:
+            json.dump(aggregate, handle, ensure_ascii=False, indent=2)
+          print(f"✅ 聚合完成: {len(files)} 个分片")
+          EOF
+
+          cat TestResults/cypress-shards/**/cypress-shard-*-output.txt > TestResults/cypress-output.txt 2>/dev/null || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -220,34 +294,88 @@ jobs:
           path: TestResults/
           retention-days: 7
 
-  playwright:
-    name: "🎭 Playwright"
+  playwright-matrix:
+    name: "🎭 Playwright [${{ matrix.shard }}/10]"
     needs: detect-selection
     if: needs.detect-selection.outputs.execute_playwright == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
-      - working-directory: testing/tests/playwright-tests
+      - name: 📦 安装依赖
+        working-directory: testing/tests/playwright-tests
         run: |
           npm ci || npm install
           npx playwright install --with-deps chromium
-      - name: 运行 Playwright（并行）
+      - name: 🧪 运行 Playwright 分片 ${{ matrix.shard }}/10
         working-directory: testing/tests/playwright-tests
         continue-on-error: true
         env:
           FULL_RUN: '1'
         run: |
-          rm -rf ../../../TestResults
-          mkdir -p ../../../TestResults
+          mkdir -p ../../../TestResults/playwright-shards
           LEVEL="${{ github.event.inputs.test_level || 'full' }}"
-          ARGS="--reporter=list,junit --workers=4"
-          if [ "$LEVEL" = "smoke" ]; then ARGS="$ARGS --grep @smoke"; fi
-          echo "🚀 并行执行 | Workers: 4 | Reporter: list+junit"
-          npx playwright test $ARGS 2>&1 | tee ../../../TestResults/playwright-output.txt || true
+          SHARD=${{ matrix.shard }}
+
+          ARGS="--reporter=list,junit --shard=${SHARD}/10"
+          if [ "$LEVEL" = "smoke" ]; then
+            ARGS="$ARGS --grep @smoke"
+          fi
+
+          export PLAYWRIGHT_JUNIT_OUTPUT_NAME=playwright-shard-${SHARD}-results.xml
+          export PLAYWRIGHT_JUNIT_OUTPUT_DIR=../../../TestResults/playwright-shards
+          npx playwright test $ARGS 2>&1 | tee ../../../TestResults/playwright-shards/playwright-shard-${SHARD}-output.txt || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-shard-${{ matrix.shard }}
+          path: TestResults/playwright-shards/
+          retention-days: 7
+
+  playwright:
+    name: "🎭 Playwright"
+    needs: [detect-selection, playwright-matrix]
+    if: always() && needs.detect-selection.outputs.execute_playwright == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: playwright-shard-*
+          path: TestResults/playwright-shards/
+          merge-multiple: true
+      - name: 📊 聚合 Playwright 结果
+        run: |
+          mkdir -p TestResults
+          pip install junitparser
+
+          python3 << 'EOF'
+          import glob
+          from junitparser import JUnitXml
+
+          combined = JUnitXml()
+          xml_files = glob.glob('TestResults/playwright-shards/**/playwright-shard-*-results.xml', recursive=True)
+
+          for xml_file in sorted(xml_files):
+              try:
+                  xml = JUnitXml.fromfile(xml_file)
+                  for suite in xml:
+                      combined.add_testsuite(suite)
+              except Exception as error:
+                  print(f"警告: 无法解析 {xml_file}: {error}")
+
+          combined.write('TestResults/playwright-results.xml')
+          print(f"✅ 聚合完成: {len(xml_files)} 个分片")
+          EOF
+
+          cat TestResults/playwright-shards/**/playwright-shard-*-output.txt > TestResults/playwright-output.txt 2>/dev/null || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
