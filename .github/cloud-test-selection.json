@@ -1,10 +1,5 @@
 ﻿{
     "selectedTools":  [
-                          "pytest",
-                          "cypress",
-                          "puppeteer",
-                          "selenium",
-                          "playwright",
                           "k6"
                       ],
     "integrationLocalOnly":  true,
@@ -12,6 +7,6 @@
     "dataMode":  "mock",
     "defaultLocalDataMode":  "real",
     "syncMode":  "Push",
-    "runMode":  "unpassed",
-    "generatedAt":  "2026-03-25T06:29:29"
+    "runMode":  "full",
+    "generatedAt":  "2026-03-25T06:37:37"
 }
