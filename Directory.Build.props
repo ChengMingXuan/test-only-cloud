@@ -1,0 +1,122 @@
+<Project>
+  <PropertyGroup>
+    <!-- 禁用 NuGet 包版本约束警告 -->
+    <!-- NU1608/NU1605: 传递依赖版本冲突，不影响运行 -->
+    <!-- NU1902/NU1903 不再静默，恢复漏洞可见性并纳入治理 -->
+    <NoWarn>$(NoWarn);NU1608;NU1605</NoWarn>
+    
+    <!-- 禁用可空引用类型相关的非关键性警告 -->
+    <!-- CS8618: 非空属性/字段未初始化（DTO 类常见） -->
+    <!-- CS8625: null 字面量转换为非空引用类型 -->
+    <!-- CS8601: 可能的 null 引用赋值 -->
+    <!-- CS8602: 可能的 null 引用解引用 -->
+    <!-- CS8604: 可能的 null 引用参数 -->
+    <!-- CS8619: 引用类型的可空性不匹配 -->
+    <!-- CS8629: 可空值类型可能为 null -->
+    <!-- CS1998: 异步方法缺少 await（API 预留方法常见） -->
+    <!-- CS0109: 成员不会隐藏继承的成员，new 关键字不是必需的 -->
+    <!-- CS0618: 过时成员警告（Dapr SDK 等第三方库） -->
+    <!-- CS8321: 声明了本地函数但未使用（数据库初始化保留函数，已迁移至 init-databases.ps1） -->
+    <!-- xUnit2020: xUnit 断言样式建议（不影响测试结果） -->
+    <NoWarn>$(NoWarn);CS8618;CS8625;CS8601;CS8602;CS8603;CS8604;CS8619;CS8629;CS1998;CS0109;CS0618;CS8321;xUnit2020</NoWarn>
+
+    <!-- Dapper.AOT 分析提示（非阻塞，代码运行正确） -->
+    <!-- DAP043: Dapper.AOT 内置 NormalizedHash/NormalizedEquals 自动跳过下划线+忽略大小写，
+         snake_case 列名（如 tenant_id）自动映射 PascalCase 属性（如 TenantId），
+         无需 [Column] + [UseColumnAttribute]，抑制此警告 -->
+    <!-- DAP012: 元组绑定方式提示，命名元组 + MatchNamesWithUnderscores 已正确映射 -->
+    <!-- DAP018: SQL 参数检测假阳性（复杂 SQL 如 ON CONFLICT 子句） -->
+    <!-- DAP038: ValueTuple + QueryFirstOrDefault 无法区分空行，使用 COALESCE 已规避 -->
+    <NoWarn>$(NoWarn);DAP043;DAP012;DAP018;DAP038</NoWarn>
+
+    <!-- AOT / Trimming 分析警告（R2R 模式下不实际裁剪/AOT，仅做兼容性记录） -->
+    <!-- IL2026: RequiresUnreferencedCode（MaxLengthAttribute / JsonSerializer / ConfigurationBinder） -->
+    <!-- IL3050: RequiresDynamicCode（JsonSerializer / Configure<T> / ConfigurationBinder） -->
+    <!-- IL2070/IL2075/IL2090: 泛型类型参数反射流分析 -->
+    <!-- 说明：项目当前使用 R2R 编译，不做实际 Trimming/AOT，这些警告仅作未来迁移参考 -->
+    <!--       保留 EnableTrimAnalyzer + IsAotCompatible 配置，但抑制输出以减少噪音 -->
+    <NoWarn>$(NoWarn);IL2026;IL3050;IL2070;IL2075;IL2090</NoWarn>
+    
+    <!-- 确保源文件使用 UTF-8 编码编译，防止中文乱码 -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+
+    <!-- 固定使用仓库级 NuGet 配置，避免用户级多源配置导致 NU1507 -->
+    <RestoreConfigFile>$(MSBuildThisFileDirectory)NuGet.Config</RestoreConfigFile>
+    
+    <!-- ==================== 构建版本标记 ==================== -->
+    <!-- 格式: yyyyMMdd-HHmmss+commitShort — 每次编译自动生成，杜绝旧产物 -->
+    <_BuildTimestamp>$([System.DateTime]::UtcNow.ToString("yyyyMMdd-HHmmss"))</_BuildTimestamp>
+    <InformationalVersion>$(_BuildTimestamp)+$(CommitHash)</InformationalVersion>
+
+    <!-- ==================== AOT 优化配置 ==================== -->
+    <!-- 
+      Native AOT / R2R 编译策略说明：
+      ══════════════════════════════════════════
+      ■ 全局基线：R2R (ReadyToRun) 预编译
+        - crossgen2 支持 Windows→Linux 跨平台编译
+        - 所有服务默认获得 R2R 加速（启动快 30-50%）
+      
+      ■ Native AOT：条件式启用
+        - .NET 8 ILCompiler 不支持 Windows→Linux 交叉编译
+        - AOT 就绪服务使用条件式: Condition="'$(EnableNativeAot)' == 'true'"
+        - Linux/WSL2/CI 环境下传参启用: -p:EnableNativeAot=true
+        - Windows 上正常 publish 自动走 R2R（不触发 AOT） 
+      
+      服务分级:
+        ✅ Tier1 AOT Ready  - 无反射阻碍（条件式 AOT + R2R 兜底）
+        ⚡ Tier2 R2R Only   - 有重度反射库（Storage/Log/WorkOrder/DigitalTwin）
+        🔧 Tier3 Special    - IotCloudAI（ML.NET，独立 R2R+TieredPGO）
+    -->
+    
+    <!-- R2R 预编译：全局启用，crossgen2 支持 Windows→Linux 跨平台 -->
+    <!-- 发布 linux-x64 时，crossgen2 为目标 RID 生成预编译代码，容器启动更快 -->
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <PublishReadyToRunShowWarnings>false</PublishReadyToRunShowWarnings>
+    
+    <!-- JSON Source Generator：优先使用编译时生成的序列化代码 -->
+    <!-- true = 允许未注册类型回退到反射（R2R 模式安全，Native AOT 时需改为 false） -->
+    <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
+    
+    <!-- 启用 Trimming 分析警告（仅对支持的目标框架启用） -->
+    <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
+    <EnableTrimAnalyzer Condition="'$(TargetFramework)' != '' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))">true</EnableTrimAnalyzer>
+    <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
+    
+    <!-- AOT 兼容性警告（仅对支持的目标框架启用） -->
+    <IsAotCompatible>false</IsAotCompatible>
+    <IsAotCompatible Condition="'$(TargetFramework)' != '' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))">true</IsAotCompatible>
+    
+    <!-- Dapper.AOT Interceptors 支持（全局启用，新增微服务统一使用） -->
+    <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Dapper.AOT</InterceptorsPreviewNamespaces>
+    
+    <!-- 跨项目引用时允许重复发布输出文件（如 Auth 引用 Monitor，两者都有 appsettings.json） -->
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+  </PropertyGroup>
+
+  <!-- ==================== 配置文件随 Publish 输出 ==================== -->
+  <!-- Native AOT 机器码挂载部署时，容器内无源码目录，必须将配置文件复制到发布目录 -->
+  <!-- 环境变量仍可覆盖这些配置，但有了基础配置文件后 docker-compose 只需写差异项 -->
+  <ItemGroup>
+    <Content Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Update="appsettings.*.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- ==================== AOT 类型保留配置 ==================== -->
+  <ItemGroup>
+    <!-- 保留运行时必需的第三方库类型 -->
+    <TrimmerRootAssembly Include="Dapr.Client" />
+    <TrimmerRootAssembly Include="Dapr.AspNetCore" />
+    <TrimmerRootAssembly Include="Dapr.Actors" />
+    <TrimmerRootAssembly Include="Quartz" />
+    <TrimmerRootAssembly Include="Polly" />
+    <TrimmerRootAssembly Include="Consul" />
+    <TrimmerRootAssembly Include="StackExchange.Redis" />
+    <TrimmerRootAssembly Include="Npgsql" />
+    <TrimmerRootAssembly Include="Microsoft.EntityFrameworkCore" />
+    <!-- ⚠️ 已移除 AOT 不兼容库：Newtonsoft.Json, AutoMapper, MediatR -->
+    <!-- 如需 Newtonsoft.Json 请迁移到 System.Text.Json + AppJsonContext -->
+    
+    <!-- 使用 rd.xml 保留业务类型 -->
+    <TrimmerRootDescriptor Include="$(MSBuildThisFileDirectory)rd.xml" />
+  </ItemGroup>
+</Project>

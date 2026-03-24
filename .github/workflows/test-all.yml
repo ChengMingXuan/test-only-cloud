@@ -299,13 +299,13 @@ jobs:
           mkdir -p ../../TestResults
           dotnet restore || true
           dotnet build --no-restore -c Release || true
-          # -- RunConfiguration.MaxCpuCount=0 启用最大并行
-          echo "🚀 并行执行 | dotnet test --parallel"
-          dotnet test --no-build -c Release --parallel \
-            -- RunConfiguration.MaxCpuCount=0 \
+          # RunConfiguration.MaxCpuCount=0 启用最大并行（放在 -- 之后传给测试运行器）
+          echo "🚀 并行执行 | dotnet test (MaxCpuCount=0)"
+          dotnet test --no-build -c Release \
             --logger "trx;LogFileName=../../TestResults/integration-results.trx" \
             --logger "junit;LogFilePath=../../TestResults/integration-results.xml" \
             --results-directory ../../TestResults \
+            -- RunConfiguration.MaxCpuCount=0 \
             2>&1 | tee ../../TestResults/integration-output.txt || true
       - uses: actions/upload-artifact@v4
         if: always()
