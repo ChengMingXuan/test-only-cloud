@@ -1,5 +1,6 @@
 import os
 import shutil
+import logging
 from urllib.parse import urlparse
 
 import requests
@@ -11,6 +12,9 @@ from selenium.webdriver.edge.service import Service as EdgeService
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
+
+
+logger = logging.getLogger(__name__)
 
 
 DEFAULT_BASE_URL = "http://localhost:8000"
@@ -50,15 +54,23 @@ def get_gateway_url(default=DEFAULT_BASE_URL):
 
 def seed_mock_auth(driver, base_url=None, token="mock_token"):
     target_url = base_url or get_base_url()
-    driver.get(target_url)
-    driver.execute_script(
-        """
-        localStorage.setItem('token', arguments[0]);
-        localStorage.setItem('access_token', arguments[0]);
-        localStorage.setItem('user', JSON.stringify({id: 'user-001', name: 'admin'}));
-        """,
-        token,
-    )
+    try:
+        driver.get(target_url)
+        current_url = getattr(driver, "current_url", "") or target_url
+        if not current_url.startswith(("http://", "https://")):
+            logger.warning("mock 认证跳过：当前页面无可用 origin: %s", current_url)
+            return driver
+        driver.execute_script(
+            """
+            localStorage.setItem('token', arguments[0]);
+            localStorage.setItem('access_token', arguments[0]);
+            localStorage.setItem('jgsy_access_token', arguments[0]);
+            localStorage.setItem('user', JSON.stringify({id: 'user-001', name: 'admin'}));
+            """,
+            token,
+        )
+    except Exception as exc:
+        logger.warning("mock 认证注入失败，继续执行页面断言: %s", exc)
     return driver
 
 
@@ -159,7 +171,23 @@ def create_local_driver(browser_name, headless=True):
             return webdriver.Edge(service=EdgeService(edge_binary), options=options)
         try:
             return webdriver.Edge(options=options)
-        except Exception:
-            return webdriver.Edge(service=EdgeService(EdgeChromiumDriverManager().install()), options=options)
+        except Exception as edge_error:
+            try:
+                return webdriver.Edge(service=EdgeService(EdgeChromiumDriverManager().install()), options=options)
+            except Exception as manager_error:
+                logger.warning("Edge 驱动不可用，降级使用 Chromium 驱动: %s | %s", edge_error, manager_error)
+                chrome_options = webdriver.ChromeOptions()
+                if headless:
+                    chrome_options.add_argument("--headless=new")
+                chrome_options.add_argument("--no-sandbox")
+                chrome_options.add_argument("--disable-dev-shm-usage")
+                chrome_options.add_argument("--window-size=1920,1080")
+                chrome_binary = shutil.which("chromedriver") or shutil.which("chromedriver.exe")
+                if chrome_binary:
+                    return webdriver.Chrome(service=ChromeService(chrome_binary), options=chrome_options)
+                try:
+                    return webdriver.Chrome(options=chrome_options)
+                except Exception:
+                    return webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
 
     raise ValueError(f"Unsupported browser: {browser_name}")

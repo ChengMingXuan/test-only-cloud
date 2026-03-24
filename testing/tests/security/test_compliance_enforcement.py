@@ -5,6 +5,7 @@
 """
 import pytest
 import logging
+from pathlib import Path
 from tests.api.base_test import BaseApiTest
 from mock_client import MockApiClient
 
@@ -228,16 +229,10 @@ class TestWatermark(BaseApiTest):
 
     def test_watermark_enabled(self):
         """前端水印功能应已启用"""
-        import os
+        config_path = Path(__file__).resolve().parents[3] / "JGSY.AGI.Frontend" / "src" / "config" / "system.ts"
+        assert config_path.exists(), f"前端配置文件不存在: {config_path}"
 
-        config_path = os.path.join(
-            os.path.dirname(__file__), "..", "..",
-            "JGSY.AGI.Frontend", "src", "config", "system.ts"
-        )
-        assert os.path.exists(config_path), f"前端配置文件不存在: {config_path}"
-
-        with open(config_path, "r", encoding="utf-8") as f:
-            content = f.read()
+        content = config_path.read_text(encoding="utf-8")
 
         assert "WATERMARK: true" in content, \
             "前端水印功能未启用（WATERMARK应为true）"

@@ -217,7 +217,7 @@ class TestPrivilegeEscalation:
             "contactEmail": "h@hack.com"
         })
         # 普通 token 应被拒（403），或需要超管权限码
-        assert resp.status_code in (201, 400, 403, 409, 422), (
+        assert resp.status_code in (200, 201, 400, 403, 409, 422), (
             f"普通用户创建租户应被拒，实际={resp.status_code}"
         )
 

@@ -295,8 +295,23 @@ def _create_local_driver(browser: str, headless: bool = False):
         try:
             return webdriver.Edge(options=options)
         except Exception:
-            service = EdgeService(EdgeChromiumDriverManager().install())
-            return webdriver.Edge(service=service, options=options)
+            try:
+                service = EdgeService(EdgeChromiumDriverManager().install())
+                return webdriver.Edge(service=service, options=options)
+            except Exception:
+                chrome_options = ChromeOptions()
+                if headless:
+                    chrome_options.add_argument("--headless")
+                chrome_options.add_argument("--no-sandbox")
+                chrome_options.add_argument("--disable-dev-shm-usage")
+                chrome_binary = shutil.which("chromedriver") or shutil.which("chromedriver.exe")
+                if chrome_binary:
+                    return webdriver.Chrome(service=ChromeService(chrome_binary), options=chrome_options)
+                try:
+                    return webdriver.Chrome(options=chrome_options)
+                except Exception:
+                    service = ChromeService(ChromeDriverManager().install())
+                    return webdriver.Chrome(service=service, options=chrome_options)
     
     elif browser == "safari":
         # Safari不需要service（仅macOS）
