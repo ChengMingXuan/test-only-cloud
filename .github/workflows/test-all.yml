@@ -384,34 +384,88 @@ jobs:
           path: TestResults/
           retention-days: 7
 
-  puppeteer:
-    name: "🤖 Puppeteer"
+  puppeteer-matrix:
+    name: "🤖 Puppeteer [${{ matrix.shard }}/${{ strategy.job-total }}]"
     needs: detect-selection
     if: needs.detect-selection.outputs.execute_puppeteer == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
-      - working-directory: testing/tests/puppeteer-tests
+      - name: 安装 Puppeteer 依赖
+        working-directory: testing/tests/puppeteer-tests
         run: npm ci || npm install
-      - name: 运行 Puppeteer（并行）
+      - name: 运行 Puppeteer 分片 ${{ matrix.shard }}/5
         working-directory: testing/tests/puppeteer-tests
         continue-on-error: true
         run: |
-          rm -rf ../../../TestResults
-          mkdir -p ../../../TestResults
-          echo "🚀 并行执行 | maxWorkers: 4"
+          mkdir -p ../../../TestResults/puppeteer-shards
+          SHARD=${{ matrix.shard }}
+
+          echo "🚀 分片并发执行 | shard: ${SHARD}/5 | maxWorkers: 4"
           npx jest \
-            --config jest.config.js \
             --ci \
             --forceExit \
+            --shard=${SHARD}/5 \
             --maxWorkers=4 \
+            --config jest.config.js \
             --reporters=default \
             --reporters=jest-junit \
-            2>&1 | tee ../../../TestResults/puppeteer-output.txt || true
+            2>&1 | tee ../../../TestResults/puppeteer-shards/puppeteer-shard-${SHARD}-output.txt || true
+        env:
+          JEST_JUNIT_OUTPUT_DIR: ../../../TestResults/puppeteer-shards
+          JEST_JUNIT_OUTPUT_NAME: puppeteer-shard-${{ matrix.shard }}-results.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: puppeteer-shard-${{ matrix.shard }}
+          path: TestResults/puppeteer-shards/
+          retention-days: 7
+
+  puppeteer-aggregate:
+    name: "📊 Puppeteer 聚合"
+    needs: [detect-selection, puppeteer-matrix]
+    if: always() && needs.detect-selection.outputs.execute_puppeteer == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: puppeteer-shard-*
+          path: TestResults/puppeteer-shards/
+          merge-multiple: true
+      - name: 聚合 Puppeteer 结果
+        run: |
+          mkdir -p TestResults
+          pip install junitparser
+
+          python3 << 'EOF'
+          import glob
+          from junitparser import JUnitXml
+
+          combined = JUnitXml()
+          xml_files = glob.glob('TestResults/puppeteer-shards/**/puppeteer-shard-*-results.xml', recursive=True)
+
+          for xml_file in sorted(xml_files):
+              try:
+                  xml = JUnitXml.fromfile(xml_file)
+                  for suite in xml:
+                      combined.add_testsuite(suite)
+              except Exception as error:
+                  print(f"警告: 无法解析 {xml_file}: {error}")
+
+          combined.write('TestResults/puppeteer-results.xml')
+          print(f"✅ 聚合完成: {len(xml_files)} 个分片")
+          EOF
+
+          cat TestResults/puppeteer-shards/**/puppeteer-shard-*-output.txt > TestResults/puppeteer-output.txt 2>/dev/null || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -590,7 +644,7 @@ jobs:
 
   summary:
     name: "📊 独立报告整理"
-    needs: [detect-selection, pytest, cypress, playwright, puppeteer, selenium, k6]
+    needs: [detect-selection, pytest, cypress, playwright, puppeteer-aggregate, selenium, k6]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 15
