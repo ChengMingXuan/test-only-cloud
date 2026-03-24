@@ -1,0 +1,34 @@
+{
+  "tool": "selenium",
+  "displayName": "Selenium（浏览器兼容性测试）",
+  "icon": "🔬",
+  "standardCases": 6540,
+  "summary": {
+    "total": 8258,
+    "passed": 7571,
+    "failed": 662,
+    "skipped": 25,
+    "passRate": 91.68,
+    "duration_s": 4267.460
+0,
+    "timestamp": "2026-03-24T02:46:30",
+    "source": "GitHub Actions CI (full)",
+    "measurementMode": "cases",
+    "comparableTotal": 8258,
+    "executedFiles": 0
+  },
+  "gateStatus": {
+    "canRelease": false,
+    "statusText": "存在失败用例 - 不可发布"
+  },
+  "ci": {
+    "gitCommit": "2387a9a4fd97127a800c6327b29067c3d4372742",
+    "eventName": "push",
+    "testLevel": "full",
+    "runnerOS": "ubuntu-latest",
+    "timestamp": "2026-03-24 02:46:30 UTC"
+  },
+  "fileCount": 0,
+  "files": [],
+  "failures": []
+}
