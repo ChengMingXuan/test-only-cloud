@@ -1,0 +1,1572 @@
+﻿[
+    {
+        "file":  "03-station.cy.js",
+        "title":  "[P0] 场站列表页面加载",
+        "error":  "AssertionError: Timed out retrying after 20000ms: Expected to find element: `.ant-table-wrapper, .ant-list, .ant-card, [class*=\"table\"]`, but never fo"
+    },
+    {
+        "file":  "03-station.cy.js",
+        "title":  "[P0] 列表包含数据行",
+        "error":  "AssertionError: Timed out retrying after 15000ms: Expected to find element: `.ant-table-tbody tr.ant-table-row, .ant-list-item, [role=\"row\"]`, but nev"
+    },
+    {
+        "file":  "03-station.cy.js",
+        "title":  "[P0] 表格包含列字段",
+        "error":  "AssertionError: Timed out retrying after 15000ms: Expected to find element: `.ant-table-thead, .ant-table th, [role=\"columnheader\"]`, but never found "
+    },
+    {
+        "file":  "03-station.cy.js",
+        "title":  "[P1] 新增场站按钮功能",
+        "error":  "AssertionError: Timed out retrying after 15000ms: Expected to find element: `button.ant-btn-primary, .ant-btn-primary, button[type=\"button\"]`, but nev"
+    },
+    {
+        "file":  "03-station.cy.js",
+        "title":  "[P1] 搜索功能可用",
+        "error":  "AssertionError: Timed out retrying after 15000ms: Expected to find element: `input.ant-input, input[placeholder*=\"搜索\"]`, but never found it."
+    },
+    {
+        "file":  "03-station.cy.js",
+        "title":  "[P1] 表格行可以展开或操作",
+        "error":  "AssertionError: Timed out retrying after 15000ms: Expected to find element: `.ant-table-tbody tr.ant-table-row, [role=\"row\"]`, but never found it."
+    },
+    {
+        "file":  "03-station.cy.js",
+        "title":  "[P1] 分页组件显示",
+        "error":  "AssertionError: Timed out retrying after 15000ms: Expected to find element: `.ant-pagination, [class*=\"pagination\"]`, but never found it."
+    },
+    {
+        "file":  "03-station.cy.js",
+        "title":  "[P2] 列表数据包含关键字段",
+        "error":  "AssertionError: Timed out retrying after 15000ms: Expected to find element: `.ant-table-tbody tr.ant-table-row, [role=\"row\"]`, but never found it."
+    },
+    {
+        "file":  "03-station.cy.js",
+        "title":  "[P2] 页面响应式布局正常",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-table-wrapper, [class*=\"table\"]`, but never found it."
+    },
+    {
+        "file":  "04-device.cy.js",
+        "title":  "[P0] 设备数据渲染",
+        "error":  "AssertionError: Timed out retrying after 15000ms: Expected to find element: `.ant-table-tbody tr.ant-table-row, .ant-list-item`, but never found it."
+    },
+    {
+        "file":  "04-device.cy.js",
+        "title":  "[P0] 设备状态指示器显示",
+        "error":  "AssertionError: Timed out retrying after 10000ms: Expected to find element: `.ant-tag, .ant-badge, [class*=\"badge\"], [class*=\"status\"]`, but never fou"
+    },
+    {
+        "file":  "04-device.cy.js",
+        "title":  "[P1] 搜索设备功能",
+        "error":  "AssertionError: Timed out retrying after 10000ms: Expected to find element: `.ant-table-tbody tr.ant-table-row, .ant-list-item`, but never found it."
+    },
+    {
+        "file":  "04-device.cy.js",
+        "title":  "[P1] 新增设备按钮",
+        "error":  "CypressError: `cy.click()` can only be called on a single element. Your subject contained 8 elements. Pass `{ multiple: true }` if you want to seriall"
+    },
+    {
+        "file":  "04-device.cy.js",
+        "title":  "[P1] 设备行操作按钮",
+        "error":  "AssertionError: Timed out retrying after 15000ms: Expected to find element: `.ant-table-tbody tr.ant-table-row`, but never found it."
+    },
+    {
+        "file":  "04-device.cy.js",
+        "title":  "[P2] 设备列表包含设备内容",
+        "error":  "AssertionError: Timed out retrying after 15000ms: Expected to find element: `.ant-table-tbody tr.ant-table-row`, but never found it."
+    },
+    {
+        "file":  "05-permission.cy.js",
+        "title":  "[P1] 新增按钮操作",
+        "error":  "CypressError: `cy.click()` can only be called on a single element. Your subject contained 4 elements. Pass `{ multiple: true }` if you want to seriall"
+    },
+    {
+        "file":  "05-permission.cy.js",
+        "title":  "[P1] 权限树展开折叠",
+        "error":  "TypeError: The following error originated from your application code, not from Cypress.\n\n  \u003e perms.map is not a function\n\nWhen Cypress detects uncaugh"
+    },
+    {
+        "file":  "05-permission.cy.js",
+        "title":  "[P1] Tab 切换（如有）",
+        "error":  "TypeError: The following error originated from your application code, not from Cypress.\n\n  \u003e perms.map is not a function\n\nWhen Cypress detects uncaugh"
+    },
+    {
+        "file":  "05-permission.cy.js",
+        "title":  "[P2] 列表数据包含内容",
+        "error":  "TypeError: The following error originated from your application code, not from Cypress.\n\n  \u003e perms.map is not a function\n\nWhen Cypress detects uncaugh"
+    },
+    {
+        "file":  "03-station.cy.js",
+        "title":  "[P1] 新增场站按钮功能",
+        "error":  "AssertionError: Timed out retrying after 8000ms: expected \u0027\u003cbutton.ant-input-clear-icon.ant-input-clear-icon-hidden\u003e\u0027 to be \u0027visible\u0027\n\nThis element `\u003c"
+    },
+    {
+        "file":  "04-device.cy.js",
+        "title":  "[P0] 设备数据渲染",
+        "error":  "AssertionError: Timed out retrying after 15000ms: Expected to find element: `.ant-table-tbody tr.ant-table-row, .ant-list-item`, but never found it."
+    },
+    {
+        "file":  "04-device.cy.js",
+        "title":  "[P0] 设备状态指示器显示",
+        "error":  "AssertionError: Timed out retrying after 10000ms: Expected to find element: `.ant-tag, .ant-badge, [class*=\"badge\"], [class*=\"status\"]`, but never fou"
+    },
+    {
+        "file":  "04-device.cy.js",
+        "title":  "[P1] 搜索设备功能",
+        "error":  "AssertionError: Timed out retrying after 10000ms: Expected to find element: `.ant-table-tbody tr.ant-table-row, .ant-list-item`, but never found it."
+    },
+    {
+        "file":  "04-device.cy.js",
+        "title":  "[P1] 新增设备按钮",
+        "error":  "CypressError: `cy.click()` can only be called on a single element. Your subject contained 8 elements. Pass `{ multiple: true }` if you want to seriall"
+    },
+    {
+        "file":  "04-device.cy.js",
+        "title":  "[P1] 设备行操作按钮",
+        "error":  "AssertionError: Timed out retrying after 15000ms: Expected to find element: `.ant-table-tbody tr.ant-table-row`, but never found it."
+    },
+    {
+        "file":  "04-device.cy.js",
+        "title":  "[P2] 设备列表包含设备内容",
+        "error":  "AssertionError: Timed out retrying after 15000ms: Expected to find element: `.ant-table-tbody tr.ant-table-row`, but never found it."
+    },
+    {
+        "file":  "05-permission.cy.js",
+        "title":  "[P1] 新增按钮操作",
+        "error":  "TypeError: The following error originated from your application code, not from Cypress.\n\n  \u003e perms.map is not a function\n\nWhen Cypress detects uncaugh"
+    },
+    {
+        "file":  "05-permission.cy.js",
+        "title":  "[P1] 权限树展开折叠",
+        "error":  "TypeError: The following error originated from your application code, not from Cypress.\n\n  \u003e perms.map is not a function\n\nWhen Cypress detects uncaugh"
+    },
+    {
+        "file":  "05-permission.cy.js",
+        "title":  "[P1] Tab 切换（如有）",
+        "error":  "TypeError: The following error originated from your application code, not from Cypress.\n\n  \u003e perms.map is not a function\n\nWhen Cypress detects uncaugh"
+    },
+    {
+        "file":  "05-permission.cy.js",
+        "title":  "[P2] 列表数据包含内容",
+        "error":  "TypeError: The following error originated from your application code, not from Cypress.\n\n  \u003e perms.map is not a function\n\nWhen Cypress detects uncaugh"
+    },
+    {
+        "file":  "06-workorder.cy.js",
+        "title":  "[P1] 新增工单按钮",
+        "error":  "CypressError: `cy.click()` can only be called on a single element. Your subject contained 5 elements. Pass `{ multiple: true }` if you want to seriall"
+    },
+    {
+        "file":  "07-user.cy.js",
+        "title":  "[P0] 用户表格数据渲染",
+        "error":  "TypeError: The following error originated from your application code, not from Cypress.\n\n  \u003e depts.map is not a function\n\nWhen Cypress detects uncaugh"
+    },
+    {
+        "file":  "07-user.cy.js",
+        "title":  "[P1] 搜索用户功能",
+        "error":  "TypeError: The following error originated from your application code, not from Cypress.\n\n  \u003e depts.map is not a function\n\nWhen Cypress detects uncaugh"
+    },
+    {
+        "file":  "07-user.cy.js",
+        "title":  "[P1] 新增用户按钮",
+        "error":  "TypeError: The following error originated from your application code, not from Cypress.\n\n  \u003e depts.map is not a function\n\nWhen Cypress detects uncaugh"
+    },
+    {
+        "file":  "07-user.cy.js",
+        "title":  "[P1] 用户行操作（编辑/删除）",
+        "error":  "TypeError: The following error originated from your application code, not from Cypress.\n\n  \u003e depts.map is not a function\n\nWhen Cypress detects uncaugh"
+    },
+    {
+        "file":  "07-user.cy.js",
+        "title":  "[P2] 用户状态指示",
+        "error":  "TypeError: The following error originated from your application code, not from Cypress.\n\n  \u003e depts.map is not a function\n\nWhen Cypress detects uncaugh"
+    },
+    {
+        "file":  "07-user.cy.js",
+        "title":  "[P2] 用户列表包含真实内容",
+        "error":  "TypeError: The following error originated from your application code, not from Cypress.\n\n  \u003e depts.map is not a function\n\nWhen Cypress detects uncaugh"
+    },
+    {
+        "file":  "08-navigation.cy.js",
+        "title":  "[P0] 访问受保护页面无 Token 跳转登录页",
+        "error":  "AssertionError: Timed out retrying after 20000ms: expected \u0027http://127.0.0.1:8000/dashboard\u0027 to satisfy [Function]"
+    },
+    {
+        "file":  "08-navigation.cy.js",
+        "title":  "[P1] 侧边菜单点击导航",
+        "error":  "AssertionError: Timed out retrying after 15000ms: Expected to find element: `.ant-menu-item a, .ant-pro-sider .ant-menu-item`, but never found it."
+    },
+    {
+        "file":  "08-navigation.cy.js",
+        "title":  "[P1] 面包屑导航点击",
+        "error":  "AssertionError: Timed out retrying after 15000ms: Expected to find element: `.ant-breadcrumb a, [class*=\"breadcrumb\"] a`, but never found it."
+    },
+    {
+        "file":  "09-energy.cy.js",
+        "title":  "[P1] 时间范围选择器",
+        "error":  "AssertionError: Timed out retrying after 15000ms: Expected to find element: `.ant-picker, .ant-tabs, .ant-segmented, .ant-radio-group, .ant-select`, b"
+    },
+    {
+        "file":  "09-energy.cy.js",
+        "title":  "[P1] 刷新数据按钮",
+        "error":  "AssertionError: Timed out retrying after 15000ms: Expected to find element: `button, .ant-btn`, but never found it."
+    },
+    {
+        "file":  "10-charging-monitor.cy.js",
+        "title":  "[P1] Tab/分段器切换",
+        "error":  "AssertionError: Timed out retrying after 15000ms: Expected to find element: `.ant-tabs-tab, .ant-segmented-item, [class*=\"tab\"]`, but never found it."
+    },
+    {
+        "file":  "10-charging-monitor.cy.js",
+        "title":  "[P1] 图表区域存在",
+        "error":  "AssertionError: Timed out retrying after 15000ms: Expected to find element: `canvas, [class*=\"chart\"], [class*=\"Chart\"]`, but never found it."
+    },
+    {
+        "file":  "32-ai-predictions.cy.js",
+        "title":  "[P0] 显示峰值统计",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-statistic-content`, but never found it."
+    },
+    {
+        "file":  "32-ai-predictions.cy.js",
+        "title":  "[P1] 3个统计卡片",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-statistic`, but never found it."
+    },
+    {
+        "file":  "32-ai-predictions.cy.js",
+        "title":  "[P0] 光伏预测数据",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-statistic-content`, but never found it."
+    },
+    {
+        "file":  "32-ai-predictions.cy.js",
+        "title":  "[P0] 峰谷电价显示",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-statistic-content`, but never found it."
+    },
+    {
+        "file":  "32-ai-predictions.cy.js",
+        "title":  "[P1] 3个统计卡片",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-statistic`, but never found it."
+    },
+    {
+        "file":  "32-ai-predictions.cy.js",
+        "title":  "[P0] 套利收益统计",
+        "error":  "AssertionError: Timed out retrying after 8000ms: expected \u0027\u003cdiv.ant-statistic-content\u003e\u0027 to contain \u0027¥8460\u0027"
+    },
+    {
+        "file":  "32-ai-predictions.cy.js",
+        "title":  "[P0] 时段表格3行",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-table-tbody .ant-table-row`, but never found it."
+    },
+    {
+        "file":  "32-ai-predictions.cy.js",
+        "title":  "[P1] 优化策略按钮",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-modal`, but never found it."
+    },
+    {
+        "file":  "33-ai-advanced.cy.js",
+        "title":  "[P0] 健康评分显示",
+        "error":  "TypeError: The following error originated from your application code, not from Cypress.\n\n  \u003e supportedTypes.reduce is not a function\n\nWhen Cypress det"
+    },
+    {
+        "file":  "33-ai-advanced.cy.js",
+        "title":  "[P1] 设备列表3行",
+        "error":  "TypeError: The following error originated from your application code, not from Cypress.\n\n  \u003e supportedTypes.reduce is not a function\n\nWhen Cypress det"
+    },
+    {
+        "file":  "33-ai-advanced.cy.js",
+        "title":  "[P1] 风险标签显示",
+        "error":  "TypeError: The following error originated from your application code, not from Cypress.\n\n  \u003e supportedTypes.reduce is not a function\n\nWhen Cypress det"
+    },
+    {
+        "file":  "33-ai-advanced.cy.js",
+        "title":  "[P0] 预警列表3行",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-table-tbody .ant-table-row`, but never found it."
+    },
+    {
+        "file":  "33-ai-advanced.cy.js",
+        "title":  "[P1] 搜索框存在",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `input.ant-input`, but never found it."
+    },
+    {
+        "file":  "33-ai-advanced.cy.js",
+        "title":  "[P0] 碳配额统计",
+        "error":  "AssertionError: Timed out retrying after 8000ms: expected \u0027[ \u003cdiv.ant-statistic-content\u003e, 6 more... ]\u0027 to contain \u002712580\u0027"
+    },
+    {
+        "file":  "34-analytics-sub1.cy.js",
+        "title":  "[P1] 图表容器存在",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-card`, but never found it."
+    },
+    {
+        "file":  "34-analytics-sub1.cy.js",
+        "title":  "[P1] 图表容器存在",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-card`, but never found it."
+    },
+    {
+        "file":  "35-analytics-sub2.cy.js",
+        "title":  "[P0] 内容区可见",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-table-wrapper`, but never found it."
+    },
+    {
+        "file":  "35-analytics-sub2.cy.js",
+        "title":  "[P0] 查询输入框存在",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `input.ant-input`, but never found it."
+    },
+    {
+        "file":  "36-analytics-sub3.cy.js",
+        "title":  "[P0] 画像数据存在",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-table-tbody .ant-table-row`, but never found it."
+    },
+    {
+        "file":  "37-blockchain-sub.cy.js",
+        "title":  "[P0] 交易表格存在",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-table-tbody .ant-table-row`, but never found it."
+    },
+    {
+        "file":  "37-blockchain-sub.cy.js",
+        "title":  "[P1] 哈希地址显示",
+        "error":  "AssertionError: Timed out retrying after 8000ms: expected \u0027\u003ctbody.ant-table-tbody\u003e\u0027 to contain \u00270x\u0027"
+    },
+    {
+        "file":  "37-blockchain-sub.cy.js",
+        "title":  "[P0] 钱包余额显示",
+        "error":  "TypeError: The following error originated from your application code, not from Cypress.\n\n  \u003e rawData.some is not a function\n\nWhen Cypress detects unca"
+    },
+    {
+        "file":  "37-blockchain-sub.cy.js",
+        "title":  "[P0] 存证记录存在",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-table-tbody .ant-table-row`, but never found it."
+    },
+    {
+        "file":  "37-blockchain-sub.cy.js",
+        "title":  "[P1] 存证状态标签",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-tag`, but never found it."
+    },
+    {
+        "file":  "39-account-sub.cy.js",
+        "title":  "[P0] 姓名输入框",
+        "error":  "Error: The following error originated from your application code, not from Cypress.\n\n  \u003e Objects are not valid as a React child (found: object with ke"
+    },
+    {
+        "file":  "39-account-sub.cy.js",
+        "title":  "[P1] 邮箱输入框",
+        "error":  "Error: The following error originated from your application code, not from Cypress.\n\n  \u003e Objects are not valid as a React child (found: object with ke"
+    },
+    {
+        "file":  "39-account-sub.cy.js",
+        "title":  "[P1] 手机号输入框",
+        "error":  "Error: The following error originated from your application code, not from Cypress.\n\n  \u003e Objects are not valid as a React child (found: object with ke"
+    },
+    {
+        "file":  "39-account-sub.cy.js",
+        "title":  "[P0] 发票列表存在",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-table-tbody .ant-table-row`, but never found it."
+    },
+    {
+        "file":  "40-agent-content.cy.js",
+        "title":  "[P0] 3个统计卡片",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-statistic`, but never found it."
+    },
+    {
+        "file":  "40-agent-content.cy.js",
+        "title":  "[P0] 内容列表存在",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-table-tbody .ant-table-row`, but never found it."
+    },
+    {
+        "file":  "40-agent-content.cy.js",
+        "title":  "[P1] 新增内容按钮",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn-primary`, but never found it."
+    },
+    {
+        "file":  "40-agent-content.cy.js",
+        "title":  "[P0] 媒体列表存在",
+        "error":  "TypeError: The following error originated from your application code, not from Cypress.\n\n  \u003e items.map is not a function\n\nWhen Cypress detects uncaugh"
+    },
+    {
+        "file":  "41-developer-edge.cy.js",
+        "title":  "[P0] 新增网关按钮",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `button.ant-btn-primary, .ant-btn-primary, button[type=button], .ant-btn`, "
+    },
+    {
+        "file":  "41-developer-edge.cy.js",
+        "title":  "[P0] 网关列表存在",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-table-tbody .ant-table-row`, but never found it."
+    },
+    {
+        "file":  "41-developer-edge.cy.js",
+        "title":  "[P1] 在线/离线标签",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-tag`, but never found it."
+    },
+    {
+        "file":  "42-device-sub.cy.js",
+        "title":  "[P0] 设备列表可见",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-table-tbody .ant-table-row`, but never found it."
+    },
+    {
+        "file":  "42-device-sub.cy.js",
+        "title":  "[P0] 升级列表存在",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-table-tbody .ant-table-row`, but never found it."
+    },
+    {
+        "file":  "42-device-sub.cy.js",
+        "title":  "[P1] 固件版本显示",
+        "error":  "AssertionError: Timed out retrying after 8000ms: expected \u0027\u003ctbody.ant-table-tbody\u003e\u0027 to contain \u0027v3.2.1\u0027"
+    },
+    {
+        "file":  "42-device-sub.cy.js",
+        "title":  "[P0] 设备健康表格4行",
+        "error":  "TypeError: The following error originated from your application code, not from Cypress.\n\n  \u003e supportedTypes.reduce is not a function\n\nWhen Cypress det"
+    },
+    {
+        "file":  "42-device-sub.cy.js",
+        "title":  "[P1] 风险等级标签",
+        "error":  "TypeError: The following error originated from your application code, not from Cypress.\n\n  \u003e supportedTypes.reduce is not a function\n\nWhen Cypress det"
+    },
+    {
+        "file":  "42-device-sub.cy.js",
+        "title":  "[P2] 搜索框",
+        "error":  "TypeError: The following error originated from your application code, not from Cypress.\n\n  \u003e supportedTypes.reduce is not a function\n\nWhen Cypress det"
+    },
+    {
+        "file":  "43-dt-sub1.cy.js",
+        "title":  "[P0] 孪生统计卡片",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-statistic`, but never found it."
+    },
+    {
+        "file":  "43-dt-sub1.cy.js",
+        "title":  "[P0] 监控数据存在",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-table-tbody .ant-table-row`, but never found it."
+    },
+    {
+        "file":  "43-dt-sub1.cy.js",
+        "title":  "[P1] 实时监控图表",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-table-wrapper`, but never found it."
+    },
+    {
+        "file":  "44-dt-sub2.cy.js",
+        "title":  "[P0] 仿真任务列表",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-table-tbody .ant-table-row`, but never found it."
+    },
+    {
+        "file":  "44-dt-sub2.cy.js",
+        "title":  "[P1] 仿真参数设置",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn`, but never found it."
+    },
+    {
+        "file":  "44-dt-sub2.cy.js",
+        "title":  "[P2] 仿真状态标签",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-tag`, but never found it."
+    },
+    {
+        "file":  "45-energy-services1.cy.js",
+        "title":  "[P0] 交易记录3行",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-table-tbody .ant-table-row`, but never found it."
+    },
+    {
+        "file":  "45-energy-services1.cy.js",
+        "title":  "[P1] 新建交易按钮",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `button.ant-btn-primary, .ant-btn-primary, button[type=button], .ant-btn`, "
+    },
+    {
+        "file":  "45-energy-services1.cy.js",
+        "title":  "[P1] 导出按钮",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "45-energy-services1.cy.js",
+        "title":  "[P2] 交易状态标签",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-tag[class*=green], .ant-tag[color=green], .ant-tag-success`, but neve"
+    },
+    {
+        "file":  "45-energy-services1.cy.js",
+        "title":  "[P0] 响应记录3行",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-table-tbody .ant-table-row`, but never found it."
+    },
+    {
+        "file":  "45-energy-services1.cy.js",
+        "title":  "[P1] 申报响应按钮",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `button.ant-btn-primary, .ant-btn-primary, button[type=button], .ant-btn`, "
+    },
+    {
+        "file":  "45-energy-services1.cy.js",
+        "title":  "[P0] 交易记录3行",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-table-tbody .ant-table-row`, but never found it."
+    },
+    {
+        "file":  "45-energy-services1.cy.js",
+        "title":  "[P1] 提交报价按钮",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `button.ant-btn-primary, .ant-btn-primary, button[type=button], .ant-btn`, "
+    },
+    {
+        "file":  "45-energy-services1.cy.js",
+        "title":  "[P2] 中标状态标签",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-tag[class*=green], .ant-tag[color=green], .ant-tag-success`, but neve"
+    },
+    {
+        "file":  "46-energy-services2.cy.js",
+        "title":  "[P0] 综合能效显示",
+        "error":  "AssertionError: Timed out retrying after 8000ms: expected \u0027\u003cdiv.ant-statistic-content\u003e\u0027 to contain \u002788.4%\u0027"
+    },
+    {
+        "file":  "46-energy-services2.cy.js",
+        "title":  "[P1] Tab切换（实时拓扑/能流/调度）",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-tabs-tab`, but never found it."
+    },
+    {
+        "file":  "46-energy-services2.cy.js",
+        "title":  "[P0] 风险列表3行",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-table-tbody .ant-table-row`, but never found it."
+    },
+    {
+        "file":  "46-energy-services2.cy.js",
+        "title":  "[P1] 导出报告按钮",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "46-energy-services2.cy.js",
+        "title":  "[P2] 风险级别标签",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-tag[class*=red], .ant-tag[color=red], .ant-tag-error`, but never foun"
+    },
+    {
+        "file":  "46-energy-services2.cy.js",
+        "title":  "[P0] 3个统计卡片",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-statistic`, but never found it."
+    },
+    {
+        "file":  "46-energy-services2.cy.js",
+        "title":  "[P0] 微网列表3行",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-table-tbody .ant-table-row`, but never found it."
+    },
+    {
+        "file":  "46-energy-services2.cy.js",
+        "title":  "[P1] 新建微网按钮",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `button.ant-btn-primary, .ant-btn-primary, button[type=button], .ant-btn`, "
+    },
+    {
+        "file":  "46-energy-services2.cy.js",
+        "title":  "[P2] 运行状态标签",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-tag[class*=green], .ant-tag[color=green], .ant-tag-success`, but neve"
+    },
+    {
+        "file":  "47-energy-services3.cy.js",
+        "title":  "[P0] 4个统计卡片",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-statistic`, but never found it."
+    },
+    {
+        "file":  "47-energy-services3.cy.js",
+        "title":  "[P0] SOC显示",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-statistic-content`, but never found it."
+    },
+    {
+        "file":  "47-energy-services3.cy.js",
+        "title":  "[P1] 3个Tab分页",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-tabs-tab`, but never found it."
+    },
+    {
+        "file":  "47-energy-services3.cy.js",
+        "title":  "[P1] 图表容器",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-card`, but never found it."
+    },
+    {
+        "file":  "47-energy-services3.cy.js",
+        "title":  "[P0] 协调任务3行",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-table-tbody .ant-table-row`, but never found it."
+    },
+    {
+        "file":  "47-energy-services3.cy.js",
+        "title":  "[P1] 新建协调任务按钮",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `button.ant-btn-primary, .ant-btn-primary, button[type=button], .ant-btn`, "
+    },
+    {
+        "file":  "47-energy-services3.cy.js",
+        "title":  "[P1] 搜索框",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `input.ant-input`, but never found it."
+    },
+    {
+        "file":  "47-energy-services3.cy.js",
+        "title":  "[P1] 时段切换",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-segmented`, but never found it."
+    },
+    {
+        "file":  "48-misc-advanced.cy.js",
+        "title":  "[P1] 搜索框",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `input.ant-input`, but never found it."
+    },
+    {
+        "file":  "48-misc-advanced.cy.js",
+        "title":  "[P2] SOC数据显示",
+        "error":  "AssertionError: Timed out retrying after 8000ms: expected \u0027\u003ctbody.ant-table-tbody\u003e\u0027 to contain \u0027ESS-001\u0027"
+    },
+    {
+        "file":  "48-misc-advanced.cy.js",
+        "title":  "[P0] 完成率显示",
+        "error":  "AssertionError: Timed out retrying after 8000ms: expected \u0027[ \u003cdiv.ant-statistic-content\u003e, 3 more... ]\u0027 to contain \u002794.4%\u0027"
+    },
+    {
+        "file":  "48-misc-advanced.cy.js",
+        "title":  "[P1] 时段切换",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-segmented`, but never found it."
+    },
+    {
+        "file":  "48-misc-advanced.cy.js",
+        "title":  "[P0] 发票列表3行",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-table-tbody .ant-table-row`, but never found it."
+    },
+    {
+        "file":  "48-misc-advanced.cy.js",
+        "title":  "[P1] 申请开票按钮",
+        "error":  "CypressError: `cy.click()` can only be called on a single element. Your subject contained 5 elements. Pass `{ multiple: true }` if you want to seriall"
+    },
+    {
+        "file":  "48-misc-advanced.cy.js",
+        "title":  "[P2] 分页组件",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-pagination`, but never found it."
+    },
+    {
+        "file":  "48-misc-advanced.cy.js",
+        "title":  "[P0] 调试控制台存在",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `#debug-console`, but never found it."
+    },
+    {
+        "file":  "48-misc-advanced.cy.js",
+        "title":  "[P0] 执行日志显示",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `#debug-console`, but never found it."
+    },
+    {
+        "file":  "48-misc-advanced.cy.js",
+        "title":  "[P0] 调试结果表格3行",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-table-tbody .ant-table-row`, but never found it."
+    },
+    {
+        "file":  "48-misc-advanced.cy.js",
+        "title":  "[P1] 运行调试按钮",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "51-monitor-full.cy.js",
+        "title":  "[C12] 行数据渲染正常（Mock数据）",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-table-row, .ant-list-item`, but never found it."
+    },
+    {
+        "file":  "51-monitor-full.cy.js",
+        "title":  "[C24] 筛选完整流程：选条件→查询→重置",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `button:contains(\"搜索\"), button:contains(\"查询\")`, but never found it."
+    },
+    {
+        "file":  "51-monitor-full.cy.js",
+        "title":  "[C25] 端到端监控查询链路",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `button:contains(\"搜索\"), button:contains(\"查询\")`, but never found it."
+    },
+    {
+        "file":  "51-monitor-full.cy.js",
+        "title":  "[C24] 筛选完整流程：选条件→查询→重置",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `button:contains(\"搜索\"), button:contains(\"查询\")`, but never found it."
+    },
+    {
+        "file":  "51-monitor-full.cy.js",
+        "title":  "[C25] 端到端监控查询链路",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `button:contains(\"搜索\"), button:contains(\"查询\")`, but never found it."
+    },
+    {
+        "file":  "51-monitor-full.cy.js",
+        "title":  "[C24] 筛选完整流程：选条件→查询→重置",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `button:contains(\"搜索\"), button:contains(\"查询\")`, but never found it."
+    },
+    {
+        "file":  "51-monitor-full.cy.js",
+        "title":  "[C25] 端到端监控查询链路",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `button:contains(\"搜索\"), button:contains(\"查询\")`, but never found it."
+    },
+    {
+        "file":  "51-monitor-full.cy.js",
+        "title":  "[C11] 表格列头存在",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-table-thead th, .ant-table-column-title`, but never found it."
+    },
+    {
+        "file":  "51-monitor-full.cy.js",
+        "title":  "[C12] 行数据渲染正常（Mock数据）",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-table-row, .ant-list-item`, but never found it."
+    },
+    {
+        "file":  "51-monitor-full.cy.js",
+        "title":  "[C24] 筛选完整流程：选条件→查询→重置",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `button:contains(\"搜索\"), button:contains(\"查询\")`, but never found it."
+    },
+    {
+        "file":  "51-monitor-full.cy.js",
+        "title":  "[C25] 端到端监控查询链路",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `button:contains(\"搜索\"), button:contains(\"查询\")`, but never found it."
+    },
+    {
+        "file":  "51-monitor-full.cy.js",
+        "title":  "[C24] 筛选完整流程：选条件→查询→重置",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `button:contains(\"搜索\"), button:contains(\"查询\")`, but never found it."
+    },
+    {
+        "file":  "51-monitor-full.cy.js",
+        "title":  "[C25] 端到端监控查询链路",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `button:contains(\"搜索\"), button:contains(\"查询\")`, but never found it."
+    },
+    {
+        "file":  "51-monitor-full.cy.js",
+        "title":  "[C24] 筛选完整流程：选条件→查询→重置",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `button:contains(\"搜索\"), button:contains(\"查询\")`, but never found it."
+    },
+    {
+        "file":  "51-monitor-full.cy.js",
+        "title":  "[C25] 端到端监控查询链路",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `button:contains(\"搜索\"), button:contains(\"查询\")`, but never found it."
+    },
+    {
+        "file":  "51-monitor-full.cy.js",
+        "title":  "[C24] 筛选完整流程：选条件→查询→重置",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `button:contains(\"搜索\"), button:contains(\"查询\")`, but never found it."
+    },
+    {
+        "file":  "51-monitor-full.cy.js",
+        "title":  "[C25] 端到端监控查询链路",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `button:contains(\"搜索\"), button:contains(\"查询\")`, but never found it."
+    },
+    {
+        "file":  "54-device-ingestion-ruleengine.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "54-device-ingestion-ruleengine.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "54-device-ingestion-ruleengine.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "55-ai-iotcloud-phm.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "55-ai-iotcloud-phm.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "55-ai-iotcloud-phm.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "55-ai-iotcloud-phm.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "56-energy-vpp-microgrid-pvessc.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "56-energy-vpp-microgrid-pvessc.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "56-energy-vpp-microgrid-pvessc.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "56-energy-vpp-microgrid-pvessc.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "56-energy-vpp-microgrid-pvessc.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "56-energy-vpp-microgrid-pvessc.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "56-energy-vpp-microgrid-pvessc.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "56-energy-vpp-microgrid-pvessc.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "56-energy-vpp-microgrid-pvessc.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "56-energy-vpp-microgrid-pvessc.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "56-energy-vpp-microgrid-pvessc.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "56-energy-vpp-microgrid-pvessc.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "56-energy-vpp-microgrid-pvessc.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "56-energy-vpp-microgrid-pvessc.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "56-energy-vpp-microgrid-pvessc.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "56-energy-vpp-microgrid-pvessc.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "56-energy-vpp-microgrid-pvessc.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "56-energy-vpp-microgrid-pvessc.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "57-electrade-carbontrade-demandresp.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "57-electrade-carbontrade-demandresp.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "57-electrade-carbontrade-demandresp.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "57-electrade-carbontrade-demandresp.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "57-electrade-carbontrade-demandresp.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "57-electrade-carbontrade-demandresp.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "57-electrade-carbontrade-demandresp.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "57-electrade-carbontrade-demandresp.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "57-electrade-carbontrade-demandresp.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "57-electrade-carbontrade-demandresp.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "57-electrade-carbontrade-demandresp.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "57-electrade-carbontrade-demandresp.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "57-electrade-carbontrade-demandresp.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "57-electrade-carbontrade-demandresp.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "57-electrade-carbontrade-demandresp.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "57-electrade-carbontrade-demandresp.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "57-electrade-carbontrade-demandresp.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "57-electrade-carbontrade-demandresp.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "57-electrade-carbontrade-demandresp.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "57-electrade-carbontrade-demandresp.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "57-electrade-carbontrade-demandresp.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "57-electrade-carbontrade-demandresp.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "57-electrade-carbontrade-demandresp.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "58-energyeff-multienergy-safecontrol-deviceops.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "58-energyeff-multienergy-safecontrol-deviceops.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "58-energyeff-multienergy-safecontrol-deviceops.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "58-energyeff-multienergy-safecontrol-deviceops.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "58-energyeff-multienergy-safecontrol-deviceops.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "58-energyeff-multienergy-safecontrol-deviceops.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "58-energyeff-multienergy-safecontrol-deviceops.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "58-energyeff-multienergy-safecontrol-deviceops.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "58-energyeff-multienergy-safecontrol-deviceops.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "58-energyeff-multienergy-safecontrol-deviceops.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "58-energyeff-multienergy-safecontrol-deviceops.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "58-energyeff-multienergy-safecontrol-deviceops.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "58-energyeff-multienergy-safecontrol-deviceops.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "58-energyeff-multienergy-safecontrol-deviceops.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "58-energyeff-multienergy-safecontrol-deviceops.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "58-energyeff-multienergy-safecontrol-deviceops.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "58-energyeff-multienergy-safecontrol-deviceops.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "58-energyeff-multienergy-safecontrol-deviceops.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "59-blockchain-digitaltwin.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "59-blockchain-digitaltwin.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "59-blockchain-digitaltwin.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "59-blockchain-digitaltwin.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "59-blockchain-digitaltwin.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "59-blockchain-digitaltwin.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "59-blockchain-digitaltwin.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "59-blockchain-digitaltwin.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "59-blockchain-digitaltwin.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "59-blockchain-digitaltwin.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "59-blockchain-digitaltwin.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "62-tenant-account.cy.js",
+        "title":  "[C05] 关键词搜索",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/tenant/list\n\nWe attempted to make an http request to this URL but the request"
+    },
+    {
+        "file":  "62-tenant-account.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/account/profile\n\nWe attempted to make an http request to this URL but the req"
+    },
+    {
+        "file":  "62-tenant-account.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/account/profile\n\nWe attempted to make an http request to this URL but the req"
+    },
+    {
+        "file":  "62-tenant-account.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/account/profile\n\nWe attempted to make an http request to this URL but the req"
+    },
+    {
+        "file":  "62-tenant-account.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/account/profile\n\nWe attempted to make an http request to this URL but the req"
+    },
+    {
+        "file":  "62-tenant-account.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/account/profile\n\nWe attempted to make an http request to this URL but the req"
+    },
+    {
+        "file":  "62-tenant-account.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/account/profile\n\nWe attempted to make an http request to this URL but the req"
+    },
+    {
+        "file":  "62-tenant-account.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/account/oauth\n\nWe attempted to make an http request to this URL but the reque"
+    },
+    {
+        "file":  "62-tenant-account.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/account/mfa\n\nWe attempted to make an http request to this URL but the request"
+    },
+    {
+        "file":  "62-tenant-account.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/account/profile\n\nWe attempted to make an http request to this URL but the req"
+    },
+    {
+        "file":  "62-tenant-account.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/account/profile\n\nWe attempted to make an http request to this URL but the req"
+    },
+    {
+        "file":  "63-workorder-workflow-developer.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/workorder/list\n\nWe attempted to make an http request to this URL but the requ"
+    },
+    {
+        "file":  "63-workorder-workflow-developer.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/workorder/list\n\nWe attempted to make an http request to this URL but the requ"
+    },
+    {
+        "file":  "63-workorder-workflow-developer.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/workorder/list\n\nWe attempted to make an http request to this URL but the requ"
+    },
+    {
+        "file":  "63-workorder-workflow-developer.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/workorder/list\n\nWe attempted to make an http request to this URL but the requ"
+    },
+    {
+        "file":  "63-workorder-workflow-developer.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/workorder/list\n\nWe attempted to make an http request to this URL but the requ"
+    },
+    {
+        "file":  "63-workorder-workflow-developer.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/workorder/list\n\nWe attempted to make an http request to this URL but the requ"
+    },
+    {
+        "file":  "63-workorder-workflow-developer.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/workorder/list\n\nWe attempted to make an http request to this URL but the requ"
+    },
+    {
+        "file":  "63-workorder-workflow-developer.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/workorder/list\n\nWe attempted to make an http request to this URL but the requ"
+    },
+    {
+        "file":  "63-workorder-workflow-developer.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/workorder/list\n\nWe attempted to make an http request to this URL but the requ"
+    },
+    {
+        "file":  "63-workorder-workflow-developer.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/workorder/list\n\nWe attempted to make an http request to this URL but the requ"
+    },
+    {
+        "file":  "63-workorder-workflow-developer.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/workflow/template\n\nWe attempted to make an http request to this URL but the r"
+    },
+    {
+        "file":  "63-workorder-workflow-developer.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/workflow/template\n\nWe attempted to make an http request to this URL but the r"
+    },
+    {
+        "file":  "63-workorder-workflow-developer.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/workflow/template\n\nWe attempted to make an http request to this URL but the r"
+    },
+    {
+        "file":  "63-workorder-workflow-developer.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/workflow/template\n\nWe attempted to make an http request to this URL but the r"
+    },
+    {
+        "file":  "63-workorder-workflow-developer.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/workflow/designer\n\nWe attempted to make an http request to this URL but the r"
+    },
+    {
+        "file":  "63-workorder-workflow-developer.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/message/template\n\nWe attempted to make an http request to this URL but the re"
+    },
+    {
+        "file":  "63-workorder-workflow-developer.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/message/records\n\nWe attempted to make an http request to this URL but the req"
+    },
+    {
+        "file":  "63-workorder-workflow-developer.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/developer/api-docs\n\nWe attempted to make an http request to this URL but the "
+    },
+    {
+        "file":  "63-workorder-workflow-developer.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/developer/api\n\nWe attempted to make an http request to this URL but the reque"
+    },
+    {
+        "file":  "63-workorder-workflow-developer.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/developer/api\n\nWe attempted to make an http request to this URL but the reque"
+    },
+    {
+        "file":  "63-workorder-workflow-developer.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/developer/oauth-apps\n\nWe attempted to make an http request to this URL but th"
+    },
+    {
+        "file":  "63-workorder-workflow-developer.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/developer/rate-limits\n\nWe attempted to make an http request to this URL but t"
+    },
+    {
+        "file":  "63-workorder-workflow-developer.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/developer/api\n\nWe attempted to make an http request to this URL but the reque"
+    },
+    {
+        "file":  "63-workorder-workflow-developer.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/developer/api\n\nWe attempted to make an http request to this URL but the reque"
+    },
+    {
+        "file":  "63-workorder-workflow-developer.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/developer/keys\n\nWe attempted to make an http request to this URL but the requ"
+    },
+    {
+        "file":  "64-misc-platform.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/platform/theme\n\nWe attempted to make an http request to this URL but the requ"
+    },
+    {
+        "file":  "64-misc-platform.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/platform/theme\n\nWe attempted to make an http request to this URL but the requ"
+    },
+    {
+        "file":  "64-misc-platform.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/platform/theme\n\nWe attempted to make an http request to this URL but the requ"
+    },
+    {
+        "file":  "64-misc-platform.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/platform/marketplace\n\nWe attempted to make an http request to this URL but th"
+    },
+    {
+        "file":  "64-misc-platform.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/platform/certificates\n\nWe attempted to make an http request to this URL but t"
+    },
+    {
+        "file":  "64-misc-platform.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/platform/licenses\n\nWe attempted to make an http request to this URL but the r"
+    },
+    {
+        "file":  "64-misc-platform.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/platform/settings\n\nWe attempted to make an http request to this URL but the r"
+    },
+    {
+        "file":  "64-misc-platform.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/open-platform/apps\n\nWe attempted to make an http request to this URL but the "
+    },
+    {
+        "file":  "64-misc-platform.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/open-platform/api-gateway\n\nWe attempted to make an http request to this URL b"
+    },
+    {
+        "file":  "64-misc-platform.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/open-platform/oauth-app\n\nWe attempted to make an http request to this URL but"
+    },
+    {
+        "file":  "64-misc-platform.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/open-platform/oauth\n\nWe attempted to make an http request to this URL but the"
+    },
+    {
+        "file":  "64-misc-platform.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/ops/deploy\n\nWe attempted to make an http request to this URL but the request "
+    },
+    {
+        "file":  "64-misc-platform.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/ops/config-map\n\nWe attempted to make an http request to this URL but the requ"
+    },
+    {
+        "file":  "64-misc-platform.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/ops/secrets\n\nWe attempted to make an http request to this URL but the request"
+    },
+    {
+        "file":  "64-misc-platform.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/help/docs\n\nWe attempted to make an http request to this URL but the request f"
+    },
+    {
+        "file":  "64-misc-platform.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/help/tutorials\n\nWe attempted to make an http request to this URL but the requ"
+    },
+    {
+        "file":  "64-misc-platform.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/help/center\n\nWe attempted to make an http request to this URL but the request"
+    },
+    {
+        "file":  "64-misc-platform.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/help/support\n\nWe attempted to make an http request to this URL but the reques"
+    },
+    {
+        "file":  "64-misc-platform.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/i18n/config\n\nWe attempted to make an http request to this URL but the request"
+    },
+    {
+        "file":  "64-misc-platform.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/i18n/locales\n\nWe attempted to make an http request to this URL but the reques"
+    },
+    {
+        "file":  "64-misc-platform.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/i18n/import-export\n\nWe attempted to make an http request to this URL but the "
+    },
+    {
+        "file":  "64-misc-platform.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/report/template\n\nWe attempted to make an http request to this URL but the req"
+    },
+    {
+        "file":  "64-misc-platform.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/report/center\n\nWe attempted to make an http request to this URL but the reque"
+    },
+    {
+        "file":  "64-misc-platform.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/report/center\n\nWe attempted to make an http request to this URL but the reque"
+    },
+    {
+        "file":  "64-misc-platform.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/simulator/charging\n\nWe attempted to make an http request to this URL but the "
+    },
+    {
+        "file":  "64-misc-platform.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "CypressError: `cy.visit()` failed trying to load:\n\nhttp://127.0.0.1:8000/simulator/charging\n\nWe attempted to make an http request to this URL but the "
+    },
+    {
+        "file":  "64-misc-platform.cy.js",
+        "title":  "[C01] 页面加载成功",
+        "error":  "AssertionError: Timed out retrying after 12000ms: Expected to find element: `#root, .ant-layout, .ant-spin-container`, but never found it."
+    },
+    {
+        "file":  "64-misc-platform.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "64-misc-platform.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "64-misc-platform.cy.js",
+        "title":  "[C23] 操作按钮至少1个",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-btn, button`, but never found it."
+    },
+    {
+        "file":  "65-auth-error-profile.cy.js",
+        "title":  "[C21] 空表单提交错误状态",
+        "error":  "AssertionError: Timed out retrying after 5000ms: Expected to find element: `.ant-form-item-explain-error, .ant-alert, [class*=\"error\"]`, but never fou"
+    },
+    {
+        "file":  "65-auth-error-profile.cy.js",
+        "title":  "[C14] Mock POST 认证请求",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `input[type=\"text\"], input:not([type=\"password\"])`, but never found it."
+    },
+    {
+        "file":  "65-auth-error-profile.cy.js",
+        "title":  "[C21] 空表单提交错误状态",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-form input`, but never found it."
+    },
+    {
+        "file":  "65-auth-error-profile.cy.js",
+        "title":  "[C25] 端到端认证\u0026个人信息链路",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `input`, but never found it."
+    },
+    {
+        "file":  "65-auth-error-profile.cy.js",
+        "title":  "[C09] 提交/保存/登录按钮",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `button:contains(\"登录\"), button:contains(\"提交\"), button:contains(\"保存\"), butto"
+    },
+    {
+        "file":  "65-auth-error-profile.cy.js",
+        "title":  "[C14] Mock POST 认证请求",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `input[type=\"text\"], input:not([type=\"password\"])`, but never found it."
+    },
+    {
+        "file":  "65-auth-error-profile.cy.js",
+        "title":  "[C21] 空表单提交错误状态",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-form input`, but never found it."
+    },
+    {
+        "file":  "65-auth-error-profile.cy.js",
+        "title":  "[C25] 端到端认证\u0026个人信息链路",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `input`, but never found it."
+    },
+    {
+        "file":  "65-auth-error-profile.cy.js",
+        "title":  "[C09] 提交/保存/登录按钮",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `button:contains(\"登录\"), button:contains(\"提交\"), button:contains(\"保存\"), butto"
+    },
+    {
+        "file":  "65-auth-error-profile.cy.js",
+        "title":  "[C14] Mock POST 认证请求",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `input[type=\"text\"], input:not([type=\"password\"])`, but never found it."
+    },
+    {
+        "file":  "65-auth-error-profile.cy.js",
+        "title":  "[C21] 空表单提交错误状态",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-form input`, but never found it."
+    },
+    {
+        "file":  "65-auth-error-profile.cy.js",
+        "title":  "[C25] 端到端认证\u0026个人信息链路",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `input`, but never found it."
+    },
+    {
+        "file":  "65-auth-error-profile.cy.js",
+        "title":  "[C14] Mock POST 认证请求",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `input[type=\"text\"], input:not([type=\"password\"])`, but never found it."
+    },
+    {
+        "file":  "65-auth-error-profile.cy.js",
+        "title":  "[C21] 空表单提交错误状态",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-form input`, but never found it."
+    },
+    {
+        "file":  "65-auth-error-profile.cy.js",
+        "title":  "[C25] 端到端认证\u0026个人信息链路",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `input`, but never found it."
+    },
+    {
+        "file":  "65-auth-error-profile.cy.js",
+        "title":  "[C09] 提交/保存/登录按钮",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `button:contains(\"登录\"), button:contains(\"提交\"), button:contains(\"保存\"), butto"
+    },
+    {
+        "file":  "65-auth-error-profile.cy.js",
+        "title":  "[C14] Mock POST 认证请求",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `input[type=\"text\"], input:not([type=\"password\"])`, but never found it."
+    },
+    {
+        "file":  "65-auth-error-profile.cy.js",
+        "title":  "[C21] 空表单提交错误状态",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-form input`, but never found it."
+    },
+    {
+        "file":  "65-auth-error-profile.cy.js",
+        "title":  "[C25] 端到端认证\u0026个人信息链路",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `input`, but never found it."
+    },
+    {
+        "file":  "65-auth-error-profile.cy.js",
+        "title":  "[C09] 提交/保存/登录按钮",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `button:contains(\"登录\"), button:contains(\"提交\"), button:contains(\"保存\"), butto"
+    },
+    {
+        "file":  "65-auth-error-profile.cy.js",
+        "title":  "[C14] Mock POST 认证请求",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `input[type=\"text\"], input:not([type=\"password\"])`, but never found it."
+    },
+    {
+        "file":  "65-auth-error-profile.cy.js",
+        "title":  "[C21] 空表单提交错误状态",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-form input`, but never found it."
+    },
+    {
+        "file":  "65-auth-error-profile.cy.js",
+        "title":  "[C25] 端到端认证\u0026个人信息链路",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `input`, but never found it."
+    },
+    {
+        "file":  "65-auth-error-profile.cy.js",
+        "title":  "[C14] Mock POST 认证请求",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `input[type=\"text\"], input:not([type=\"password\"])`, but never found it."
+    },
+    {
+        "file":  "65-auth-error-profile.cy.js",
+        "title":  "[C21] 空表单提交错误状态",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `.ant-form input`, but never found it."
+    },
+    {
+        "file":  "65-auth-error-profile.cy.js",
+        "title":  "[C25] 端到端认证\u0026个人信息链路",
+        "error":  "AssertionError: Timed out retrying after 8000ms: Expected to find element: `input`, but never found it."
+    }
+]

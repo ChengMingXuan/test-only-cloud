@@ -1,4 +1,4 @@
-﻿# ═══════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════
 # k6 性能压测工作流
 # 3,651 检查点 | 仅 smoke 模式（CI安全）
 # ═══════════════════════════════════════════════════════════════════
@@ -11,11 +11,6 @@ permissions:
   contents: write
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'testing/k6/**'
-      - '.github/workflows/test-k6.yml'
   workflow_dispatch:
     inputs:
       scenario:
@@ -34,7 +29,7 @@ concurrency:
 
 jobs:
   k6:
-    name: ⚡ k6 (${{ github.event.inputs.scenario || 'smoke' }})
+    name: ⚡ k6 (${{ github.event.inputs.scenario || 'full' }})
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -73,7 +68,7 @@ jobs:
         id: test
         continue-on-error: true
         run: |
-          SCENARIO="${{ github.event.inputs.scenario || 'smoke' }}"
+          SCENARIO="${{ github.event.inputs.scenario || 'full' }}"
           mkdir -p TestResults
           
           # CI 模式：连接 Mock 服务器（localhost:8000）
@@ -108,7 +103,7 @@ jobs:
           
           - **执行时间**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
           - **Git Commit**: ${{ github.sha }}
-          - **场景**: ${{ github.event.inputs.scenario || 'smoke' }}
+          - **场景**: ${{ github.event.inputs.scenario || 'full' }}
           
           ## 测试结果
           
@@ -139,7 +134,7 @@ jobs:
           chmod +x .github/scripts/generate-ci-report.sh
           ./.github/scripts/generate-ci-report.sh k6 \
             --output TestResults/k6-output.txt \
-            --level "${{ github.event.inputs.scenario || 'smoke' }}"
+            --level "${{ github.event.inputs.scenario || 'full' }}"
 
       - name: 💾 提交报告到仓库
         if: always()

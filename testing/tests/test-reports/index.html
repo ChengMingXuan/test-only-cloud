@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JGSY.AGI 测试分析报告 — 2026-03-06</title>
+<style>
+  :root {
+    --green: #10b981; --red: #ef4444; --yellow: #f59e0b;
+    --blue: #3b82f6; --gray: #6b7280; --bg: #f9fafb;
+    --card: #ffffff; --border: #e5e7eb; --text: #111827;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', -apple-system, sans-serif; background: var(--bg); color: var(--text); }
+  .header { background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%); color: #fff; padding: 32px 40px; }
+  .header h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+  .header .sub { font-size: 14px; opacity: .75; }
+  .container { max-width: 1300px; margin: 0 auto; padding: 32px 24px; }
+  .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; }
+  .card .label { font-size: 12px; color: var(--gray); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
+  .card .value { font-size: 40px; font-weight: 700; line-height: 1; }
+  .card .sub { font-size: 13px; color: var(--gray); margin-top: 6px; }
+  .green { color: var(--green); } .red { color: var(--red); } .yellow { color: var(--yellow); } .blue { color: var(--blue); }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 99px; font-size: 12px; font-weight: 600; }
+  .badge-green { background: #d1fae5; color: #065f46; }
+  .badge-red { background: #fee2e2; color: #991b1b; }
+  .badge-yellow { background: #fef3c7; color: #92400e; }
+  .section { margin-bottom: 40px; }
+  .section h2 { font-size: 18px; font-weight: 600; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--border); }
+  .tool-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: #f3f4f6; text-align: left; padding: 10px 12px; font-weight: 600; border-bottom: 2px solid var(--border); }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:hover td { background: #f9fafb; }
+  .prog-bar { height: 8px; border-radius: 4px; background: #e5e7eb; overflow: hidden; margin-top: 4px; }
+  .prog-fill { height: 100%; border-radius: 4px; background: var(--green); }
+  .prog-fill.warn { background: var(--yellow); }
+  .prog-fill.danger { background: var(--red); }
+  .tool-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .tool-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .icon-green { background: #d1fae5; }
+  .icon-yellow { background: #fef3c7; }
+  .icon-red { background: #fee2e2; }
+  .tool-card-title { font-size: 15px; font-weight: 600; }
+  .stat-row { display: flex; justify-content: space-between; margin: 6px 0; font-size: 13px; }
+  .fail-list { font-size: 12px; color: var(--gray); background: #f8fafc; border-radius: 6px; padding: 10px 14px; margin-top: 10px; max-height: 200px; overflow-y: auto; }
+  .fail-list li { padding: 3px 0; border-bottom: 1px solid #f1f5f9; }
+  .fail-list li:last-child { border: 0; }
+  .fail-tag { font-size: 11px; padding: 1px 6px; border-radius: 4px; margin-left: 4px; }
+  .syntax-tag { background: #fee2e2; color: #991b1b; }
+  .render-tag { background: #fef3c7; color: #92400e; }
+  .blank-tag { background: #ede9fe; color: #5b21b6; }
+  .auth-tag { background: #e0f2fe; color: #0369a1; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .module-table th, .module-table td { font-size: 12px; padding: 7px 10px; }
+  .status-ok { color: var(--green); font-weight: 600; }
+  .status-warn { color: var(--yellow); font-weight: 600; }
+  .status-fail { color: var(--red); font-weight: 600; }
+  .footer { text-align: center; padding: 24px; color: var(--gray); font-size: 12px; border-top: 1px solid var(--border); margin-top: 40px; }
+  @media(max-width:900px){ .summary-grid{grid-template-columns:1fr 1fr;} .tool-cards{grid-template-columns:1fr;} .two-col{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🧪 JGSY.AGI 测试分析报告</h1>
+  <div class="sub">生成时间：2026-03-06 &nbsp;|&nbsp; 三工具联合测试（pytest + Cypress + Puppeteer）&nbsp;|&nbsp; 前端服务：Mock 模式</div>
+</div>
+
+<div class="container">
+
+  <!-- ===== 总览卡片 ===== -->
+  <div class="summary-grid">
+    <div class="card">
+      <div class="label">总用例数</div>
+      <div class="value blue">1388</div>
+      <div class="sub">pytest 285 + Cypress 483 + Puppeteer 620</div>
+    </div>
+    <div class="card">
+      <div class="label">通过</div>
+      <div class="value green">1353</div>
+      <div class="sub">通过率 97.48%</div>
+    </div>
+    <div class="card">
+      <div class="label">失败</div>
+      <div class="value red">35</div>
+      <div class="sub">Puppeteer 页面渲染 35 个（未实现页面）</div>
+    </div>
+    <div class="card">
+      <div class="label">Cypress Spec 语法错误</div>
+      <div class="value yellow">16</div>
+      <div class="sub">文件 50-65.cy.js 待修复</div>
+    </div>
+  </div>
+
+  <!-- ===== 三工具详情 ===== -->
+  <div class="section">
+    <h2>📊 各工具测试结果</h2>
+    <div class="tool-cards">
+
+      <!-- pytest -->
+      <div class="card">
+        <div class="tool-header">
+          <div class="tool-icon icon-green">🐍</div>
+          <div>
+            <div class="tool-card-title">pytest — API 接口测试</div>
+            <span class="badge badge-green">全部通过</span>
+          </div>
+        </div>
+        <div class="stat-row"><span>总用例</span><strong>285</strong></div>
+        <div class="stat-row"><span>通过</span><strong class="green">285</strong></div>
+        <div class="stat-row"><span>失败</span><strong class="red">0</strong></div>
+        <div class="stat-row"><span>耗时</span><span>18.79s</span></div>
+        <div class="stat-row"><span>通过率</span><strong>100%</strong></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:100%"></div></div>
+        <div style="font-size:12px;color:var(--gray);margin-top:10px;">
+          后端服务在线 · Gateway:5000 鉴权正常<br>
+          涵盖：服务端点 / 租户鉴权 / CRUD / 安全 / 集成
+        </div>
+      </div>
+
+      <!-- Cypress -->
+      <div class="card">
+        <div class="tool-header">
+          <div class="tool-icon icon-green">🌲</div>
+          <div>
+            <div class="tool-card-title">Cypress — E2E UI 测试</div>
+            <span class="badge badge-green">全部通过</span>
+          </div>
+        </div>
+        <div class="stat-row"><span>Spec 文件</span><strong>49 个</strong></div>
+        <div class="stat-row"><span>通过用例</span><strong class="green">483</strong></div>
+        <div class="stat-row"><span>失败用例</span><strong class="red">0</strong></div>
+        <div class="stat-row"><span>耗时</span><span>1分35秒</span></div>
+        <div class="stat-row"><span>通过率</span><strong>100%</strong></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:100%"></div></div>
+        <div style="font-size:12px;color:var(--yellow);margin-top:10px;">
+          ⚠️ 另有 16 个扩展 Spec（50-65）存在语法错误（SyntaxError），未计入通过数
+        </div>
+      </div>
+
+      <!-- Puppeteer -->
+      <div class="card">
+        <div class="tool-header">
+          <div class="tool-icon icon-yellow">🤖</div>
+          <div>
+            <div class="tool-card-title">Puppeteer — 全页面渲染检查</div>
+            <span class="badge badge-yellow">94.35% 通过</span>
+          </div>
+        </div>
+        <div class="stat-row"><span>总路由数</span><strong>620</strong></div>
+        <div class="stat-row"><span>通过</span><strong class="green">585</strong></div>
+        <div class="stat-row"><span>失败</span><strong class="red">35</strong></div>
+        <div class="stat-row"><span>通过率</span><strong>94.35%</strong></div>
+        <div class="prog-bar"><div class="prog-fill warn" style="width:94.35%"></div></div>
+        <div style="font-size:12px;color:var(--gray);margin-top:10px;">
+          前端 Mock 模式（localhost:8000）<br>
+          失败均为"扩展功能模块"未实现组件
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== Puppeteer 失败分析 ===== -->
+  <div class="section">
+    <h2>❌ Puppeteer 35 个失败页面分析</h2>
+    <div class="two-col">
+      <div>
+        <table>
+          <thead><tr><th>失败类型</th><th>数量</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge fail-tag render-tag">render-error</span></td><td><strong>28</strong></td><td>Ant Design 系统级错误组件（页面未实现）</td></tr>
+            <tr><td><span class="badge fail-tag blank-tag">blank</span></td><td><strong>5</strong></td><td>页面内容过少（bodyHTML=131字节）</td></tr>
+            <tr><td><span class="badge fail-tag syntax-tag">navigation-error</span></td><td><strong>1</strong></td><td>net::ERR_ABORTED（内容广告页）</td></tr>
+            <tr><td><span class="badge fail-tag auth-tag">auth-failed</span></td><td><strong>1</strong></td><td>登录日志页权限拦截</td></tr>
+          </tbody>
+        </table>
+
+        <br>
+        <table>
+          <thead><tr><th>失败模块</th><th>失败/总数</th><th>通过率</th></tr></thead>
+          <tbody>
+            <tr><td>智能AI-扩展</td><td class="red">0/9</td><td>0%</td></tr>
+            <tr><td>建站系统-扩展</td><td class="red">0/6</td><td>0%</td></tr>
+            <tr><td>平台管理-扩展</td><td class="red">0/3</td><td>0%</td></tr>
+            <tr><td>代理商管理</td><td class="red">0/2</td><td>0%</td></tr>
+            <tr><td>门户管理-扩展</td><td class="red">0/2</td><td>0%</td></tr>
+            <tr><td>内容管理</td><td class="yellow">7/12</td><td>58%</td></tr>
+            <tr><td>规则引擎-扩展</td><td class="red">0/1</td><td>0%</td></tr>
+            <tr><td>报表中心-扩展</td><td class="red">0/1</td><td>0%</td></tr>
+            <tr><td>租户管理-扩展</td><td class="red">0/1</td><td>0%</td></tr>
+            <tr><td>充电管理-扩展</td><td class="red">0/1</td><td>0%</td></tr>
+            <tr><td>设备管理-扩展</td><td class="red">0/1</td><td>0%</td></tr>
+            <tr><td>系统监控</td><td class="yellow">6/7</td><td>86%</td></tr>
+            <tr><td>租户-状态</td><td class="yellow">1/3</td><td>33%</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div>
+        <div class="fail-list">
+          <ul style="list-style:none;">
+            <li>系统监控 | 登录日志 <span class="fail-tag auth-tag">auth-failed</span></li>
+            <li>内容管理 | 内容管理 <span class="fail-tag blank-tag">blank</span></li>
+            <li>内容管理 | 媒体库 <span class="fail-tag blank-tag">blank</span></li>
+            <li>内容管理 | 模板管理 <span class="fail-tag blank-tag">blank</span></li>
+            <li>内容管理 | 评论管理 <span class="fail-tag blank-tag">blank</span></li>
+            <li>内容管理 | 广告管理 <span class="fail-tag syntax-tag">nav-error</span></li>
+            <li>代理商管理 | 代理商列表 <span class="fail-tag render-tag">render-error</span></li>
+            <li>代理商管理 | 佣金管理 <span class="fail-tag render-tag">render-error</span></li>
+            <li>充电管理-扩展 | OCPP调试 <span class="fail-tag render-tag">render-error</span></li>
+            <li>设备管理-扩展 | 设备数据采集 <span class="fail-tag render-tag">render-error</span></li>
+            <li>智能AI-扩展 | AI模型管理 <span class="fail-tag render-tag">render-error</span></li>
+            <li>智能AI-扩展 | AI训练管理 <span class="fail-tag render-tag">render-error</span></li>
+            <li>智能AI-扩展 | 碳交易AI <span class="fail-tag render-tag">render-error</span></li>
+            <li>智能AI-扩展 | 虚拟电厂AI <span class="fail-tag render-tag">render-error</span></li>
+            <li>智能AI-扩展 | 需求响应AI <span class="fail-tag render-tag">render-error</span></li>
+            <li>智能AI-扩展 | 故障预警AI <span class="fail-tag render-tag">render-error</span></li>
+            <li>智能AI-扩展 | 并网管理AI <span class="fail-tag render-tag">render-error</span></li>
+            <li>智能AI-扩展 | 市场交易AI <span class="fail-tag render-tag">render-error</span></li>
+            <li>智能AI-扩展 | 峰谷套利AI <span class="fail-tag render-tag">render-error</span></li>
+            <li>建站系统-扩展 | 我的站点 <span class="fail-tag render-tag">render-error</span></li>
+            <li>建站系统-扩展 | 页面管理 <span class="fail-tag render-tag">render-error</span></li>
+            <li>建站系统-扩展 | 预览站点 <span class="fail-tag render-tag">render-error</span></li>
+            <li>建站系统-扩展 | 静态生成 <span class="fail-tag render-tag">render-error</span></li>
+            <li>建站系统-扩展 | 模板预览 <span class="fail-tag render-tag">render-error</span></li>
+            <li>建站系统-扩展 | 可视化编辑器 <span class="fail-tag render-tag">render-error</span></li>
+            <li>平台管理-扩展 | 代理商管理 <span class="fail-tag render-tag">render-error</span></li>
+            <li>平台管理-扩展 | 主题设置 <span class="fail-tag render-tag">render-error</span></li>
+            <li>平台管理-扩展 | 工单管理 <span class="fail-tag render-tag">render-error</span></li>
+            <li>门户管理-扩展 | 站点设置 <span class="fail-tag render-tag">render-error</span></li>
+            <li>门户管理-扩展 | 门户模板 <span class="fail-tag render-tag">render-error</span></li>
+            <li>规则引擎-扩展 | 规则设计器 <span class="fail-tag render-tag">render-error</span></li>
+            <li>报表中心-扩展 | 报表中心 <span class="fail-tag render-tag">render-error</span></li>
+            <li>租户管理-扩展 | 新建租户 <span class="fail-tag render-tag">render-error</span></li>
+            <li>租户-状态 | 活跃租户 <span class="fail-tag blank-tag">blank</span></li>
+            <li>租户-状态 | 到期租户 <span class="fail-tag syntax-tag">timeout</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Cypress SyntaxError ===== -->
+  <div class="section">
+    <h2>⚠️ Cypress 16 个扩展 Spec 语法错误</h2>
+    <p style="font-size:13px;color:var(--gray);margin-bottom:12px;">这些文件是本次新生成的扩展测试，Babel 编译时报 Unexpected token，需要修复括号嵌套问题。</p>
+    <table>
+      <thead><tr><th>文件名</th><th>错误行</th><th>错误类型</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>50-system-full-b.cy.js</td><td>63:11</td><td class="red">SyntaxError</td><td>缺少闭合括号</td></tr>
+        <tr><td>51-monitor-full.cy.js</td><td>57:11</td><td class="red">SyntaxError</td><td>缺少闭合括号</td></tr>
+        <tr><td>52-security-full.cy.js</td><td>54:11</td><td class="red">SyntaxError</td><td>缺少闭合括号</td></tr>
+        <tr><td>53-charging-settle-finance-station.cy.js</td><td>59:11</td><td class="red">SyntaxError</td><td>缺少闭合括号</td></tr>
+        <tr><td>54-device-ingestion-ruleengine.cy.js</td><td>48:208</td><td class="red">SyntaxError</td><td>行内括号未闭合</td></tr>
+        <tr><td>55-ai-iotcloud-phm.cy.js</td><td>48:208</td><td class="red">SyntaxError</td><td>行内括号未闭合</td></tr>
+        <tr><td>56-energy-vpp-microgrid-pvessc.cy.js</td><td>48:208</td><td class="red">SyntaxError</td><td>行内括号未闭合</td></tr>
+        <tr><td>57-electrade-carbontrade-demandresp.cy.js</td><td>48:208</td><td class="red">SyntaxError</td><td>行内括号未闭合</td></tr>
+        <tr><td>58-energyeff-multienergy-safecontrol-deviceops.cy.js</td><td>48:208</td><td class="red">SyntaxError</td><td>行内括号未闭合</td></tr>
+        <tr><td>59-blockchain-digitaltwin.cy.js</td><td>48:208</td><td class="red">SyntaxError</td><td>行内括号未闭合</td></tr>
+        <tr><td>60-analytics-builder.cy.js</td><td>48:208</td><td class="red">SyntaxError</td><td>行内括号未闭合</td></tr>
+        <tr><td>61-content-portal-mgmt.cy.js</td><td>48:208</td><td class="red">SyntaxError</td><td>行内括号未闭合</td></tr>
+        <tr><td>62-tenant-account.cy.js</td><td>48:208</td><td class="red">SyntaxError</td><td>行内括号未闭合</td></tr>
+        <tr><td>63-workorder-workflow-developer.cy.js</td><td>48:208</td><td class="red">SyntaxError</td><td>行内括号未闭合</td></tr>
+        <tr><td>64-misc-platform.cy.js</td><td>48:208</td><td class="red">SyntaxError</td><td>行内括号未闭合</td></tr>
+        <tr><td>65-auth-error-profile.cy.js</td><td>43:208</td><td class="red">SyntaxError</td><td>行内括号未闭合</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== Puppeteer 按模块通过率 ===== -->
+  <div class="section">
+    <h2>📐 Puppeteer 全模块通过率（620 路由）</h2>
+    <div class="two-col">
+      <table class="module-table">
+        <thead><tr><th>模块</th><th>通过/总数</th><th>通过率</th></tr></thead>
+        <tbody>
+          <tr><td>核心</td><td>2/2</td><td class="status-ok">100%</td></tr>
+          <tr><td>模拟器</td><td>4/4</td><td class="status-ok">100%</td></tr>
+          <tr><td>租户管理</td><td>7/7</td><td class="status-ok">100%</td></tr>
+          <tr><td>充电管理</td><td>9/9</td><td class="status-ok">100%</td></tr>
+          <tr><td>场站管理</td><td>3/3</td><td class="status-ok">100%</td></tr>
+          <tr><td>结算管理</td><td>4/4</td><td class="status-ok">100%</td></tr>
+          <tr><td>财务管理</td><td>8/8</td><td class="status-ok">100%</td></tr>
+          <tr><td>工单管理</td><td>10/10</td><td class="status-ok">100%</td></tr>
+          <tr><td>平台管理</td><td>3/3</td><td class="status-ok">100%</td></tr>
+          <tr><td>系统管理</td><td>24/24</td><td class="status-ok">100%</td></tr>
+          <tr><td>消息中心</td><td>4/4</td><td class="status-ok">100%</td></tr>
+          <tr><td>流程管理</td><td>3/3</td><td class="status-ok">100%</td></tr>
+          <tr><td>报表中心</td><td>2/2</td><td class="status-ok">100%</td></tr>
+          <tr><td>设备台账</td><td>4/4</td><td class="status-ok">100%</td></tr>
+          <tr><td>设备监控</td><td>3/3</td><td class="status-ok">100%</td></tr>
+          <tr><td>设备运维</td><td>6/6</td><td class="status-ok">100%</td></tr>
+          <tr><td>数据采集</td><td>5/5</td><td class="status-ok">100%</td></tr>
+          <tr><td>规则引擎</td><td>4/4</td><td class="status-ok">100%</td></tr>
+          <tr><td>区块链</td><td>9/9</td><td class="status-ok">100%</td></tr>
+          <tr><td>智能AI</td><td>3/3</td><td class="status-ok">100%</td></tr>
+          <tr><td>智能AI-预测</td><td>3/3</td><td class="status-ok">100%</td></tr>
+          <tr><td>智能AI-场景</td><td>7/7</td><td class="status-ok">100%</td></tr>
+          <tr><td>智能AI-设置</td><td>2/2</td><td class="status-ok">100%</td></tr>
+          <tr><td>智能AI-健康</td><td>7/7</td><td class="status-ok">100%</td></tr>
+          <tr><td>数字孪生</td><td>11/11</td><td class="status-ok">100%</td></tr>
+          <tr><td>数字孪生-扩展</td><td>5/5</td><td class="status-ok">100%</td></tr>
+          <tr><td>开发工具</td><td>8/8</td><td class="status-ok">100%</td></tr>
+          <tr><td>个人中心</td><td>10/10</td><td class="status-ok">100%</td></tr>
+          <tr><td>数据分析</td><td>13/13</td><td class="status-ok">100%</td></tr>
+          <tr><td>安全中心</td><td>6/6</td><td class="status-ok">100%</td></tr>
+          <tr><td>日志中心</td><td>4/4</td><td class="status-ok">100%</td></tr>
+          <tr><td>建站系统</td><td>8/8</td><td class="status-ok">100%</td></tr>
+          <tr><td>门户管理</td><td>12/12</td><td class="status-ok">100%</td></tr>
+        </tbody>
+      </table>
+      <table class="module-table">
+        <thead><tr><th>模块</th><th>通过/总数</th><th>通过率</th></tr></thead>
+        <tbody>
+          <tr><td>能源-VPP</td><td>7/7</td><td class="status-ok">100%</td></tr>
+          <tr><td>能源-微电网</td><td>6/6</td><td class="status-ok">100%</td></tr>
+          <tr><td>能源-光储充</td><td>9/9</td><td class="status-ok">100%</td></tr>
+          <tr><td>能源-电力交易</td><td>12/12</td><td class="status-ok">100%</td></tr>
+          <tr><td>能源-碳交易</td><td>7/7</td><td class="status-ok">100%</td></tr>
+          <tr><td>能源-需求响应</td><td>6/6</td><td class="status-ok">100%</td></tr>
+          <tr><td>能源-能效</td><td>6/6</td><td class="status-ok">100%</td></tr>
+          <tr><td>能源-多能互补</td><td>5/5</td><td class="status-ok">100%</td></tr>
+          <tr><td>能源-SEHS</td><td>5/5</td><td class="status-ok">100%</td></tr>
+          <tr><td>能源-安全管控</td><td>5/5</td><td class="status-ok">100%</td></tr>
+          <tr><td>内容管理-扩展</td><td>1/1</td><td class="status-ok">100%</td></tr>
+          <tr><td>充电-订单状态</td><td>5/5</td><td class="status-ok">100%</td></tr>
+          <tr><td>充电桩-状态</td><td>4/4</td><td class="status-ok">100%</td></tr>
+          <tr><td>工单-类型/状态</td><td>7/7</td><td class="status-ok">100%</td></tr>
+          <tr><td>数据分析-时间</td><td>11/11</td><td class="status-ok">100%</td></tr>
+          <tr><td>安全-事件类型</td><td>4/4</td><td class="status-ok">100%</td></tr>
+          <tr><td>系统监控</td><td>6/7</td><td class="status-warn">86%</td></tr>
+          <tr><td>内容管理</td><td>7/12</td><td class="status-warn">58%</td></tr>
+          <tr><td>租户-状态</td><td>1/3</td><td class="status-warn">33%</td></tr>
+          <tr><td>代理商管理</td><td>0/2</td><td class="status-fail">0%</td></tr>
+          <tr><td>充电管理-扩展</td><td>0/1</td><td class="status-fail">0%</td></tr>
+          <tr><td>设备管理-扩展</td><td>0/1</td><td class="status-fail">0%</td></tr>
+          <tr><td>智能AI-扩展</td><td>0/9</td><td class="status-fail">0%</td></tr>
+          <tr><td>建站系统-扩展</td><td>0/6</td><td class="status-fail">0%</td></tr>
+          <tr><td>平台管理-扩展</td><td>0/3</td><td class="status-fail">0%</td></tr>
+          <tr><td>门户管理-扩展</td><td>0/2</td><td class="status-fail">0%</td></tr>
+          <tr><td>规则引擎-扩展</td><td>0/1</td><td class="status-fail">0%</td></tr>
+          <tr><td>报表中心-扩展</td><td>0/1</td><td class="status-fail">0%</td></tr>
+          <tr><td>租户管理-扩展</td><td>0/1</td><td class="status-fail">0%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== 待办 ===== -->
+  <div class="section">
+    <h2>🔧 待处理问题</h2>
+    <table>
+      <thead><tr><th>#</th><th>优先级</th><th>问题</th><th>影响范围</th><th>状态</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><span class="badge badge-red">P0</span></td>
+          <td>修复 Cypress e2e/50-65.cy.js 16 个文件 SyntaxError（括号嵌套问题）</td>
+          <td>约 200+ 条潜在 E2E 用例无法运行</td>
+          <td><span class="badge badge-red">待修复</span></td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><span class="badge badge-yellow">P1</span></td>
+          <td>实现"扩展模块"前端页面组件（智能AI-扩展 9 个、建站系统-扩展 6 个等）</td>
+          <td>Puppeteer 35 个 render-error</td>
+          <td><span class="badge badge-yellow">待开发</span></td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><span class="badge badge-yellow">P1</span></td>
+          <td>修复内容管理 5 个页面空白（模块未注册或路由配置问题）</td>
+          <td>内容管理模块</td>
+          <td><span class="badge badge-yellow">待排查</span></td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><span class="badge" style="background:#e0f2fe;color:#0369a1">P2</span></td>
+          <td>系统监控 / 登录日志 auth-failed（权限配置问题）</td>
+          <td>1 个页面</td>
+          <td><span class="badge badge-yellow">待确认</span></td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><span class="badge" style="background:#e0f2fe;color:#0369a1">P2</span></td>
+          <td>租户"到期租户"页面超时（protocolTimeout）</td>
+          <td>1 个页面</td>
+          <td><span class="badge badge-yellow">待排查</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<div class="footer">
+  JGSY.AGI AIOps v2 &nbsp;|&nbsp; 测试报告生成于 2026-03-06 &nbsp;|&nbsp; pytest 285 / Cypress 483 / Puppeteer 585 通过
+</div>
+
+</body>
+</html>

@@ -1,4 +1,4 @@
-﻿# ═══════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════
 # pytest 自动化测试工作流
 # 57,774 用例 | Python 3.11 | 100% Mock（零外部依赖）
 # ═══════════════════════════════════════════════════════════════════
@@ -11,19 +11,12 @@ permissions:
   contents: write
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'testing/tests/**/*.py'
-      - 'testing/tests/pytest.ini'
-      - 'testing/tests/requirements.txt'
-      - '.github/workflows/test-pytest.yml'
   workflow_dispatch:
     inputs:
       test_level:
         description: '测试级别'
         required: true
-        default: 'smoke'
+        default: 'full'
         type: choice
         options:
           - smoke
@@ -40,7 +33,7 @@ concurrency:
 
 jobs:
   pytest:
-    name: 🐍 pytest (${{ github.event.inputs.test_level || 'smoke' }})
+    name: 🐍 pytest (${{ github.event.inputs.test_level || 'full' }})
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
@@ -65,7 +58,7 @@ jobs:
         working-directory: testing/tests
         continue-on-error: true
         run: |
-          LEVEL="${{ github.event.inputs.test_level || 'smoke' }}"
+          LEVEL="${{ github.event.inputs.test_level || 'full' }}"
           MARKER="${{ github.event.inputs.marker }}"
           TIMESTAMP=$(date +%Y%m%d_%H%M%S)
           
@@ -100,7 +93,7 @@ jobs:
           echo "- **执行时间**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> test-error-reports/latest/pytest-errors.md
           echo "- **Git Commit**: ${{ github.sha }}" >> test-error-reports/latest/pytest-errors.md
           echo "- **触发方式**: ${{ github.event_name }}" >> test-error-reports/latest/pytest-errors.md
-          echo "- **测试级别**: ${{ github.event.inputs.test_level || 'smoke' }}" >> test-error-reports/latest/pytest-errors.md
+          echo "- **测试级别**: ${{ github.event.inputs.test_level || 'full' }}" >> test-error-reports/latest/pytest-errors.md
           echo "" >> test-error-reports/latest/pytest-errors.md
           
           if [ -f TestResults/pytest-results.xml ]; then
@@ -152,7 +145,7 @@ jobs:
           ./.github/scripts/generate-ci-report.sh pytest \
             --xml TestResults/pytest-results.xml \
             --output TestResults/pytest-output.txt \
-            --level "${{ github.event.inputs.test_level || 'smoke' }}"
+            --level "${{ github.event.inputs.test_level || 'full' }}"
 
       - name: 💾 提交报告到仓库
         if: always()

@@ -11,11 +11,6 @@ permissions:
   contents: write
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'testing/tests/selenium-tests/**'
-      - '.github/workflows/test-selenium.yml'
   workflow_dispatch:
     inputs:
       browser:

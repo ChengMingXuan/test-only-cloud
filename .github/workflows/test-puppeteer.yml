@@ -11,11 +11,6 @@ permissions:
   contents: write
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'testing/tests/puppeteer-tests/**'
-      - '.github/workflows/test-puppeteer.yml'
   workflow_dispatch:
     inputs:
       test_type:

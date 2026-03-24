@@ -13,11 +13,6 @@ permissions:
   contents: write
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'testing/JGSY.AGI.Test/**'
-      - '.github/workflows/test-integration.yml'
   workflow_dispatch:
 
 concurrency:

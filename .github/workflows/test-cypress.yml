@@ -1,4 +1,4 @@
-﻿# ═══════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════
 # Cypress UI 交互测试工作流
 # 9,877 用例 | Node 18 | cy.intercept() 全量 Mock
 # ═══════════════════════════════════════════════════════════════════
@@ -11,17 +11,12 @@ permissions:
   contents: write
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'testing/tests/cypress-tests/**'
-      - '.github/workflows/test-cypress.yml'
   workflow_dispatch:
     inputs:
       test_level:
         description: '测试级别'
         required: true
-        default: 'smoke'
+        default: 'full'
         type: choice
         options:
           - smoke
@@ -34,7 +29,7 @@ concurrency:
 
 jobs:
   cypress:
-    name: 🌲 Cypress (${{ github.event.inputs.test_level || 'smoke' }})
+    name: 🌲 Cypress (${{ github.event.inputs.test_level || 'full' }})
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
@@ -56,7 +51,7 @@ jobs:
         working-directory: testing/tests/cypress-tests
         continue-on-error: true
         run: |
-          LEVEL="${{ github.event.inputs.test_level || 'smoke' }}"
+          LEVEL="${{ github.event.inputs.test_level || 'full' }}"
           
           mkdir -p ../../../TestResults
           # 所有 spec 在 e2e/ 根目录下，不区分 smoke/standard
@@ -74,7 +69,7 @@ jobs:
           - **执行时间**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
           - **Git Commit**: ${{ github.sha }}
           - **触发方式**: ${{ github.event_name }}
-          - **测试级别**: ${{ github.event.inputs.test_level || 'smoke' }}
+          - **测试级别**: ${{ github.event.inputs.test_level || 'full' }}
           
           ## 失败详情
           
@@ -106,7 +101,7 @@ jobs:
           chmod +x .github/scripts/generate-ci-report.sh
           ./.github/scripts/generate-ci-report.sh cypress \
             --output TestResults/cypress-output.txt \
-            --level "${{ github.event.inputs.test_level || 'smoke' }}"
+            --level "${{ github.event.inputs.test_level || 'full' }}"
 
       - name: 💾 提交报告到仓库
         if: always()

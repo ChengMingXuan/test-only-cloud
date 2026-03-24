@@ -1,73 +1,15 @@
-# ═══════════════════════════════════════════════════════════════════
-# test-only-cloud .gitignore
-# 测试专用仓库 - 排除所有非测试内容
-# ═══════════════════════════════════════════════════════════════════
-
-# ── 编译产物 ──
-**/bin/
-**/obj/
-**/publish/
-
-# ── 依赖包 ──
-**/node_modules/
-# package-lock.json：保留 testing 下的 lock 文件供 CI npm ci 使用
-/package-lock.json
-!testing/**/package-lock.json
-
-# ── Python 虚拟环境 ──
-**/venv/
-**/env/
-**/.venv/
-
-# ── Python 缓存 ──
-**/__pycache__/
-**/.pytest_cache/
-**/.mypy_cache/
-*.pyc
-*.pyo
-
-# ── 测试临时产物（CI自动生成） ──
-testing/tests/cypress-tests/reports/
-testing/tests/cypress-tests/*.log
-testing/tests/cypress-tests/debug-*.txt
-testing/tests/playwright-tests/test-results/
-testing/tests/playwright-tests/playwright-report/
-testing/tests/puppeteer-tests/screenshots/
-testing/TestResults/
-TestResults/atomic/
-TestResults/reports/
-TestResults/*.xml
-TestResults/*.json
-TestResults/*.md
-
-# ── 大文件排除（超过 GitHub 限制） ──
-testing/JGSY.AGI.Test/coverage/
-testing/tests/blockchain/performance_results.txt
-testing/k6/results/
-**/*-output.json
-
-# ── 日志 ──
-scripts/logs/
-**/*.log
-
-# ── 环境/密钥（安全红线） ──
-.env
-.env.*
-appsettings*.json
-NuGet.Config
-**/*.pfx
-**/*.key
-**/*.pem
-
-# ── IDE ──
+﻿bin/
+obj/
+node_modules/
+__pycache__/
+.pytest_cache/
 .vs/
 .vscode/
-.idea/
-*.user
-*.suo
-*.DotSettings
+playwright-report/
+test-results/
 
-# ── OS ──
-Thumbs.db
-.DS_Store
-desktop.ini
+
+# 大文件排除
+testing/JGSY.AGI.Test/coverage/
+testing/tests/blockchain/performance_results.txt
+
