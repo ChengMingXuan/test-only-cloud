@@ -75,6 +75,8 @@ jobs:
         env:
           FULL_RUN: "1"
         run: |
+          rm -rf ../../../TestResults
+          mkdir -p ../../../TestResults
           LEVEL="${{ github.event.inputs.test_level || 'full' }}"
           PROJECT="${{ github.event.inputs.project }}"
           WORKERS="${{ github.event.inputs.parallel_workers || '8' }}"
@@ -91,7 +93,8 @@ jobs:
           fi
           
           echo "🚀 全并发执行: $WORKERS workers | fullyParallel=true | FULL_RUN=1"
-          export PLAYWRIGHT_JUNIT_OUTPUT_NAME=../../../TestResults/playwright-results.xml
+          export PLAYWRIGHT_JUNIT_OUTPUT_NAME=playwright-results.xml
+          export PLAYWRIGHT_JUNIT_OUTPUT_DIR=../../../TestResults
           npx playwright test $ARGS 2>&1 | tee ../../../TestResults/playwright-output.txt || true
 
       - name: 📊 生成错误报告

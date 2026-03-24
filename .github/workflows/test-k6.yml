@@ -69,6 +69,7 @@ jobs:
         continue-on-error: true
         run: |
           SCENARIO="${{ github.event.inputs.scenario || 'full' }}"
+          rm -rf TestResults
           mkdir -p TestResults
           
           # CI 模式：连接 Mock 服务器（localhost:8000）
@@ -133,6 +134,7 @@ jobs:
         run: |
           chmod +x .github/scripts/generate-ci-report.sh
           ./.github/scripts/generate-ci-report.sh k6 \
+            --json TestResults/k6-summary.json \
             --output TestResults/k6-output.txt \
             --level "${{ github.event.inputs.scenario || 'full' }}"
 

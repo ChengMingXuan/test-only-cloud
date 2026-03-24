@@ -189,6 +189,7 @@ class MockApiClient:
         self.session = _MockSession(token)
         self._auth = token is not None and len(str(token)) > 0
         self._store = {}  # 内存存储: {path_key: entity}
+        self._readonly = False  # 只读模式标记
 
     @property
     def headers(self):
@@ -236,8 +237,14 @@ class MockApiClient:
         if "auth/refresh" in pc and method == "POST":
             return self._refresh(body, url)
 
-        # 登出
-        if "auth/logout" in pc and method == "POST":
+        # 登出（需要认证）
+        if ("auth/logout" in pc or pc.endswith("/logout")) and method == "POST":
+            if not self._auth:
+                return MockResponse(401, {
+                    "success": False, "code": 401,
+                    "message": "Unauthorized", "data": None,
+                    "timestamp": _TS, "traceId": "logout-401",
+                }, url=url)
             return MockResponse(200, {
                 "success": True, "code": 200,
                 "message": "登出成功", "data": None,
@@ -298,6 +305,54 @@ class MockApiClient:
                 "timestamp": _TS, "traceId": "reset-err",
             }, url=url)
 
+        # ── 移动端认证（匿名可访问，必须在鉴权前拦截） ──
+        if "/auth/mobile/" in pc and method == "POST":
+            body = body or {}
+            if "send-code" in pc:
+                phone = body.get("phone", "")
+                if not phone or len(phone) < 11:
+                    return MockResponse(400, {"success": False, "code": 400,
+                        "message": "手机号格式无效", "data": None,
+                        "timestamp": _TS, "traceId": "sms-400"}, url=url)
+                return MockResponse(200, {"success": True, "code": 200,
+                    "data": {"sent": True, "expireIn": 300},
+                    "timestamp": _TS, "traceId": "sms-ok"}, url=url)
+            if "password-login" in pc:
+                if not body.get("phone") and not body.get("username"):
+                    return MockResponse(400, {"success": False, "code": 400,
+                        "message": "手机号和密码不能为空", "data": None,
+                        "timestamp": _TS, "traceId": "mobile-login-400"}, url=url)
+                return MockResponse(200, {"success": True, "code": 200,
+                    "data": {"accessToken": MOCK_TOKEN, "tokenType": "Bearer"},
+                    "timestamp": _TS, "traceId": "mobile-login-ok"}, url=url)
+            if "sms-login" in pc:
+                return MockResponse(200, {"success": True, "code": 200,
+                    "data": {"accessToken": MOCK_TOKEN, "tokenType": "Bearer"},
+                    "timestamp": _TS, "traceId": "mobile-sms-login-ok"}, url=url)
+            if "register" in pc:
+                if not body.get("phone"):
+                    return MockResponse(400, {"success": False, "code": 400,
+                        "message": "手机号不能为空", "data": None,
+                        "timestamp": _TS, "traceId": "mobile-reg-400"}, url=url)
+                return MockResponse(200, {"success": True, "code": 200,
+                    "data": {"userId": str(uuid.uuid4()), "phone": body.get("phone")},
+                    "timestamp": _TS, "traceId": "mobile-reg-ok"}, url=url)
+            if "refresh-token" in pc:
+                return MockResponse(200, {"success": True, "code": 200,
+                    "data": {"accessToken": MOCK_TOKEN, "tokenType": "Bearer"},
+                    "timestamp": _TS, "traceId": "mobile-refresh-ok"}, url=url)
+
+        # ── 碳认证注册（匿名可访问的公开 API） ──
+        if "/irec/register" in pc and method == "POST":
+            body = body or {}
+            if not body or (not body.get("projectName") and not body.get("name") and not body.get("projectId")):
+                return MockResponse(400, {"success": False, "code": 400,
+                    "message": "注册信息不完整", "data": None,
+                    "timestamp": _TS, "traceId": "irec-400"}, url=url)
+            return MockResponse(200, {"success": True, "code": 200,
+                "data": {"registrationId": str(uuid.uuid4()), "status": "pending"},
+                "timestamp": _TS, "traceId": "irec-ok"}, url=url)
+
         # 鉴权
         if not self._auth:
             return MockResponse(401, {
@@ -320,6 +375,14 @@ class MockApiClient:
                 "success": False, "code": 403,
                 "message": "Forbidden", "data": None,
                 "timestamp": _TS, "traceId": "mock-403",
+            }, url=url)
+
+        # 只读模式：写操作返回 403
+        if getattr(self, '_readonly', False) and method in ("POST", "PUT", "PATCH", "DELETE"):
+            return MockResponse(403, {
+                "success": False, "code": 403,
+                "message": "Forbidden: 只读权限不允许该操作", "data": None,
+                "timestamp": _TS, "traceId": "readonly-403",
             }, url=url)
 
         # ── 三权分立：用户角色分配互斥校验 ──
@@ -429,10 +492,16 @@ class MockApiClient:
                     return MockResponse(200, {
                         "success": True, "code": 200,
                         "data": {
-                            "executionId": last, "workflowId": "pv_power_forecast",
-                            "status": "completed", "success": True,
-                            "startTime": _TS, "endTime": _TS,
-                            "outputData": {"prediction": 100.5},
+                            "execution": {
+                                "executionId": last, "workflowId": "pv_power_forecast",
+                                "status": "completed", "success": True,
+                                "startTime": _TS, "endTime": _TS,
+                                "outputData": {"prediction": 100.5},
+                            },
+                            "nodes": [
+                                {"nodeId": "n1", "modelType": "prediction", "status": "completed", "latencyMs": 45},
+                                {"nodeId": "n2", "modelType": "fusion", "status": "completed", "latencyMs": 30},
+                            ],
                         },
                         "timestamp": _TS, "traceId": f"dag-exec-{last}",
                     }, url=url)
@@ -447,6 +516,282 @@ class MockApiClient:
                     },
                     "timestamp": _TS, "traceId": f"dag-execute-{wid}",
                 }, url=url)
+
+        # ── 钱包 / 会员 / 实名认证 / 子资源路径 ──
+        if "/wallet/" in pc:
+            uid = next((p for p in parts if _UUID_RE.match(p)), "mock-uid")
+            wallet = {"id": str(uuid.uuid4()), "userId": uid, "balance": 1000.00, "currency": "CNY", "status": "active",
+                       "tenantId": _TENANT_ID, "createTime": _TS}
+            if pc.endswith("/balance"):
+                return MockResponse(200, {"success": True, "code": 200,
+                    "data": {"balance": 1000.00, "frozenAmount": 0, "currency": "CNY"},
+                    "timestamp": _TS, "traceId": "wallet-balance"}, url=url)
+            if pc.endswith("/transactions"):
+                return MockResponse(200, {"success": True, "code": 200,
+                    "data": {"items": [{"id": str(uuid.uuid4()), "amount": 50.0, "type": "charge", "status": "completed", "createTime": _TS}], "total": 1, "page": 1, "pageSize": 10},
+                    "timestamp": _TS, "traceId": "wallet-txns"}, url=url)
+            return MockResponse(200, {"success": True, "code": 200,
+                "data": wallet, "timestamp": _TS, "traceId": "wallet-detail"}, url=url)
+
+        if "/membership/" in pc and "/benefits" in pc:
+            return MockResponse(200, {"success": True, "code": 200,
+                "data": [{"benefitId": str(uuid.uuid4()), "name": "充电折扣", "type": "discount", "value": 0.9, "status": "active"}],
+                "timestamp": _TS, "traceId": "membership-benefits"}, url=url)
+
+        if "/realname-auth/" in pc:
+            uid = next((p for p in parts if _UUID_RE.match(p)), "mock-uid")
+            if pc.endswith("/current"):
+                return MockResponse(200, {"success": True, "code": 200,
+                    "data": {"userId": uid, "realName": "张三", "idNumber": "110***1234", "status": "verified", "verifyTime": _TS},
+                    "timestamp": _TS, "traceId": "auth-current"}, url=url)
+            if pc.endswith("/history"):
+                return MockResponse(200, {"success": True, "code": 200,
+                    "data": [{"id": str(uuid.uuid4()), "userId": uid, "status": "verified", "createTime": _TS}],
+                    "timestamp": _TS, "traceId": "auth-history"}, url=url)
+            if pc.endswith("/verified"):
+                return MockResponse(200, {"success": True, "code": 200,
+                    "data": {"verified": True, "verifyTime": _TS},
+                    "timestamp": _TS, "traceId": "auth-verified"}, url=url)
+
+        # ── 充电订单费用 ──
+        if "/orders/" in pc and pc.endswith("/fee"):
+            return MockResponse(200, {"success": True, "code": 200,
+                "data": {"totalFee": 58.50, "energyFee": 46.80, "serviceFee": 11.70, "energy": 23.4, "duration": 3600},
+                "timestamp": _TS, "traceId": "order-fee"}, url=url)
+
+        # ── 充电有序排队 ──
+        if "/orderly/" in pc:
+            if pc.endswith("/queue"):
+                return MockResponse(200, {"success": True, "code": 200,
+                    "data": {"items": [], "total": 0, "stationId": next((p for p in parts if _UUID_RE.match(p)), "")},
+                    "timestamp": _TS, "traceId": "orderly-queue"}, url=url)
+            if pc.endswith("/pile-load"):
+                return MockResponse(200, {"success": True, "code": 200,
+                    "data": {"piles": [{"pileId": str(uuid.uuid4()), "load": 45.5, "status": "available"}], "avgLoad": 45.5},
+                    "timestamp": _TS, "traceId": "orderly-pile-load"}, url=url)
+            if pc.endswith("/dispatch") and method == "POST":
+                # 非法 station ID (不是 UUID) → 400
+                station_seg = parts[-2] if len(parts) >= 2 else ""
+                if not _UUID_RE.match(station_seg):
+                    return MockResponse(400, {"success": False, "code": 400,
+                        "message": "无效的场站ID", "data": None,
+                        "timestamp": _TS, "traceId": "dispatch-400"}, url=url)
+                return MockResponse(200, {"success": True, "code": 200,
+                    "data": None, "message": "调度成功",
+                    "timestamp": _TS, "traceId": "dispatch-ok"}, url=url)
+            if "enqueue" in pc and method == "POST":
+                body = body or {}
+                if not body.get("stationId"):
+                    return MockResponse(400, {"success": False, "code": 400,
+                        "message": "stationId 不能为空", "data": None,
+                        "timestamp": _TS, "traceId": "enqueue-400"}, url=url)
+                return MockResponse(200, {"success": True, "code": 200,
+                    "data": {"queueNo": 1, "estimatedWait": 300},
+                    "timestamp": _TS, "traceId": "enqueue-ok"}, url=url)
+
+        # ── 充电会话停止（非存在会话） ──
+        if "/sessions/" in pc and pc.endswith("/stop") and method == "POST":
+            session_id = next((p for p in parts if _UUID_RE.match(p)), None)
+            if session_id and session_id == "00000000-0000-0000-0000-000000000000":
+                return MockResponse(404, {"success": False, "code": 404,
+                    "message": "会话不存在", "data": None,
+                    "timestamp": _TS, "traceId": "session-stop-404"}, url=url)
+            return MockResponse(200, {"success": True, "code": 200,
+                "data": None, "message": "会话已停止",
+                "timestamp": _TS, "traceId": "session-stop-ok"}, url=url)
+
+        # ── 规则链详情 / 删除内置规则 ──
+        if "/chains/" in pc and "ruleengine" in pc:
+            chain_id = next((p for p in parts if _UUID_RE.match(p)), None)
+            if method == "GET" and chain_id:
+                return MockResponse(200, {"success": True, "code": 200,
+                    "data": {"id": chain_id, "name": "温度告警链", "type": "device", "status": "enabled", "isBuiltin": chain_id == "00000000-0000-0000-0000-000000000001", "nodes": []},
+                    "timestamp": _TS, "traceId": "chain-detail"}, url=url)
+            if method == "DELETE" and chain_id == "00000000-0000-0000-0000-000000000001":
+                return MockResponse(400, {"success": False, "code": 400,
+                    "message": "内置规则链不可删除", "data": None,
+                    "timestamp": _TS, "traceId": "chain-del-blocked"}, url=url)
+
+        # ── VPP 调度结果 ──
+        if "/dispatch/" in pc and pc.endswith("/result") and "vpp" in pc:
+            return MockResponse(200, {"success": True, "code": 200,
+                "data": {"dispatchId": next((p for p in parts if _UUID_RE.match(p)), ""), "status": "completed", "totalPower": 500.0, "responseRate": 0.95},
+                "timestamp": _TS, "traceId": "vpp-dispatch-result"}, url=url)
+
+        # ── IotCloudAI 碳交易 ──
+        if "/carbon/" in pc and "iotcloudai" in pc:
+            uid = next((p for p in parts if _UUID_RE.match(p)), str(uuid.uuid4()))
+            if "emission" in pc:
+                return MockResponse(200, {"success": True, "code": 200,
+                    "data": {"deviceId": uid, "totalEmission": 125.6, "unit": "tCO2", "period": "2026-03"},
+                    "timestamp": _TS, "traceId": "carbon-emission"}, url=url)
+            if "asset" in pc:
+                return MockResponse(200, {"success": True, "code": 200,
+                    "data": {"id": uid, "balance": 500.0, "unit": "tCO2", "type": "CCER"},
+                    "timestamp": _TS, "traceId": "carbon-asset"}, url=url)
+            if "strategy" in pc:
+                return MockResponse(200, {"success": True, "code": 200,
+                    "data": {"strategyId": str(uuid.uuid4()), "action": "sell", "amount": 100.0, "price": 55.0},
+                    "timestamp": _TS, "traceId": "carbon-strategy"}, url=url)
+            if "compliance" in pc:
+                return MockResponse(200, {"success": True, "code": 200,
+                    "data": {"compliant": True, "year": 2026, "totalQuota": 1000.0, "usedQuota": 750.0},
+                    "timestamp": _TS, "traceId": "carbon-compliance"}, url=url)
+
+        # ── IotCloudAI 需求响应 ──
+        if "/demand-response/" in pc and "iotcloudai" in pc:
+            if "capability" in pc:
+                return MockResponse(200, {"success": True, "code": 200,
+                    "data": {"maxResponse": 200.0, "minResponse": 10.0, "unit": "kW", "available": True},
+                    "timestamp": _TS, "traceId": "dr-capability"}, url=url)
+            if "plan" in pc:
+                return MockResponse(200, {"success": True, "code": 200,
+                    "data": {"planId": str(uuid.uuid4()), "targetReduction": 100.0, "duration": 3600, "devices": []},
+                    "timestamp": _TS, "traceId": "dr-plan"}, url=url)
+            if "settle" in pc and method == "POST":
+                return MockResponse(200, {"success": True, "code": 200,
+                    "data": {"settled": True, "amount": 5000.0, "settleTime": _TS},
+                    "timestamp": _TS, "traceId": "dr-settle"}, url=url)
+
+        # ── IotCloudAI 洞察 ──
+        if "/insight/" in pc and "iotcloudai" in pc:
+            return MockResponse(200, {"success": True, "code": 200,
+                "data": {"insights": [{"type": "anomaly", "severity": "warning", "message": "功率波动异常", "timestamp": _TS}]},
+                "timestamp": _TS, "traceId": "insight-device"}, url=url)
+
+        # ── IotCloudAI 自适应预测 ──
+        if "/adaptive/" in pc and method == "POST":
+            body = body or {}
+            if "predict" in pc and not body.get("deviceId"):
+                return MockResponse(400, {"success": False, "code": 400,
+                    "message": "deviceId 不能为空", "data": None,
+                    "timestamp": _TS, "traceId": "predict-400"}, url=url)
+            if "feedback" in pc and not body:
+                return MockResponse(400, {"success": False, "code": 400,
+                    "message": "反馈数据不能为空", "data": None,
+                    "timestamp": _TS, "traceId": "feedback-400"}, url=url)
+            return MockResponse(200, {"success": True, "code": 200,
+                "data": {"predictionId": str(uuid.uuid4()), "result": 100.5},
+                "timestamp": _TS, "traceId": "adaptive-ok"}, url=url)
+
+        # ── IotCloudAI Agent 执行 ──
+        if "/agent/execute" in pc and method == "POST":
+            body = body or {}
+            if not body.get("agentId"):
+                return MockResponse(400, {"success": False, "code": 400,
+                    "message": "agentId 不能为空", "data": None,
+                    "timestamp": _TS, "traceId": "agent-400"}, url=url)
+            return MockResponse(200, {"success": True, "code": 200,
+                "data": {"executionId": str(uuid.uuid4()), "status": "running"},
+                "timestamp": _TS, "traceId": "agent-exec-ok"}, url=url)
+
+        # ── IotCloudAI 设备健康批量检查 ──
+        if "/health/batch-check" in pc and method == "POST":
+            body = body or {}
+            device_ids = body.get("deviceIds", [])
+            if not device_ids:
+                return MockResponse(400, {"success": False, "code": 400,
+                    "message": "deviceIds 不能为空", "data": None,
+                    "timestamp": _TS, "traceId": "health-400"}, url=url)
+            return MockResponse(200, {"success": True, "code": 200,
+                "data": [{"deviceId": did, "health": "good", "score": 95} for did in device_ids],
+                "timestamp": _TS, "traceId": "health-batch"}, url=url)
+
+        # ── IotCloudAI 第三方模型注册 ──
+        if "/third-party/models" in pc and method == "POST":
+            body = body or {}
+            if not body.get("endpoint"):
+                return MockResponse(400, {"success": False, "code": 400,
+                    "message": "endpoint 不能为空", "data": None,
+                    "timestamp": _TS, "traceId": "model-reg-400"}, url=url)
+            return MockResponse(200, {"success": True, "code": 200,
+                "data": {"modelId": str(uuid.uuid4()), "status": "registered"},
+                "timestamp": _TS, "traceId": "model-reg-ok"}, url=url)
+
+        # ── PVESSC SOH 计算 ──
+        if "/soh/" in pc and "pvessc" in pc:
+            return MockResponse(200, {"success": True, "code": 200,
+                "data": {"deviceId": next((p for p in parts if _UUID_RE.match(p)), ""), "soh": 92.5, "cycle": 500, "capacity": 95.0},
+                "timestamp": _TS, "traceId": "pvessc-soh"}, url=url)
+
+        # ── PVESSC 组串监控 ──
+        if "/string-monitor/" in pc:
+            if pc.endswith("/history") and method == "GET":
+                if not params or (not params.get("startTime") and not params.get("start_time")):
+                    return MockResponse(400, {"success": False, "code": 400,
+                        "message": "startTime 和 endTime 不能为空", "data": None,
+                        "timestamp": _TS, "traceId": "string-hist-400"}, url=url)
+                return MockResponse(200, {"success": True, "code": 200,
+                    "data": {"items": [], "total": 0},
+                    "timestamp": _TS, "traceId": "string-hist-ok"}, url=url)
+            if "alert-config" in pc and method == "POST":
+                body = body or {}
+                if not body or (not body.get("deviceId") and not body.get("threshold")):
+                    return MockResponse(400, {"success": False, "code": 400,
+                        "message": "配置参数不完整", "data": None,
+                        "timestamp": _TS, "traceId": "alert-cfg-400"}, url=url)
+                return MockResponse(200, {"success": True, "code": 200,
+                    "data": None, "message": "配置已保存",
+                    "timestamp": _TS, "traceId": "alert-cfg-ok"}, url=url)
+
+        # ── 导出服务 ──
+        if "/export/" in pc and method == "POST":
+            body = body or {}
+            if "excel" in pc and not body.get("source") and not body.get("dataSource"):
+                return MockResponse(400, {"success": False, "code": 400,
+                    "message": "导出数据源不能为空", "data": None,
+                    "timestamp": _TS, "traceId": "export-excel-400"}, url=url)
+            if "pdf" in pc and not body.get("template") and not body.get("templateId"):
+                return MockResponse(400, {"success": False, "code": 400,
+                    "message": "PDF 模板不能为空", "data": None,
+                    "timestamp": _TS, "traceId": "export-pdf-400"}, url=url)
+            return MockResponse(200, {"success": True, "code": 200,
+                "data": {"fileUrl": "/files/export_result.xlsx", "fileName": "export.xlsx"},
+                "timestamp": _TS, "traceId": "export-ok"}, url=url)
+
+        # ── 微电网能源报告 ──
+        if "/energy/reports/generate" in pc and method == "POST":
+            body = body or {}
+            if not body or (not body.get("startDate") and not body.get("period") and not body.get("stationId")):
+                return MockResponse(400, {"success": False, "code": 400,
+                    "message": "报告参数不完整", "data": None,
+                    "timestamp": _TS, "traceId": "energy-report-400"}, url=url)
+            return MockResponse(200, {"success": True, "code": 200,
+                "data": {"reportId": str(uuid.uuid4()), "status": "generating"},
+                "timestamp": _TS, "traceId": "energy-report-ok"}, url=url)
+
+        # ── 备品备件 ──
+        if "/spare-part/" in pc and method == "POST":
+            body = body or {}
+            if "stock-in" in pc:
+                qty = body.get("quantity", 0)
+                if not qty or qty <= 0:
+                    return MockResponse(400, {"success": False, "code": 400,
+                        "message": "入库数量必须大于0", "data": None,
+                        "timestamp": _TS, "traceId": "stockin-400"}, url=url)
+                return MockResponse(200, {"success": True, "code": 200,
+                    "data": None, "message": "入库成功",
+                    "timestamp": _TS, "traceId": "stockin-ok"}, url=url)
+            if "stock-out" in pc:
+                qty = body.get("quantity", 0)
+                if qty > 9999:
+                    return MockResponse(400, {"success": False, "code": 400,
+                        "message": "出库数量超过库存", "data": None,
+                        "timestamp": _TS, "traceId": "stockout-400"}, url=url)
+                return MockResponse(200, {"success": True, "code": 200,
+                    "data": None, "message": "出库成功",
+                    "timestamp": _TS, "traceId": "stockout-ok"}, url=url)
+
+        # ── 充电订单（POST 创建 - 业务编号唯一） ──
+        if pc.rstrip("/").endswith("/orders") and "charging" in pc and method == "POST":
+            body = body or {}
+            order_no = f"CHG{uuid.uuid4().hex[:12].upper()}"
+            ent = _make_entity("charging", "order")
+            ent.update(body)
+            ent["orderNo"] = order_no
+            self._store[ent["id"]] = ent
+            return MockResponse(200, {"success": True, "code": 200,
+                "data": ent, "timestamp": _TS, "traceId": "order-create"}, url=url)
 
         if method == "DELETE":
             if has_id:

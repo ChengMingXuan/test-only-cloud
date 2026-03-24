@@ -13,6 +13,7 @@ shift
 # 默认参数
 XML_FILE=""
 OUTPUT_FILE=""
+JSON_FILE=""
 LEVEL="smoke"
 GIT_SHA="${GITHUB_SHA:-unknown}"
 EVENT="${GITHUB_EVENT_NAME:-manual}"
@@ -23,6 +24,7 @@ while [[ $# -gt 0 ]]; do
   case $1 in
     --xml) XML_FILE="$2"; shift 2 ;;
     --output) OUTPUT_FILE="$2"; shift 2 ;;
+    --json) JSON_FILE="$2"; shift 2 ;;
     --level) LEVEL="$2"; shift 2 ;;
     --report-dir) REPORT_DIR="$2"; shift 2 ;;
     *) shift ;;
@@ -119,7 +121,65 @@ strip_ansi() {
   sed 's/\x1b\[[0-9;]*[a-zA-Z]//g; s/\x1b\][^\x07]*\x07//g'
 }
 
-# 方法2：从输出文本估算（Cypress、Playwright、Puppeteer、k6）
+# 方法2：优先从 JSON 解析（Cypress、k6）
+if [ "$TOTAL" -eq 0 ] && [ -n "$JSON_FILE" ] && [ -f "$JSON_FILE" ]; then
+  case "$TOOL" in
+  cypress)
+    CYPRESS_STATS=$(python3 -c "
+import json, sys
+try:
+  data = json.load(open('$JSON_FILE', encoding='utf-8'))
+  total = 0
+  passed = 0
+  failed = 0
+  pending = 0
+  duration = 0.0
+
+  def walk(node):
+    global total, passed, failed, pending, duration
+    if isinstance(node, dict):
+      stats = node.get('stats')
+      if isinstance(stats, dict):
+        total += int(stats.get('tests', 0) or 0)
+        passed += int(stats.get('passes', 0) or 0)
+        failed += int(stats.get('failures', 0) or 0)
+        pending += int(stats.get('pending', 0) or 0)
+        duration += float(stats.get('duration', 0) or 0)
+      results = node.get('results')
+      if isinstance(results, list):
+        for item in results:
+          walk(item)
+    elif isinstance(node, list):
+      for item in node:
+        walk(item)
+
+  walk(data)
+  if total == 0 and isinstance(data, list):
+    walk({'results': data})
+  print(f'{total} {passed} {failed} {pending} {duration/1000.0:.3f}')
+except Exception:
+  print('0 0 0 0 0.0')
+" 2>/dev/null || echo "0 0 0 0 0.0")
+    read TOTAL PASSED FAILED SKIPPED DURATION <<< "$CYPRESS_STATS"
+    ;;
+  k6)
+    K6_STATS=$(python3 -c "
+import json
+try:
+  data = json.load(open('$JSON_FILE', encoding='utf-8'))
+  checks = data.get('metrics', {}).get('checks', {})
+  passed = int(checks.get('passes', 0) or 0)
+  failed = int(checks.get('fails', 0) or 0)
+  print(f'{passed + failed} {passed} {failed}')
+except Exception:
+  print('0 0 0')
+" 2>/dev/null || echo "0 0 0")
+    read TOTAL PASSED FAILED <<< "$K6_STATS"
+    ;;
+  esac
+fi
+
+# 方法3：从输出文本估算（Cypress、Playwright、Puppeteer、k6）
 if [ "$TOTAL" -eq 0 ] && [ -n "$OUTPUT_FILE" ] && [ -f "$OUTPUT_FILE" ]; then
   # 预处理：生成去除 ANSI 码的临时文件
   CLEAN_FILE=$(mktemp)
@@ -194,8 +254,8 @@ except: print('0 0 0 0 0.0')
       K6_SUMMARY="TestResults/k6-summary.json"
       if [ -f "$K6_SUMMARY" ]; then
         echo "[DEBUG] 使用 k6 summary JSON: $K6_SUMMARY" >&2
-        PASSED=$(python3 -c "import json; d=json.load(open('$K6_SUMMARY')); print(int(d.get('metrics',{}).get('checks',{}).get('values',{}).get('passes',0)))" 2>/dev/null || echo "0")
-        FAILED=$(python3 -c "import json; d=json.load(open('$K6_SUMMARY')); print(int(d.get('metrics',{}).get('checks',{}).get('values',{}).get('fails',0)))" 2>/dev/null || echo "0")
+        PASSED=$(python3 -c "import json; d=json.load(open('$K6_SUMMARY')); print(int(d.get('metrics',{}).get('checks',{}).get('passes',0)))" 2>/dev/null || echo "0")
+        FAILED=$(python3 -c "import json; d=json.load(open('$K6_SUMMARY')); print(int(d.get('metrics',{}).get('checks',{}).get('fails',0)))" 2>/dev/null || echo "0")
         [ -z "$PASSED" ] && PASSED=0
         [ -z "$FAILED" ] && FAILED=0
         TOTAL=$((PASSED + FAILED))
@@ -300,6 +360,85 @@ except Exception as e:
   fi
 fi
 
+# 尝试统计执行文件数
+EXECUTED_FILES=0
+case "$TOOL" in
+  cypress)
+  if [ -n "$JSON_FILE" ] && [ -f "$JSON_FILE" ]; then
+    EXECUTED_FILES=$(python3 -c "
+import json
+try:
+  data = json.load(open('$JSON_FILE', encoding='utf-8'))
+  seen = set()
+  def walk(node):
+    if isinstance(node, dict):
+      for key in ('file', 'fullFile', 'spec'):
+        value = node.get(key)
+        if isinstance(value, str) and value:
+          seen.add(value)
+      results = node.get('results')
+      if isinstance(results, list):
+        for item in results:
+          walk(item)
+    elif isinstance(node, list):
+      for item in node:
+        walk(item)
+  walk(data)
+  print(len(seen))
+except Exception:
+  print(0)
+" 2>/dev/null || echo "0")
+  fi
+  ;;
+  playwright)
+  if [ -n "$XML_FILE" ] && [ -f "$XML_FILE" ]; then
+    EXECUTED_FILES=$(python3 -c "
+import xml.etree.ElementTree as ET
+try:
+  root = ET.parse('$XML_FILE').getroot()
+  names = set()
+  for ts in root.iter('testsuite'):
+    name = ts.get('name')
+    if name:
+      names.add(name)
+  print(len(names))
+except Exception:
+  print(0)
+" 2>/dev/null || echo "0")
+  fi
+  ;;
+  puppeteer)
+  if [ -n "$XML_FILE" ] && [ -f "$XML_FILE" ]; then
+    EXECUTED_FILES=$(python3 -c "
+import xml.etree.ElementTree as ET
+try:
+  root = ET.parse('$XML_FILE').getroot()
+  names = set()
+  for ts in root.iter('testsuite'):
+    name = ts.get('name')
+    if name:
+      names.add(name)
+  print(len(names))
+except Exception:
+  print(0)
+" 2>/dev/null || echo "0")
+  fi
+  ;;
+  k6)
+  if [ -n "$JSON_FILE" ] && [ -f "$JSON_FILE" ]; then
+    EXECUTED_FILES=$(python3 -c "
+import json
+try:
+  data = json.load(open('$JSON_FILE', encoding='utf-8'))
+  scenarios = data.get('scenarios', 0)
+  print(int(scenarios or 0))
+except Exception:
+  print(0)
+" 2>/dev/null || echo "0")
+  fi
+  ;;
+esac
+
 # ─── 生成 JSON 报告（与本地 generate-tool-reports.ps1 格式一致）───
 MEASUREMENT_MODE="cases"
 [ "$TOOL" = "k6" ] && MEASUREMENT_MODE="checks"
@@ -321,7 +460,7 @@ cat > "$REPORT_DIR/${TOOL}-report.json" << JSONEOF
     "source": "GitHub Actions CI ($LEVEL)",
     "measurementMode": "$MEASUREMENT_MODE",
     "comparableTotal": $TOTAL,
-    "executedFiles": 0
+    "executedFiles": $EXECUTED_FILES
   },
   "gateStatus": {
     "canRelease": $CAN_RELEASE,

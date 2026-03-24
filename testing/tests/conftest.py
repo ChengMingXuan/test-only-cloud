@@ -422,6 +422,15 @@ def no_auth_api():
     return RoutingApiClient(token=None)
 
 @pytest.fixture(scope="session")
+def readonly_api(auth_token):
+    """只读权限客户端 — 供权限检查测试使用（返回 403）"""
+    if MOCK_MODE:
+        client = MockApiClient(GATEWAY_URL, auth_token)
+        client._readonly = True
+        return client
+    return RoutingApiClient(token=auth_token)
+
+@pytest.fixture(scope="session")
 def validator():
     return ApiResultValidator()
 

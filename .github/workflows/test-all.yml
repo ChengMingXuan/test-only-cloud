@@ -194,10 +194,18 @@ jobs:
         working-directory: testing/tests/cypress-tests
         continue-on-error: true
         run: |
-          mkdir -p ../../../TestResults
+          rm -rf ../../../TestResults
+          mkdir -p ../../../TestResults reports
           export CYPRESS_VIDEO=false
           export CYPRESS_SCREENSHOT_ON_RUN_FAILURE=false
-          npx cypress run --reporter mochawesome 2>&1 | tee ../../../TestResults/cypress-output.txt || true
+          npx cypress run \
+            --reporter mochawesome \
+            --reporter-options "reportDir=reports,overwrite=true,html=false,json=true" \
+            2>&1 | tee ../../../TestResults/cypress-output.txt || true
+
+          if [ -f reports/mochawesome.json ]; then
+            cp reports/mochawesome.json ../../../TestResults/cypress-results.json
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -223,14 +231,16 @@ jobs:
       - name: 运行 Playwright（并行）
         working-directory: testing/tests/playwright-tests
         continue-on-error: true
+        env:
+          FULL_RUN: '1'
         run: |
+          rm -rf ../../../TestResults
           mkdir -p ../../../TestResults
           LEVEL="${{ github.event.inputs.test_level || 'full' }}"
           ARGS="--reporter=list,junit --workers=4"
           if [ "$LEVEL" = "smoke" ]; then ARGS="$ARGS --grep @smoke"; fi
           echo "🚀 并行执行 | Workers: 4 | Reporter: list+junit"
-          PLAYWRIGHT_JUNIT_OUTPUT_NAME=../../../TestResults/playwright-results.xml \
-            npx playwright test $ARGS 2>&1 | tee ../../../TestResults/playwright-output.txt || true
+          npx playwright test $ARGS 2>&1 | tee ../../../TestResults/playwright-output.txt || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -255,9 +265,17 @@ jobs:
         working-directory: testing/tests/puppeteer-tests
         continue-on-error: true
         run: |
+          rm -rf ../../../TestResults
           mkdir -p ../../../TestResults
           echo "🚀 并行执行 | maxWorkers: 4"
-          npx jest --ci --forceExit --maxWorkers=4 2>&1 | tee ../../../TestResults/puppeteer-output.txt || true
+          npx jest \
+            --config jest.config.js \
+            --ci \
+            --forceExit \
+            --maxWorkers=4 \
+            --reporters=default \
+            --reporters=jest-junit \
+            2>&1 | tee ../../../TestResults/puppeteer-output.txt || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -330,6 +348,7 @@ jobs:
       - name: 运行 k6（全量 - 全部场景）
         continue-on-error: true
         run: |
+          rm -rf TestResults
           mkdir -p TestResults
           K6_DIR="testing/k6/scenarios"
           COMBINED_OUTPUT="TestResults/k6-output.txt"
@@ -371,22 +390,24 @@ jobs:
           echo "═══════════════════════════════════════" >> "$COMBINED_OUTPUT"
           echo "全量统计: $SCENARIO_COUNT 个场景, checks: ✓ $TOTAL_PASS  ✗ $TOTAL_FAIL" >> "$COMBINED_OUTPUT"
 
-          python3 -c "
+            python3 -c "
           import json, glob
           summaries = glob.glob('TestResults/k6-*-summary.json')
           total_pass = 0
           total_fail = 0
+            total_scenarios = 0
           for f in summaries:
               try:
                   d = json.load(open(f))
-                  checks = d.get('metrics', {}).get('checks', {}).get('values', {})
-                  total_pass += int(checks.get('passes', 0))
-                  total_fail += int(checks.get('fails', 0))
+                checks = d.get('metrics', {}).get('checks', {})
+                total_pass += int(checks.get('passes', 0))
+                total_fail += int(checks.get('fails', 0))
+                total_scenarios += 1
               except Exception:
                   pass
-          combined = {'metrics': {'checks': {'values': {'passes': total_pass, 'fails': total_fail}}}}
+            combined = {'metrics': {'checks': {'passes': total_pass, 'fails': total_fail}}, 'scenarios': total_scenarios}
           json.dump(combined, open('TestResults/k6-summary.json', 'w'), indent=2)
-          print(f'Combined: {len(summaries)} summaries, passes={total_pass}, fails={total_fail}')
+            print(f'Combined: {len(summaries)} summaries, passes={total_pass}, fails={total_fail}')
           " 2>/dev/null || true
       - uses: actions/upload-artifact@v4
         if: always()
@@ -443,19 +464,19 @@ jobs:
             ./.github/scripts/generate-ci-report.sh pytest --xml TestResults/pytest-results.xml --output TestResults/pytest-output.txt --level "$LEVEL"
           fi
           if tool_executed cypress; then
-            ./.github/scripts/generate-ci-report.sh cypress --output TestResults/cypress-output.txt --level "$LEVEL"
+            ./.github/scripts/generate-ci-report.sh cypress --json TestResults/cypress-results.json --output TestResults/cypress-output.txt --level "$LEVEL"
           fi
           if tool_executed playwright; then
             ./.github/scripts/generate-ci-report.sh playwright --xml TestResults/playwright-results.xml --output TestResults/playwright-output.txt --level "$LEVEL"
           fi
           if tool_executed puppeteer; then
-            ./.github/scripts/generate-ci-report.sh puppeteer --output TestResults/puppeteer-output.txt --level "$LEVEL"
+            ./.github/scripts/generate-ci-report.sh puppeteer --xml TestResults/puppeteer-results.xml --output TestResults/puppeteer-output.txt --level "$LEVEL"
           fi
           if tool_executed selenium; then
             ./.github/scripts/generate-ci-report.sh selenium --xml TestResults/selenium-results.xml --output TestResults/selenium-output.txt --level "$LEVEL"
           fi
           if tool_executed k6; then
-            ./.github/scripts/generate-ci-report.sh k6 --output TestResults/k6-output.txt --level "$LEVEL"
+            ./.github/scripts/generate-ci-report.sh k6 --json TestResults/k6-summary.json --output TestResults/k6-output.txt --level "$LEVEL"
           fi
 
       - name: "📦 整理本次独立报告"

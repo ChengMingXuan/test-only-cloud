@@ -60,6 +60,7 @@ jobs:
         working-directory: testing/tests/cypress-tests
         continue-on-error: true
         run: |
+          rm -rf ../../../TestResults reports
           LEVEL="${{ github.event.inputs.test_level || 'full' }}"
           PARALLEL="${{ github.event.inputs.parallel || 'true' }}"
           CONCURRENCY=10
@@ -88,6 +89,9 @@ jobs:
               --reporter mochawesome \
               --reporter-options "reportDir=reports/shard-${SHARD_ID},overwrite=false,json=true" \
               > "../../../TestResults/cypress-shards/shard-${SHARD_ID}.txt" 2>&1 || true
+            if [ -f "reports/shard-${SHARD_ID}/mochawesome.json" ]; then
+              cp "reports/shard-${SHARD_ID}/mochawesome.json" "../../../TestResults/cypress-shards/shard-${SHARD_ID}-mochawesome.json"
+            fi
             echo "✅ [Shard $SHARD_ID] 完成"
           }
           
@@ -125,6 +129,34 @@ jobs:
           # 汇总输出
           echo "📊 汇总各 shard 输出..."
           cat ../../../TestResults/cypress-shards/shard-*.txt > ../../../TestResults/cypress-output.txt 2>/dev/null || true
+
+          python3 << 'EOF'
+          import glob
+          import json
+
+          files = glob.glob('../../../TestResults/cypress-shards/shard-*-mochawesome.json')
+          aggregate = {
+            'stats': {'tests': 0, 'passes': 0, 'failures': 0, 'pending': 0, 'duration': 0},
+            'results': []
+          }
+
+          for file in sorted(files):
+            try:
+              with open(file, encoding='utf-8') as handle:
+                data = json.load(handle)
+              stats = data.get('stats', {})
+              aggregate['stats']['tests'] += int(stats.get('tests', 0) or 0)
+              aggregate['stats']['passes'] += int(stats.get('passes', 0) or 0)
+              aggregate['stats']['failures'] += int(stats.get('failures', 0) or 0)
+              aggregate['stats']['pending'] += int(stats.get('pending', 0) or 0)
+              aggregate['stats']['duration'] += float(stats.get('duration', 0) or 0)
+              aggregate['results'].append(data)
+            except Exception as exc:
+              print(f'warning: failed to parse {file}: {exc}')
+
+          with open('../../../TestResults/cypress-results.json', 'w', encoding='utf-8') as handle:
+            json.dump(aggregate, handle, ensure_ascii=False, indent=2)
+          EOF
           
           # 统计结果
           PASS=$(grep -c "passing" ../../../TestResults/cypress-output.txt 2>/dev/null || echo "0")
@@ -174,6 +206,7 @@ jobs:
         run: |
           chmod +x .github/scripts/generate-ci-report.sh
           ./.github/scripts/generate-ci-report.sh cypress \
+            --json TestResults/cypress-results.json \
             --output TestResults/cypress-output.txt \
             --level "${{ github.event.inputs.test_level || 'full' }}"
 

@@ -201,6 +201,8 @@ jobs:
       - name: 🧪 运行 Playwright 分片 ${{ matrix.shard }}/10
         working-directory: testing/tests/playwright-tests
         continue-on-error: true
+        env:
+          FULL_RUN: '1'
         run: |
           mkdir -p ../../../TestResults/playwright-shards
           LEVEL="${{ github.event.inputs.test_level || 'full' }}"
@@ -212,7 +214,8 @@ jobs:
             ARGS="$ARGS --grep @smoke"
           fi
           
-          export PLAYWRIGHT_JUNIT_OUTPUT_NAME=../../../TestResults/playwright-shards/playwright-shard-${SHARD}-results.xml
+          export PLAYWRIGHT_JUNIT_OUTPUT_NAME=playwright-shard-${SHARD}-results.xml
+          export PLAYWRIGHT_JUNIT_OUTPUT_DIR=../../../TestResults/playwright-shards
           npx playwright test $ARGS 2>&1 | tee ../../../TestResults/playwright-shards/playwright-shard-${SHARD}-output.txt || true
       
       - uses: actions/upload-artifact@v4
@@ -294,6 +297,7 @@ jobs:
         continue-on-error: true
         run: |
           mkdir -p ../../../TestResults/cypress-shards
+          mkdir -p reports
           SHARD=${{ matrix.shard }}
           TOTAL_SHARDS=10
           
@@ -311,12 +315,16 @@ jobs:
             echo "分片 $SHARD: 执行文件 $START_IDX 到 $END_IDX"
             npx cypress run \
               --spec "$SHARD_FILES" \
-              --reporter junit \
-              --reporter-options "mochaFile=../../../TestResults/cypress-shards/cypress-shard-${SHARD}-results.xml" \
+              --reporter mochawesome \
+              --reporter-options "reportDir=reports/shard-${SHARD},overwrite=true,html=false,json=true" \
               2>&1 | tee ../../../TestResults/cypress-shards/cypress-shard-${SHARD}-output.txt || true
+
+            if [ -f "reports/shard-${SHARD}/mochawesome.json" ]; then
+              cp "reports/shard-${SHARD}/mochawesome.json" ../../../TestResults/cypress-shards/cypress-shard-${SHARD}-results.json
+            fi
           else
             echo "分片 $SHARD: 无测试文件"
-            echo '<?xml version="1.0"?><testsuites><testsuite tests="0" failures="0" errors="0"/></testsuites>' > ../../../TestResults/cypress-shards/cypress-shard-${SHARD}-results.xml
+            echo '{"stats":{"tests":0,"passes":0,"failures":0,"pending":0,"duration":0},"results":[]}' > ../../../TestResults/cypress-shards/cypress-shard-${SHARD}-results.json
           fi
       
       - uses: actions/upload-artifact@v4
@@ -343,25 +351,32 @@ jobs:
       - name: 📊 聚合 Cypress 结果
         run: |
           mkdir -p TestResults
-          pip install junitparser
-          
           python3 << 'EOF'
           import glob
-          from junitparser import JUnitXml
+          import json
 
-          combined = JUnitXml()
-          xml_files = glob.glob('TestResults/cypress-shards/**/cypress-shard-*-results.xml', recursive=True)
-          
-          for xml_file in sorted(xml_files):
-              try:
-                  xml = JUnitXml.fromfile(xml_file)
-                  for suite in xml:
-                      combined.add_testsuite(suite)
-              except Exception as e:
-                  print(f"警告: 无法解析 {xml_file}: {e}")
-          
-          combined.write('TestResults/cypress-results.xml')
-          print(f"✅ 聚合完成: {len(xml_files)} 个分片")
+          files = glob.glob('TestResults/cypress-shards/**/cypress-shard-*-results.json', recursive=True)
+          aggregate = {
+            'stats': {'tests': 0, 'passes': 0, 'failures': 0, 'pending': 0, 'duration': 0},
+            'results': []
+          }
+
+          for file in sorted(files):
+            try:
+              data = json.load(open(file, encoding='utf-8'))
+              stats = data.get('stats', {})
+              aggregate['stats']['tests'] += int(stats.get('tests', 0) or 0)
+              aggregate['stats']['passes'] += int(stats.get('passes', 0) or 0)
+              aggregate['stats']['failures'] += int(stats.get('failures', 0) or 0)
+              aggregate['stats']['pending'] += int(stats.get('pending', 0) or 0)
+              aggregate['stats']['duration'] += float(stats.get('duration', 0) or 0)
+              aggregate['results'].append(data)
+            except Exception as e:
+              print(f'警告: 无法解析 {file}: {e}')
+
+          with open('TestResults/cypress-results.json', 'w', encoding='utf-8') as handle:
+            json.dump(aggregate, handle, ensure_ascii=False, indent=2)
+          print(f"✅ 聚合完成: {len(files)} 个分片")
           EOF
           
           cat TestResults/cypress-shards/**/cypress-shard-*-output.txt > TestResults/cypress-output.txt 2>/dev/null || true
@@ -406,6 +421,7 @@ jobs:
             --forceExit \
             --shard=${SHARD}/5 \
             --maxWorkers=4 \
+            --config jest.config.js \
             --reporters=default \
             --reporters=jest-junit \
             2>&1 | tee ../../../TestResults/puppeteer-shards/puppeteer-shard-${SHARD}-output.txt || true
@@ -679,9 +695,9 @@ jobs:
           for f in sorted(summaries):
               try:
                   d = json.load(open(f))
-                  checks = d.get('metrics', {}).get('checks', {}).get('values', {})
-                  p = int(checks.get('passes', 0))
-                  f_count = int(checks.get('fails', 0))
+                checks = d.get('metrics', {}).get('checks', {})
+                p = int(checks.get('passes', 0))
+                f_count = int(checks.get('fails', 0))
                   total_pass += p
                   total_fail += f_count
                   scenario_count += 1
@@ -691,7 +707,8 @@ jobs:
           combined = {
               'metrics': {
                   'checks': {
-                      'values': {'passes': total_pass, 'fails': total_fail}
+                  'passes': total_pass,
+                  'fails': total_fail
                   }
               },
               'scenarios': scenario_count
@@ -739,11 +756,17 @@ jobs:
       - name: 📊 生成7份独立报告
         run: |
           chmod +x .github/scripts/generate-ci-report.sh 2>/dev/null || true
+          rm -f TestResults/*-report.json TestResults/*-report.md
           
           for TOOL in pytest playwright cypress puppeteer selenium k6; do
-            if [ -f "TestResults/${TOOL}-results.xml" ] || [ -f "TestResults/${TOOL}-output.txt" ]; then
-              ./.github/scripts/generate-ci-report.sh $TOOL \
+            if [ -f "TestResults/${TOOL}-results.xml" ] || [ -f "TestResults/${TOOL}-results.json" ] || [ -f "TestResults/${TOOL}-output.txt" ] || [ -f "TestResults/${TOOL}-summary.json" ]; then
+              JSON_PATH="TestResults/${TOOL}-results.json"
+              if [ "$TOOL" = "k6" ]; then
+                JSON_PATH="TestResults/k6-summary.json"
+              fi
+              ./.github/scripts/generate-ci-report.sh "$TOOL" \
                 --xml "TestResults/${TOOL}-results.xml" \
+                --json "$JSON_PATH" \
                 --output "TestResults/${TOOL}-output.txt" \
                 --level "${{ github.event.inputs.test_level || 'full' }}" || true
             fi

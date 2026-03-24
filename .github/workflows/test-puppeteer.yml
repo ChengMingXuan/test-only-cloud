@@ -61,12 +61,14 @@ jobs:
         working-directory: testing/tests/puppeteer-tests
         continue-on-error: true
         run: |
+          rm -rf ../../../TestResults
           mkdir -p ../../../TestResults
           WORKERS="${{ github.event.inputs.max_workers || '4' }}"
           
           echo "🚀 并行执行: $WORKERS workers"
           # 运行全部测试，使用 Jest maxWorkers 并行执行
           npx jest \
+            --config jest.config.js \
             --forceExit \
             --ci \
             --maxWorkers=$WORKERS \
