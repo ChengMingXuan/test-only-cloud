@@ -29,7 +29,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-HELM_DIR = os.path.join(PROJECT_ROOT, "helm", "jgsy-agi")
+HELM_DIR = os.path.join(PROJECT_ROOT, "Configuration2.0", "helm", "jgsy-agi")
 
 
 def _read_yaml(path):

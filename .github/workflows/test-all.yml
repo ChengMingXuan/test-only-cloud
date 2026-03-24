@@ -385,7 +385,7 @@ jobs:
           retention-days: 7
 
   puppeteer-matrix:
-    name: "🤖 Puppeteer [${{ matrix.shard }}/${{ strategy.job-total }}]"
+    name: "🤖 Puppeteer [${{ matrix.shard }}/5]"
     needs: detect-selection
     if: needs.detect-selection.outputs.execute_puppeteer == 'true'
     runs-on: ubuntu-latest

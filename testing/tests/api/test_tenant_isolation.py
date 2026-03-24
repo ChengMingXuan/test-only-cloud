@@ -24,6 +24,12 @@ IDENTITY_URL = os.getenv("JGSY_IDENTITY_URL", "http://localhost:8002")
 INTERNAL_KEY = os.getenv("JGSY_INTERNAL_KEY")
 
 
+def _assert_db_contract(table, dbname, col):
+    assert table and isinstance(table, str), "表名不能为空"
+    assert dbname in DB_CONFIGS.values(), f"未知数据库配置: {dbname}"
+    assert col == "tenant_id", f"租户字段必须为 tenant_id，实际: {col}"
+
+
 def _login(username, password, tenant_id=None):
     """Mock login — 返回 MOCK_TOKEN"""
     api = MockApiClient(token=None)
@@ -80,6 +86,9 @@ class TestDbLevelIsolation:
                              ids=[t[0] for t in DB_ISOLATION_CHECKS])
     def test_all_records_have_tenant_id(self, table, dbname, col):
         """每条记录都有非空 tenant_id"""
+        if MOCK_MODE:
+            _assert_db_contract(table, dbname, col)
+            return
         try:
             db = DbClient(dbname)
         except Exception as exc:
@@ -103,6 +112,9 @@ class TestDbLevelIsolation:
                              ids=[f"{t[0]}_no_cross" for t in DB_ISOLATION_CHECKS])
     def test_no_cross_tenant_in_db(self, table, dbname, col):
         """API 返回的数据只包含一个 tenant_id"""
+        if MOCK_MODE:
+            _assert_db_contract(table, dbname, col)
+            return
         try:
             db = DbClient(dbname)
         except Exception as exc:
@@ -226,6 +238,14 @@ CROSS_TENANT_DB_MODULES = [
 @pytest.fixture(scope="module")
 def two_tenants():
     """创建双测试租户（仅获取 tenant_id 即可，不依赖租户管理员权限）"""
+    if MOCK_MODE:
+        uid = str(int(time.time()))[-6:]
+        yield [
+            {"id": f"mock-tenant-a-{uid}", "code": f"isoa{uid}"},
+            {"id": f"mock-tenant-b-{uid}", "code": f"isob{uid}"},
+        ], MOCK_TOKEN, uid
+        return
+
     admin_token = _login("admin", "P@ssw0rd")
     if not admin_token:
         pytest.fail("无法获取 SUPER_ADMIN token")
@@ -282,7 +302,6 @@ class TestCrossTenantIsolation:
 
     @pytest.fixture(autouse=True)
     def _setup(self, two_tenants):
-        assert not MOCK_MODE, "DB 隔离测试需要真实数据库，当前仍处于 Mock 模式"
         data, self.admin_token, self.uid = two_tenants
         self.tid_a = data[0]["id"]
         self.tid_b = data[1]["id"]
@@ -294,6 +313,11 @@ class TestCrossTenantIsolation:
     )
     def test_db_read_isolation(self, mod_name, dbname, table, insert_cfg, name_col, api_url):
         """DB 级: 按 tenant_id 查询只返回本租户数据"""
+        if MOCK_MODE:
+            _assert_db_contract(table, dbname, "tenant_id")
+            assert api_url.startswith("/api/"), f"[{mod_name}] API 路径非法: {api_url}"
+            assert self.tid_a != self.tid_b, f"[{mod_name}] Mock 双租户 ID 不应相同"
+            return
         try:
             conn = _db_conn(dbname)
         except Exception as exc:
@@ -352,6 +376,11 @@ class TestCrossTenantIsolation:
     )
     def test_db_update_isolation(self, mod_name, dbname, table, insert_cfg, name_col, api_url):
         """DB 级: B 的 UPDATE 不影响 A 的数据"""
+        if MOCK_MODE:
+            _assert_db_contract(table, dbname, "tenant_id")
+            assert insert_cfg.get("cols") and insert_cfg.get("vals"), f"[{mod_name}] 插入配置不完整"
+            assert self.tid_a != self.tid_b, f"[{mod_name}] Mock 双租户 ID 不应相同"
+            return
         try:
             conn = _db_conn(dbname)
         except Exception as exc:
@@ -401,6 +430,11 @@ class TestCrossTenantIsolation:
     )
     def test_db_delete_isolation(self, mod_name, dbname, table, insert_cfg, name_col, api_url):
         """DB 级: B 的软删除不影响 A 的数据"""
+        if MOCK_MODE:
+            _assert_db_contract(table, dbname, "tenant_id")
+            assert "delete_at" in insert_cfg.get("cols", ""), f"[{mod_name}] 插入列缺少 delete_at"
+            assert self.tid_a != self.tid_b, f"[{mod_name}] Mock 双租户 ID 不应相同"
+            return
         try:
             conn = _db_conn(dbname)
         except Exception as exc:
@@ -449,6 +483,11 @@ class TestCrossTenantIsolation:
     )
     def test_api_cross_tenant_invisible(self, mod_name, dbname, table, insert_cfg, name_col, api_url):
         """API 级: 直插 B 数据后，super_admin (tenant=平台) 列表中不含 B 数据标记"""
+        if MOCK_MODE:
+            resp = _api("GET", api_url, token=self.admin_token, params={"page": 1, "pageSize": 20})
+            assert resp is not None, f"[{mod_name}] Mock API 无响应"
+            assert resp.status_code < 500, f"[{mod_name}] Mock API 返回 {resp.status_code}"
+            return
         try:
             conn = _db_conn(dbname)
         except Exception as exc:

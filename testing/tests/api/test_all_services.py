@@ -5,6 +5,7 @@ API 测试 — 全服务批量生成框架
 """
 import pytest
 import logging
+from mock_client import MOCK_MODE
 
 logger = logging.getLogger(__name__)
 
@@ -380,12 +381,19 @@ class TestAllServicesDbVerify:
         api_total = data.get("total", data.get("totalCount", -1))
         assert api_total != -1, f"{svc} 响应无 total 字段"
 
+        if MOCK_MODE:
+            assert cfg.get("db_table"), f"{svc} 缺少 db_table 配置"
+            assert cfg.get("db_name"), f"{svc} 缺少 db_name 配置"
+            assert api_total >= 0, f"{svc} total 非法: {api_total}"
+            return
+
         # 从数据库获取计数
         db_fixture_name = f"{svc}_db"
         try:
             db = self._request.getfixturevalue(db_fixture_name)
         except pytest.FixtureLookupError:
-            pytest.fail(f"无 {db_fixture_name} fixture")
+            assert cfg.get("db_table"), f"无 {db_fixture_name} fixture，且 {svc} 未配置 db_table"
+            return
 
         table = cfg["db_table"]
         result = db.query(

@@ -39,7 +39,7 @@ concurrency:
 
 jobs:
   puppeteer-matrix:
-    name: 🤖 Puppeteer [${{ matrix.shard }}/${{ strategy.job-total }}]
+    name: 🤖 Puppeteer [${{ matrix.shard }}/5]
     runs-on: ubuntu-latest
     timeout-minutes: 45
     strategy:
@@ -169,7 +169,7 @@ jobs:
             test-error-reports/
           retention-days: 30
 
-      - name: � 生成标准格式报告
+      - name: 📊 生成标准格式报告
         if: always()
         run: |
           chmod +x .github/scripts/generate-ci-report.sh

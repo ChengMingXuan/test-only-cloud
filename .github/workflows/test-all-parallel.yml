@@ -43,7 +43,7 @@ concurrency:
 # ═══════════════════════════════════════════════════════════════════
 jobs:
   pytest-matrix:
-    name: "🐍 pytest [${{ matrix.shard }}/${{ strategy.job-total }}]"
+    name: "🐍 pytest [${{ matrix.shard }}/10]"
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -179,7 +179,7 @@ jobs:
   # Playwright（11,093 用例）- 使用内置 --shard 功能
   # ═══════════════════════════════════════════════════════════════════
   playwright-matrix:
-    name: "🎭 Playwright [${{ matrix.shard }}/${{ strategy.job-total }}]"
+    name: "🎭 Playwright [${{ matrix.shard }}/10]"
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
@@ -275,7 +275,7 @@ jobs:
   # Cypress（9,877 用例）- 使用 Matrix 分片
   # ═══════════════════════════════════════════════════════════════════
   cypress-matrix:
-    name: "🌲 Cypress [${{ matrix.shard }}/${{ strategy.job-total }}]"
+    name: "🌲 Cypress [${{ matrix.shard }}/10]"
     runs-on: ubuntu-latest
     timeout-minutes: 25
     strategy:
@@ -391,7 +391,7 @@ jobs:
   # Puppeteer（8,137 用例）- 使用 Jest maxWorkers
   # ═══════════════════════════════════════════════════════════════════
   puppeteer-matrix:
-    name: "🤖 Puppeteer [${{ matrix.shard }}/${{ strategy.job-total }}]"
+    name: "🤖 Puppeteer [${{ matrix.shard }}/5]"
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
@@ -489,7 +489,7 @@ jobs:
   # Selenium（6,540 用例）- 使用 Matrix 分片
   # ═══════════════════════════════════════════════════════════════════
   selenium-matrix:
-    name: "🔬 Selenium [${{ matrix.shard }}/${{ strategy.job-total }}]"
+    name: "🔬 Selenium [${{ matrix.shard }}/8]"
     runs-on: ubuntu-latest
     timeout-minutes: 25
     strategy:

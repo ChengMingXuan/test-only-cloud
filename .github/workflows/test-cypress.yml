@@ -219,7 +219,7 @@ jobs:
             testing/tests/cypress-tests/reports/
           retention-days: 30
 
-      - name: � 生成标准格式报告
+      - name: 📊 生成标准格式报告
         if: always()
         run: |
           chmod +x .github/scripts/generate-ci-report.sh

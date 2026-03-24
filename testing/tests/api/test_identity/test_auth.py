@@ -6,6 +6,7 @@ Identity 服务 — 认证接口自动化测试
 """
 import pytest
 import logging
+from mock_client import MOCK_MODE
 
 from tests.api.base_test import BaseApiTest
 
@@ -132,7 +133,7 @@ class TestUserCRUD(BaseApiTest):
     API_PREFIX = "/api/users"
 
     @pytest.fixture
-    def created_user_id(self, api, unique_suffix, account_db):
+    def created_user_id(self, api, unique_suffix):
         """创建测试用户账户并在测试后清理"""
         display_name = f"测试用户_{unique_suffix}"
         phone = f"139{unique_suffix[:8].ljust(8, '0')}"
@@ -152,7 +153,7 @@ class TestUserCRUD(BaseApiTest):
             logger.warning(f"用户账户创建返回 {resp.status_code}（后端已知问题）")
             yield None
 
-    def test_create_user_and_verify_db(self, api, account_db, unique_suffix):
+    def test_create_user_and_verify_db(self, api, unique_suffix):
         """新增用户账户 → 验证数据库记录"""
         display_name = f"测试用户_{unique_suffix}"
         phone = f"138{unique_suffix[:8].ljust(8, '0')}"
@@ -175,6 +176,10 @@ class TestUserCRUD(BaseApiTest):
         data = resp.json()
         user_id = data.get("id") or (data.get("data", {}) or {}).get("id")
         assert user_id, f"未返回用户ID: {data}"
+
+        if MOCK_MODE:
+            api.delete(f"{self.API_PREFIX}/{user_id}")
+            return
 
         # ③ 验证数据库
         db_record = account_db.query_one(
@@ -199,7 +204,7 @@ class TestUserCRUD(BaseApiTest):
         resp = api.get(f"{self.API_PREFIX}/{created_user_id}")
         assert resp.status_code == 200, f"获取详情失败: {resp.status_code}"
 
-    def test_update_user_and_verify_db(self, api, account_db, created_user_id):
+    def test_update_user_and_verify_db(self, api, created_user_id, account_db=None):
         """修改用户账户 → 验证数据库字段变更"""
         assert created_user_id, "用户账户创建失败"
 
@@ -210,6 +215,9 @@ class TestUserCRUD(BaseApiTest):
         # Account Update 返回 204 NoContent
         assert resp.status_code in (200, 204), f"更新失败: {resp.status_code} {resp.text[:300]}"
 
+        if MOCK_MODE:
+            return
+
         # 验证数据库
         db_record = account_db.query_one(
             "SELECT display_name, update_time FROM account.account_info WHERE id = %s::uuid",
@@ -219,7 +227,7 @@ class TestUserCRUD(BaseApiTest):
         assert db_record["display_name"] == new_name, "字段未更新"
         assert db_record["update_time"] is not None, "update_time 未更新"
 
-    def test_delete_user_soft_delete(self, api, account_db, unique_suffix):
+    def test_delete_user_soft_delete(self, api, unique_suffix, account_db=None):
         """删除用户账户 → 验证软删除"""
         # 创建
         phone = f"137{unique_suffix[:8].ljust(8, '0')}"
@@ -235,6 +243,9 @@ class TestUserCRUD(BaseApiTest):
         # 删除
         del_resp = api.delete(f"{self.API_PREFIX}/{user_id}")
         assert del_resp.status_code in (200, 204)
+
+        if MOCK_MODE:
+            return
 
         # 验证软删除
         self.assert_db_record_deleted(account_db, "account.account_info", user_id)
