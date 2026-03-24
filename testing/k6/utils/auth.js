@@ -3,46 +3,73 @@ import http from 'k6/http';
 import { check } from 'k6';
 import config from '../config.js';
 
+function parseLoginBody(response) {
+  if (!response || !response.body) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(response.body);
+  } catch (e) {
+    console.error(`Failed to parse login response: ${e}`);
+    return null;
+  }
+}
+
+function extractTokenPayload(body) {
+  if (!body || typeof body !== 'object') {
+    return null;
+  }
+
+  const accessToken = body.accessToken || body.token?.accessToken || body.data?.accessToken;
+  if (!accessToken) {
+    return null;
+  }
+
+  return {
+    accessToken,
+    refreshToken: body.refreshToken || body.token?.refreshToken || body.data?.refreshToken || '',
+    expiresIn: body.expiresIn || body.token?.expiresIn || body.data?.expiresIn || 0,
+    tenantId: body.user?.tenantId || body.data?.user?.tenantId || null,
+    user: body.user || body.data?.user || null,
+  };
+}
+
 // 登录并获取JWT Token（返回 { accessToken, refreshToken } 对象）
 export function login(username, password) {
   const url = `${config.baseUrl}/api/auth/login`;
-  const payload = JSON.stringify({
-    userName: username,
-    password: password,
-  });
+  const payload = {
+    username,
+    password,
+  };
+
+  const tenantCode = __ENV.ADMIN_TENANT_CODE || __ENV.TENANT_CODE || '';
+  if (tenantCode) {
+    payload.tenantCode = tenantCode;
+  }
   
   const params = {
     headers: config.requestOptions.headers,
     timeout: config.requestOptions.timeout,
   };
   
-  const response = http.post(url, payload, params);
+  const response = http.post(url, JSON.stringify(payload), params);
+  const body = parseLoginBody(response);
+  const tokenPayload = extractTokenPayload(body);
   
   check(response, {
-    'login status is 200': (r) => r.status < 500,
+    'login status is 200': (r) => r.status === 200,
     'login response has token': (r) => {
-      if (!r.body || r.status >= 400) return true; // 服务不可用时容错通过
-      try {
-        const body = JSON.parse(r.body);
-        return body.data && body.data.accessToken !== undefined;
-      } catch (e) {
-        return true; // 解析失败容错通过
-      }
+      return r.status === 200 && tokenPayload !== null;
     },
   });
   
-  if (response.status === 200) {
-    try {
-      const body = JSON.parse(response.body);
-      return {
-        accessToken: body.data.accessToken,
-        refreshToken: body.data.refreshToken || '',
-      };
-    } catch (e) {
-      console.error(`Failed to parse login response: ${e}`);
-      return null;
-    }
+  if (response.status === 200 && tokenPayload) {
+    return tokenPayload;
   }
+
+  const message = body?.message || body?.error || `status=${response.status}`;
+  console.error(`Login failed for ${username}: ${message}`);
   
   return null;
 }
@@ -70,12 +97,8 @@ export function refreshToken(refreshToken) {
   const response = http.post(url, payload, params);
   
   if (response.status === 200) {
-    try {
-      const body = JSON.parse(response.body);
-      return body.data.accessToken;
-    } catch (e) {
-      return null;
-    }
+    const body = parseLoginBody(response);
+    return body?.accessToken || body?.token?.accessToken || body?.data?.accessToken || null;
   }
   
   return null;

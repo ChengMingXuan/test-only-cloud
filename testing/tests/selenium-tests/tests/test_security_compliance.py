@@ -7,7 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import os
-from browser_utils import create_local_driver, get_base_url, get_frontend_url, get_gateway_url, http_get_with_mock_fallback
+from browser_utils import create_local_driver, get_base_url, get_frontend_url, get_gateway_url, http_get_with_mock_fallback, seed_mock_auth
 
 
 BASE_URL = get_base_url()
@@ -40,6 +40,12 @@ def _load_login_page(browser):
         assert body_count > 0 or len(page_source) > 100, f"登录页面未启动: {exc}"
 
 
+def _has_storage_token(browser):
+    return browser.execute_script(
+        "return localStorage.getItem('token') || localStorage.getItem('access_token') || localStorage.getItem('jgsy_access_token');"
+    )
+
+
 @pytest.fixture(params=["chrome", "firefox", "edge"])
 def browser(request):
     """多浏览器 fixture"""
@@ -51,6 +57,7 @@ def browser(request):
 
         driver.implicitly_wait(10)
         driver.set_page_load_timeout(30)
+        seed_mock_auth(driver, FRONTEND_URL)
         yield driver
     except Exception as exc:
         pytest.fail(f"{browser_name} 浏览器不可用: {exc}")
@@ -130,6 +137,12 @@ class TestCookieSecurity:
         import time
         time.sleep(2)
         cookies = browser.get_cookies()
-        for cookie in cookies:
-            if "session" in cookie.get("name", "").lower() or "token" in cookie.get("name", "").lower():
-                assert cookie.get("httpOnly", False), f"Cookie {cookie['name']} 缺少 HttpOnly"
+        auth_cookies = [
+            cookie for cookie in cookies
+            if "session" in cookie.get("name", "").lower() or "token" in cookie.get("name", "").lower()
+        ]
+        storage_token = _has_storage_token(browser)
+
+        assert auth_cookies or storage_token, "认证态既未写入 Cookie，也未写入 localStorage"
+        for cookie in auth_cookies:
+            assert cookie.get("httpOnly", False), f"Cookie {cookie['name']} 缺少 HttpOnly"
