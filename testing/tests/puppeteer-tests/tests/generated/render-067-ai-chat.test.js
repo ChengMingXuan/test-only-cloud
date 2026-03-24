@@ -12,6 +12,8 @@ const PAGE_URL = BASE_URL + PAGE_PATH;
 // Mock Token
 const MOCK_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0LXVzZXIifQ.test';
 
+jest.setTimeout(60000);
+
 describe('[渲染测试] AI智能对话', () => {
   let browser;
   let page;

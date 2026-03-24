@@ -69,12 +69,12 @@ def _ensure_mock_server():
         return _mock_server_instance
 
     from mock_server import MockServer
-    _mock_server_instance = MockServer(port=8000)
     try:
+        _mock_server_instance = MockServer(port=8000)
         _mock_server_instance.start()
         TEST_CONFIG["base_url"] = _mock_server_instance.base_url
         print(f"\n⚡ [Selenium] Mock 模式 → mock_server 已启动: {_mock_server_instance.base_url}")
-    except Exception as e:
+    except OSError:
         # 端口被占用时尝试随机端口
         _mock_server_instance = MockServer()
         _mock_server_instance.start()

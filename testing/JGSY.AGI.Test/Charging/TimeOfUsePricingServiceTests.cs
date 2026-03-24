@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using JGSY.AGI.Charging.Service;
-using Microsoft.Extensions.Caching.Distributed;
+using JGSY.AGI.Common.Core.Cache;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -22,13 +22,13 @@ namespace JGSY.AGI.Test.Charging;
 /// </summary>
 public class TimeOfUsePricingServiceTests
 {
-    private readonly Mock<IDistributedCache> _cacheMock;
+    private readonly Mock<IDistributedCacheService> _cacheMock;
     private readonly Mock<ILogger<TimeOfUsePricingService>> _loggerMock;
     private readonly Guid _testStationId = Guid.NewGuid();
 
     public TimeOfUsePricingServiceTests()
     {
-        _cacheMock = new Mock<IDistributedCache>();
+        _cacheMock = new Mock<IDistributedCacheService>();
         _loggerMock = new Mock<ILogger<TimeOfUsePricingService>>();
     }
 
@@ -75,8 +75,8 @@ public class TimeOfUsePricingServiceTests
         };
 
         // 默认缓存返回空
-        _cacheMock.Setup(c => c.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((byte[]?)null);
+        _cacheMock.Setup(c => c.GetStringAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string?)null);
 
         return new TimeOfUsePricingService(httpClient, _cacheMock.Object, new ConfigurationBuilder().Build(), _loggerMock.Object);
     }
@@ -392,8 +392,8 @@ public class TimeOfUsePricingServiceTests
         var service = CreateService(rulesFromApi: null);
         
         _cacheMock.Reset();
-        _cacheMock.Setup(c => c.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(System.Text.Encoding.UTF8.GetBytes(cacheJson));
+        _cacheMock.Setup(c => c.GetStringAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(cacheJson);
 
         var rules = await service.GetPriceRulesAsync(_testStationId);
 

@@ -18,17 +18,17 @@ const PERFORMANCE_THRESHOLD = {
 let browser;
 let page;
 
-describe('v3.18 补充模块 - 渲染测试', function() {
-  this.timeout(60000);
+describe('v3.18 补充模块 - 渲染测试', () => {
+  jest.setTimeout(60000);
 
-  before(async () => {
+  beforeAll(async () => {
     browser = await puppeteer.launch({
       headless: 'new',
       args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (browser) await browser.close();
   });
 

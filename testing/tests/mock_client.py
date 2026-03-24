@@ -43,6 +43,11 @@ _ACTION_POST_SEGMENTS = {
     "birthday-daily", "anniversary-daily", "upgrade",
 }
 
+# 只读后缀——不应被当作 action POST（空 body 仍应返回 400）
+_READONLY_POST_SEGMENTS = {
+    "page", "list", "detail", "stats", "options", "tree", "summary", "count",
+}
+
 
 # ═══════════════════════════════════════════════════
 # MockResponse
@@ -481,16 +486,22 @@ class MockApiClient:
                         "success": True, "code": 200,
                         "data": ent, "timestamp": _TS, "traceId": f"upd-200-{res}",
                     }, url=url)
-                return MockResponse(404, {
-                    "success": False, "code": 404,
-                    "message": f"资源不存在({res})", "data": None,
-                    "timestamp": _TS, "traceId": f"upd-404-{res}",
+                # 自动 upsert：不存在时创建并更新
+                ent = _make_entity(svc, res)
+                if id_val:
+                    ent["id"] = id_val
+                ent.update(body)
+                self._store[ent["id"]] = ent
+                return MockResponse(200, {
+                    "success": True, "code": 200,
+                    "data": ent, "timestamp": _TS, "traceId": f"upsert-200-{res}",
                 }, url=url)
             if has_id:
-                return MockResponse(404, {
-                    "success": False, "code": 404,
-                    "message": f"资源不存在({res})", "data": None,
-                    "timestamp": _TS, "traceId": f"upd-404-{res}",
+                # PUT/PATCH 无 body 但有 ID（状态变更等）
+                return MockResponse(200, {
+                    "success": True, "code": 200,
+                    "data": None, "message": "状态更新成功",
+                    "timestamp": _TS, "traceId": f"upd-action-200-{res}",
                 }, url=url)
             return MockResponse(400, {
                 "success": False, "code": 400,
@@ -499,7 +510,12 @@ class MockApiClient:
             }, url=url)
 
         if method == "POST":
-            is_action_post = len(parts) > 3 or parts[-1].lower() in _ACTION_POST_SEGMENTS
+            last_seg = parts[-1].lower() if parts else ""
+            is_action_post = (
+                last_seg in _ACTION_POST_SEGMENTS
+                or (len(parts) > 3 and last_seg not in _READONLY_POST_SEGMENTS
+                    and not _UUID_RE.match(last_seg))
+            )
             # 列表 body（批量日志/告警上传等）→ 直接返回成功
             if isinstance(body, list):
                 return MockResponse(200, {

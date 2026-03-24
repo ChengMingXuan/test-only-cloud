@@ -24,30 +24,62 @@ async function setupMocks(page: Page) {
         status: 200,
         contentType: 'text/html',
         body: `<!DOCTYPE html><html><head><title>Mock</title></head><body>
-          <div id="root">
-            <div class="ant-layout">
-              <div data-testid="device-name"><input data-testid="device-name" /></div>
-              <div data-testid="capacity"><input data-testid="capacity" /></div>
-              <div data-testid="location"><input data-testid="location" /></div>
-              <div data-testid="period"><input data-testid="period" /></div>
-              <div data-testid="generation"><input data-testid="generation" /></div>
-              <div data-testid="device-select" class="ant-select"><div class="ant-select-item">设备1</div></div>
-              <button data-testid="submit-btn">提交</button>
-              <span>注册成功</span><span>签发申请已提交</span><span>转让成功</span>
-              <span>注册成功</span><span>减排量已核销</span>
-              <div class="ant-table"><table><tbody><tr class="ant-table-row"><td>数据</td></tr></tbody></table></div>
-              <div class="ant-card">卡片</div>
-              <div class="ant-statistic">统计</div>
-              <div class="ant-tabs"><div class="ant-tabs-tab">日报表</div><div class="ant-tabs-tab">月报表</div></div>
-              <div class="ant-form"><input /><button>保存</button></div>
-              <div class="ant-list"><div class="ant-list-item">列表项</div></div>
-              <div class="ant-tag ant-tag-green">正常</div>
-              <div class="ant-tag ant-tag-red">异常</div>
-              <div class="ant-descriptions">描述</div>
-              <div class="ant-alert">告警</div>
-              <span>查看详情</span><span>偏差分析</span>
-            </div>
-          </div>
+          <div id="root"><div class="ant-layout">
+            <!-- 输入表单 -->
+            <input data-testid="device-name" /><input data-testid="capacity" />
+            <input data-testid="location" /><input data-testid="period" />
+            <input data-testid="generation" /><input data-testid="to-account" />
+            <input data-testid="project-name" /><input data-testid="category" />
+            <input data-testid="estimated-reduction" /><input data-testid="vehicle-id" />
+            <input data-testid="current-soc" /><input data-testid="target-soc" />
+            <input data-testid="endpoint-input" /><input data-testid="quantity-0" />
+            <!-- 选择器 -->
+            <div data-testid="device-select" class="ant-select"><div class="ant-select-item">设备1</div></div>
+            <div data-testid="workorder-select" class="ant-select"><div class="ant-select-item">工单1</div></div>
+            <div data-testid="part-select-0" class="ant-select"><div class="ant-select-item">备件1</div></div>
+            <div data-testid="group-filter" class="ant-select"><div class="ant-select-item">全部</div></div>
+            <div data-testid="filter-energy-core" class="ant-select"><div class="ant-select-item">能源核心</div></div>
+            <!-- 按钮 -->
+            <button data-testid="submit-btn">提交</button>
+            <button data-testid="save-btn">保存</button>
+            <button data-testid="dispatch-btn">调度</button>
+            <button data-testid="export-btn">导出</button>
+            <button data-testid="cancel-btn-queue-001">取消</button>
+            <button data-testid="add-item-btn">添加</button>
+            <button data-testid="approve-btn">审批</button>
+            <button data-testid="confirm-approve">确认审批</button>
+            <a data-testid="service-detail">详情</a>
+            <!-- 数据展示 -->
+            <div data-testid="total-consumption">12500.5</div>
+            <div data-testid="total-generation">8500.2</div>
+            <div data-testid="daily-chart" style="width:100px;height:50px;background:#eee;">日图</div>
+            <div data-testid="monthly-chart" style="width:100px;height:50px;background:#eee;">月图</div>
+            <div data-testid="deviation-chart" style="width:100px;height:50px;background:#eee;">偏差</div>
+            <div data-testid="records-table"><span>rec-001</span></div>
+            <div data-testid="string-table"><div data-testid="string-row-S002" class="warning">S002</div></div>
+            <div data-testid="pile-card">充电桩1</div><div data-testid="pile-card">充电桩2</div>
+            <div data-testid="group-card">分组</div>
+            <!-- 文本内容 -->
+            <span>注册成功</span><span>签发申请已提交</span><span>转让成功</span>
+            <span>减排量已核销</span><span>项目注册成功</span><span>排队成功</span>
+            <span>调度完成</span><span>已取消</span><span>配置已保存</span>
+            <span>核销单已创建</span><span>审批成功</span>
+            <span>low_current</span><span>-2.5</span>
+            <!-- 六边界域 -->
+            <span>平台接入与底座域</span><span>充电运营闭环域</span>
+            <span>能源资源运营域</span><span>市场交易域</span>
+            <span>共享设备与规则域</span><span>智能与增值能力域</span>
+            <span>platform</span><span>orchestrator</span>
+            <!-- 通用组件 -->
+            <div class="ant-table"><table><tbody><tr class="ant-table-row"><td>数据</td></tr></tbody></table></div>
+            <div class="ant-card">卡片</div><div class="ant-statistic">统计</div>
+            <div class="ant-tabs"><div class="ant-tabs-tab">日报表</div><div class="ant-tabs-tab">月报表</div></div>
+            <div class="ant-form"><input /><button>保存</button></div>
+            <div class="ant-list"><div class="ant-list-item">列表项</div></div>
+            <div class="ant-tag ant-tag-green">正常</div><div class="ant-tag ant-tag-red">异常</div>
+            <div class="ant-descriptions">描述</div><div class="ant-alert">告警</div>
+            <span>查看详情</span><span>偏差分析</span>
+          </div></div>
         </body></html>`
       });
     } else if (req.url().includes('/api/')) {

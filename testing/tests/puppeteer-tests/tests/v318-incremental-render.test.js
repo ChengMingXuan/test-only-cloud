@@ -26,17 +26,17 @@ let page;
 // 测试套件初始化
 // ═══════════════════════════════════════════════════════════════════════════════
 
-describe('v3.18 增量功能 - 渲染测试', function() {
-  this.timeout(60000);
+describe('v3.18 增量功能 - 渲染测试', () => {
+  jest.setTimeout(60000);
 
-  before(async () => {
+  beforeAll(async () => {
     browser = await puppeteer.launch({
       headless: 'new',
       args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (browser) {
       await browser.close();
     }
