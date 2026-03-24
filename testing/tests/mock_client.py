@@ -39,7 +39,7 @@ _ACTION_POST_SEGMENTS = {
     "preview", "calculate", "query", "search", "validate",
     "refresh", "execute", "sync", "settle", "settlement",
     "trigger", "replay", "flush", "start", "stop",
-    "enqueue", "enqueue-batch", "send", "upload", "import", "export",
+    "enqueue", "enqueue-batch", "send", "upload", "import",
     "birthday-daily", "anniversary-daily", "upgrade",
 }
 

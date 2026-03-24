@@ -147,6 +147,7 @@ async function submitPrimaryModal(page: Page) {
 }
 
 test.describe.serial('敏感词过滤真实 UI 定向复核', () => {
+  test.skip(!!process.env.CI, '需要真实后端和 UI，CI 环境跳过');
   test.beforeAll(async () => {
     apiContext = await playwrightRequest.newContext({ ignoreHTTPSErrors: true });
     await login();

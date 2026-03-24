@@ -17,6 +17,7 @@ const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:8001';
 // ==================== 1. 安全响应头 ====================
 
 test.describe('[v2.4.6] SecuritySwitches - 安全响应头', () => {
+  test.skip(!!process.env.CI, '需要真实后端，CI 环境跳过');
 
   test('[SEC-PW01] X-Content-Type-Options: nosniff', async ({ request }) => {
     const resp = await request.get(`${GATEWAY_URL}/api/gateway/health`);
@@ -72,6 +73,7 @@ test.describe('[v2.4.6] SecuritySwitches - 安全响应头', () => {
 // ==================== 2. 认证强制 ====================
 
 test.describe('[v2.4.6] SecuritySwitches - 认证强制', () => {
+  test.skip(!!process.env.CI, '需要真实后端，CI 环境跳过');
 
   test('[SEC-PW-AUTH01] 未认证请求返回 401/403', async ({ request }) => {
     const resp = await request.get(`${GATEWAY_URL}/api/permission/roles`, {

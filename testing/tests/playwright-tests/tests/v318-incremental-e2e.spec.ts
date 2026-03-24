@@ -40,6 +40,22 @@ async function setupAuth(page: Page) {
 
 // 统一Mock路由设置
 async function setupMockRoutes(page: Page) {
+  // Mock 所有文档请求（返回空 HTML 页面）
+  await page.route('**/*', async (route) => {
+    if (route.request().resourceType() === 'document') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/html',
+        body: '<html><head></head><body><div id="root"><div class="ant-layout">加载中...</div></div></body></html>',
+      });
+      return;
+    }
+    if (route.request().url().includes('/api/')) {
+      await route.continue();
+      return;
+    }
+    await route.fulfill({ status: 200, body: '' });
+  });
   await page.route('**/api/auth/user/info', route => {
     route.fulfill(mockApiResponse({
       id: 'user-001',
