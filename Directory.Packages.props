@@ -193,6 +193,7 @@
     <PackageVersion Include="Testcontainers" Version="3.6.0" />
     <PackageVersion Include="Testcontainers.PostgreSql" Version="3.6.0" />
     <PackageVersion Include="Testcontainers.Redis" Version="3.6.0" />
+    <PackageVersion Include="JUnitTestLogger" Version="1.1.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.2" />
     <PackageVersion Include="coverlet.msbuild" Version="6.0.2" />
     <PackageVersion Include="ReportGenerator" Version="5.3.5" />

@@ -32,6 +32,7 @@
     <PackageReference Include="Testcontainers.PostgreSql" />
     <PackageReference Include="Testcontainers.Redis" />
     <PackageReference Include="Microsoft.Data.Sqlite" />
+    <PackageReference Include="JUnitTestLogger" />
     <PackageReference Include="coverlet.collector" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
     <PackageReference Include="coverlet.msbuild" PrivateAssets="all" />
     <PackageReference Include="ReportGenerator" PrivateAssets="all" />
