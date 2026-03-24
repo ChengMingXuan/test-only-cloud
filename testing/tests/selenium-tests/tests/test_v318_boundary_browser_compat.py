@@ -11,16 +11,13 @@ v3.18 六边界域架构增量测试 - Selenium浏览器兼容性测试
 """
 import pytest
 import os
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.options import Options as ChromeOptions
-from selenium.webdriver.firefox.options import Options as FirefoxOptions
-from selenium.webdriver.edge.options import Options as EdgeOptions
 from unittest.mock import MagicMock, patch
+from browser_utils import create_local_driver, get_base_url
 
-BASE_URL = os.environ.get('BASE_URL', 'http://localhost:3000')
+BASE_URL = get_base_url()
 TIMEOUT = 30
 
 
@@ -32,20 +29,7 @@ def browser(request):
     driver = None
     
     try:
-        if browser_name == 'chrome':
-            options = ChromeOptions()
-            options.add_argument('--headless')
-            options.add_argument('--no-sandbox')
-            options.add_argument('--disable-dev-shm-usage')
-            driver = webdriver.Chrome(options=options)
-        elif browser_name == 'firefox':
-            options = FirefoxOptions()
-            options.add_argument('--headless')
-            driver = webdriver.Firefox(options=options)
-        elif browser_name == 'edge':
-            options = EdgeOptions()
-            options.add_argument('--headless')
-            driver = webdriver.Edge(options=options)
+        driver = create_local_driver(browser_name)
         
         driver.set_window_size(1920, 1080)
         driver.implicitly_wait(10)

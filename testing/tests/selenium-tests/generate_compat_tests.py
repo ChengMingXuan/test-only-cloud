@@ -145,7 +145,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 
-BASE_URL = os.environ.get("TEST_BASE_URL", "http://localhost:3000")
+BASE_URL = os.environ.get("TEST_BASE_URL") or os.environ.get("BASE_URL") or "http://localhost:8000"
 PAGE_PATH = "{page["path"]}"
 PAGE_URL = BASE_URL + PAGE_PATH
 

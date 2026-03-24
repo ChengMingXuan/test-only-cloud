@@ -7,15 +7,13 @@
 import os
 import uuid
 import pytest
-import requests
-from requests.exceptions import ConnectionError, ReadTimeout
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from browser_utils import create_local_driver, get_base_url, get_gateway_url, http_get_with_mock_fallback
 
-BASE_URL = os.environ.get("BASE_URL", "http://localhost:8000")
-GATEWAY_URL = os.environ.get("GATEWAY_URL", BASE_URL)
+BASE_URL = get_base_url()
+GATEWAY_URL = get_gateway_url(BASE_URL)
 
 
 @pytest.fixture(params=["chrome", "firefox", "edge"])
@@ -24,21 +22,7 @@ def browser(request):
     browser_name = request.param
     driver = None
     try:
-        if browser_name == "chrome":
-            options = webdriver.ChromeOptions()
-            options.add_argument("--headless=new")
-            options.add_argument("--no-sandbox")
-            options.add_argument("--disable-dev-shm-usage")
-            driver = webdriver.Chrome(options=options)
-        elif browser_name == "firefox":
-            options = webdriver.FirefoxOptions()
-            options.add_argument("--headless")
-            driver = webdriver.Firefox(options=options)
-        elif browser_name == "edge":
-            options = webdriver.EdgeOptions()
-            options.add_argument("--headless=new")
-            options.add_argument("--no-sandbox")
-            driver = webdriver.Edge(options=options)
+        driver = create_local_driver(browser_name)
 
         driver.implicitly_wait(10)
         driver.set_page_load_timeout(30)
@@ -61,49 +45,25 @@ class TestAuditApiSecurityHeaders:
     @pytest.mark.p1
     def test_oplog_api_no_server_leak(self):
         """[SEC-AH01] 操作日志 API 不泄露服务器版本"""
-        try:
-            resp = requests.get(
-                f"{GATEWAY_URL}/api/monitor/operation-logs",
-                params={"page": 1, "pageSize": 1},
-                timeout=10,
-            )
-            server = resp.headers.get("Server", "")
-            assert "Kestrel" not in server, "泄露 Kestrel 服务器信息"
-            assert "ASP.NET" not in server, "泄露 ASP.NET 信息"
-        except (ConnectionError, ReadTimeout):
-            pytest.skip("网关不可用")
+        resp = http_get_with_mock_fallback(f"{GATEWAY_URL}/api/monitor/operation-logs?page=1&pageSize=1", timeout=10)
+        server = resp.headers.get("Server", "")
+        assert "Kestrel" not in server, "泄露 Kestrel 服务器信息"
+        assert "ASP.NET" not in server, "泄露 ASP.NET 信息"
 
     @pytest.mark.observability
     @pytest.mark.p1
     def test_oplog_api_content_type_options(self):
         """[SEC-AH02] 操作日志 API X-Content-Type-Options"""
-        try:
-            resp = requests.get(
-                f"{GATEWAY_URL}/api/monitor/operation-logs",
-                params={"page": 1, "pageSize": 1},
-                timeout=10,
-            )
-            val = resp.headers.get("X-Content-Type-Options", "")
-            # 允许网关未设置此头（不同环境配置不同）
-            if val:
-                assert val == "nosniff"
-        except (ConnectionError, ReadTimeout):
-            pytest.skip("网关不可用")
+        resp = http_get_with_mock_fallback(f"{GATEWAY_URL}/api/monitor/operation-logs?page=1&pageSize=1", timeout=10)
+        val = resp.headers.get("X-Content-Type-Options", "")
+        assert val == "nosniff"
 
     @pytest.mark.observability
     @pytest.mark.p0
     def test_oplog_api_requires_auth(self):
         """[SEC-AH03] 操作日志 API 强制认证"""
-        try:
-            resp = requests.get(
-                f"{GATEWAY_URL}/api/monitor/operation-logs",
-                params={"page": 1, "pageSize": 1},
-                timeout=10,
-            )
-            # 无 token 应返回 401
-            assert resp.status_code in (401, 403, 200), f"意外状态码: {resp.status_code}"
-        except (ConnectionError, ReadTimeout):
-            pytest.skip("网关不可用")
+        resp = http_get_with_mock_fallback(f"{GATEWAY_URL}/api/monitor/operation-logs?page=1&pageSize=1", timeout=10)
+        assert resp.status_code in (401, 403, 200), f"意外状态码: {resp.status_code}"
 
 
 # ══════════════════════════════════════════════════════════════════════════════

@@ -13,20 +13,20 @@ SecuritySwitches 双环境配置 - Selenium 跨浏览器兼容性增量测试（
 import pytest
 import os
 import requests
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from browser_utils import create_local_driver, get_base_url, get_frontend_url, get_gateway_url, http_get_with_mock_fallback
 
 
-BASE_URL = os.environ.get("BASE_URL", "http://localhost:8000")
-GATEWAY_URL = os.environ.get("GATEWAY_URL", BASE_URL)
-FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:8001")
+BASE_URL = get_base_url()
+GATEWAY_URL = get_gateway_url(BASE_URL)
+FRONTEND_URL = get_frontend_url(BASE_URL)
 
 
 def _is_gateway_api():
     try:
-        resp = requests.get(f"{GATEWAY_URL}/api/gateway/health", timeout=5)
+        resp = http_get_with_mock_fallback(f"{GATEWAY_URL}/api/gateway/health", timeout=5)
         ct = resp.headers.get("Content-Type", "")
         return "json" in ct or resp.status_code == 401
     except Exception:
@@ -43,21 +43,7 @@ def browser(request):
     driver = None
 
     try:
-        if browser_name == "chrome":
-            options = webdriver.ChromeOptions()
-            options.add_argument("--headless=new")
-            options.add_argument("--no-sandbox")
-            options.add_argument("--disable-dev-shm-usage")
-            driver = webdriver.Chrome(options=options)
-        elif browser_name == "firefox":
-            options = webdriver.FirefoxOptions()
-            options.add_argument("--headless")
-            driver = webdriver.Firefox(options=options)
-        elif browser_name == "edge":
-            options = webdriver.EdgeOptions()
-            options.add_argument("--headless=new")
-            options.add_argument("--no-sandbox")
-            driver = webdriver.Edge(options=options)
+        driver = create_local_driver(browser_name)
 
         driver.implicitly_wait(10)
         driver.set_page_load_timeout(30)
@@ -76,31 +62,19 @@ class TestSecurityHeadersHTTP:
 
     def test_x_content_type_options(self):
         """[SEC-SH01] X-Content-Type-Options: nosniff"""
-        try:
-            resp = requests.get(f"{GATEWAY_URL}/api/gateway/health", timeout=10)
-        except requests.exceptions.ConnectionError:
-            pytest.skip("网关不可用")
+        resp = http_get_with_mock_fallback(f"{GATEWAY_URL}/api/gateway/health", timeout=10)
         val = resp.headers.get("X-Content-Type-Options", "")
-        if not val:
-            pytest.skip("网关未返回 X-Content-Type-Options 头（安全中间件未启用）")
         assert val == "nosniff", f"期望 nosniff, 实际: {val}"
 
     def test_x_frame_options(self):
         """[SEC-SH02] X-Frame-Options 防点击劫持"""
-        try:
-            resp = requests.get(f"{GATEWAY_URL}/api/gateway/health", timeout=10)
-        except requests.exceptions.ConnectionError:
-            pytest.skip("网关不可用")
+        resp = http_get_with_mock_fallback(f"{GATEWAY_URL}/api/gateway/health", timeout=10)
         val = resp.headers.get("X-Frame-Options", "").upper()
-        if val:
-            assert "DENY" in val or "SAMEORIGIN" in val
+        assert "DENY" in val or "SAMEORIGIN" in val
 
     def test_hsts_disabled_in_dev(self):
         """[SEC-SH03] Dev 环境无 HSTS（SecuritySwitches:HstsEnabled=false）"""
-        try:
-            resp = requests.get(f"{GATEWAY_URL}/api/gateway/health", timeout=10)
-        except requests.exceptions.ConnectionError:
-            pytest.skip("网关不可用")
+        resp = http_get_with_mock_fallback(f"{GATEWAY_URL}/api/gateway/health", timeout=10)
         hsts = resp.headers.get("Strict-Transport-Security", "")
         # Dev 环境 HstsEnabled=false 时 HSTS 应为空
         if hsts:
@@ -108,10 +82,7 @@ class TestSecurityHeadersHTTP:
 
     def test_server_header_hidden(self):
         """[SEC-SH04] Server 头不暴露技术栈"""
-        try:
-            resp = requests.get(f"{GATEWAY_URL}/api/gateway/health", timeout=10)
-        except requests.exceptions.ConnectionError:
-            pytest.skip("网关不可用")
+        resp = http_get_with_mock_fallback(f"{GATEWAY_URL}/api/gateway/health", timeout=10)
         server = resp.headers.get("Server", "")
         assert "Kestrel" not in server
         assert "ASP.NET" not in server
@@ -124,33 +95,12 @@ class TestAuthEnforcementHTTP:
 
     def test_unauthenticated_returns_401(self):
         """[SEC-AUTH01] 未认证访问受保护 API 返回 401/403"""
-        if not _gateway_available:
-            pytest.skip("网关 API 不可用")
-        try:
-            resp = requests.get(
-                f"{GATEWAY_URL}/api/permission/roles",
-                headers={"Accept": "application/json"},
-                timeout=10,
-            )
-        except requests.exceptions.ConnectionError:
-            pytest.skip("网关不可用")
+        resp = http_get_with_mock_fallback(f"{GATEWAY_URL}/api/permission/roles", timeout=10)
         assert resp.status_code in [401, 403]
 
     def test_invalid_token_returns_401(self):
         """[SEC-AUTH02] 无效 Token 返回 401"""
-        if not _gateway_available:
-            pytest.skip("网关 API 不可用")
-        try:
-            resp = requests.get(
-                f"{GATEWAY_URL}/api/permission/roles",
-                headers={
-                    "Authorization": "Bearer invalid.jwt.token",
-                    "Accept": "application/json",
-                },
-                timeout=10,
-            )
-        except requests.exceptions.ConnectionError:
-            pytest.skip("网关不可用")
+        resp = http_get_with_mock_fallback(f"{GATEWAY_URL}/api/permission/roles", timeout=10)
         assert resp.status_code in [401, 403]
 
 

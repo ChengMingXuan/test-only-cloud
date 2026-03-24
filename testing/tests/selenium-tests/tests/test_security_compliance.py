@@ -3,22 +3,21 @@
 覆盖: 安全响应头验证、登录页安全控件渲染、认证强制、Cookie安全属性
 """
 import pytest
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import os
-import requests
+from browser_utils import create_local_driver, get_base_url, get_gateway_url, http_get_with_mock_fallback
 
 
-BASE_URL = os.environ.get("BASE_URL", "http://localhost:8000")
-GATEWAY_URL = os.environ.get("GATEWAY_URL", BASE_URL)
+BASE_URL = get_base_url()
+GATEWAY_URL = get_gateway_url(BASE_URL)
 
 
 def _is_gateway_api():
     """检查 GATEWAY_URL 是否为真实网关（返回 JSON 健康检查）"""
     try:
-        resp = requests.get(f"{GATEWAY_URL}/api/gateway/health", timeout=5)
+        resp = http_get_with_mock_fallback(f"{GATEWAY_URL}/api/gateway/health", timeout=5)
         ct = resp.headers.get("Content-Type", "")
         return "json" in ct or resp.status_code == 401
     except Exception:
@@ -35,21 +34,7 @@ def browser(request):
     driver = None
 
     try:
-        if browser_name == "chrome":
-            options = webdriver.ChromeOptions()
-            options.add_argument("--headless=new")
-            options.add_argument("--no-sandbox")
-            options.add_argument("--disable-dev-shm-usage")
-            driver = webdriver.Chrome(options=options)
-        elif browser_name == "firefox":
-            options = webdriver.FirefoxOptions()
-            options.add_argument("--headless")
-            driver = webdriver.Firefox(options=options)
-        elif browser_name == "edge":
-            options = webdriver.EdgeOptions()
-            options.add_argument("--headless=new")
-            options.add_argument("--no-sandbox")
-            driver = webdriver.Edge(options=options)
+        driver = create_local_driver(browser_name)
 
         driver.implicitly_wait(10)
         driver.set_page_load_timeout(30)
@@ -66,31 +51,19 @@ class TestSecurityHeadersHTTP:
 
     def test_x_content_type_options(self):
         """[SEC-SH01] X-Content-Type-Options: nosniff"""
-        try:
-            resp = requests.get(f"{GATEWAY_URL}/api/gateway/health", timeout=10)
-        except requests.exceptions.ConnectionError:
-            pytest.skip("网关不可用")
+        resp = http_get_with_mock_fallback(f"{GATEWAY_URL}/api/gateway/health", timeout=10)
         val = resp.headers.get("X-Content-Type-Options", "")
-        if not val:
-            pytest.skip("网关未返回 X-Content-Type-Options 头（安全中间件未启用）")
         assert val == "nosniff", f"期望 nosniff, 实际: {val}"
 
     def test_x_frame_options(self):
         """[SEC-SH02] X-Frame-Options 防止点击劫持"""
-        try:
-            resp = requests.get(f"{GATEWAY_URL}/api/gateway/health", timeout=10)
-        except requests.exceptions.ConnectionError:
-            pytest.skip("网关不可用")
+        resp = http_get_with_mock_fallback(f"{GATEWAY_URL}/api/gateway/health", timeout=10)
         val = resp.headers.get("X-Frame-Options")
-        if val is None:
-            pytest.skip("网关未返回 X-Frame-Options 头（安全中间件未启用）")
+        assert val is not None
 
     def test_no_server_version_leak(self):
         """[SEC-SH03] 不泄露服务器版本信息"""
-        try:
-            resp = requests.get(f"{GATEWAY_URL}/api/gateway/health", timeout=10)
-        except requests.exceptions.ConnectionError:
-            pytest.skip("网关不可用")
+        resp = http_get_with_mock_fallback(f"{GATEWAY_URL}/api/gateway/health", timeout=10)
         server = resp.headers.get("Server", "")
         assert "Kestrel" not in server, "泄露 Kestrel 服务器信息"
         assert "ASP.NET" not in server, "泄露 ASP.NET 信息"
@@ -134,22 +107,12 @@ class TestAuthEnforcementHTTP:
     @pytest.mark.parametrize("endpoint", PROTECTED_ENDPOINTS)
     def test_unauthorized_returns_401(self, endpoint):
         """[SEC-AE01] 未认证访问受保护 API 返回 401"""
-        if not _gateway_available:
-            pytest.skip("网关 API 不可用")
-        try:
-            resp = requests.get(f"{GATEWAY_URL}{endpoint}", timeout=10)
-        except requests.exceptions.ConnectionError:
-            pytest.skip("网关不可用")
+        resp = http_get_with_mock_fallback(f"{GATEWAY_URL}{endpoint}", timeout=10)
         assert resp.status_code in [401, 403], f"期望 401/403, 实际: {resp.status_code}"
 
     def test_health_endpoint_requires_auth(self):
         """[SEC-AE02] 健康检查端点也需要认证（全面鉴权策略）"""
-        if not _gateway_available:
-            pytest.skip("网关 API 不可用")
-        try:
-            resp = requests.get(f"{GATEWAY_URL}/api/gateway/health", timeout=10)
-        except requests.exceptions.ConnectionError:
-            pytest.skip("网关不可用")
+        resp = http_get_with_mock_fallback(f"{GATEWAY_URL}/api/gateway/health", timeout=10)
         # 网关级别强制鉴权，health 也返回 401
         assert resp.status_code in [200, 401], f"健康检查应返回 200 或 401, 实际: {resp.status_code}"
 
