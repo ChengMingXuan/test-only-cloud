@@ -34,6 +34,8 @@ import time
 from datetime import datetime
 from pathlib import Path
 
+from browser_utils import seed_mock_auth
+
 # ========== 测试配置 ==========
 
 # WebDriver Manager 缓存目录 — 指向 D 盘项目内，避免写入 C 盘 %USERPROFILE%\.wdm
@@ -224,6 +226,7 @@ def driver(request):
     
     # 最大化窗口
     _driver.maximize_window()
+    seed_mock_auth(_driver, TEST_CONFIG["base_url"])
     
     yield _driver
     
@@ -242,6 +245,7 @@ def chrome_driver(request):
     
     _driver.implicitly_wait(TEST_CONFIG["implicit_wait"])
     _driver.maximize_window()
+    seed_mock_auth(_driver, TEST_CONFIG["base_url"])
     
     yield _driver
     
@@ -258,6 +262,7 @@ def firefox_driver(request):
     
     _driver.implicitly_wait(TEST_CONFIG["implicit_wait"])
     _driver.maximize_window()
+    seed_mock_auth(_driver, TEST_CONFIG["base_url"])
     
     yield _driver
     
@@ -274,6 +279,7 @@ def edge_driver(request):
     
     _driver.implicitly_wait(TEST_CONFIG["implicit_wait"])
     _driver.maximize_window()
+    seed_mock_auth(_driver, TEST_CONFIG["base_url"])
     
     yield _driver
     
@@ -309,6 +315,7 @@ def mobile_chrome_driver(request):
             _driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
     
     _driver.implicitly_wait(TEST_CONFIG["implicit_wait"])
+    seed_mock_auth(_driver, TEST_CONFIG["base_url"])
     
     yield _driver
     
