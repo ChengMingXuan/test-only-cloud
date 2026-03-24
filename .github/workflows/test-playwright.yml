@@ -68,16 +68,19 @@ jobs:
           npm ci || npm install
           npx playwright install --with-deps chromium
 
-      - name: 🧪 运行 Playwright（并行）
+      - name: 🧪 运行 Playwright（全并发）
         id: test
         working-directory: testing/tests/playwright-tests
         continue-on-error: true
+        env:
+          FULL_RUN: "1"
         run: |
           LEVEL="${{ github.event.inputs.test_level || 'full' }}"
           PROJECT="${{ github.event.inputs.project }}"
-          WORKERS="${{ github.event.inputs.parallel_workers || '4' }}"
+          WORKERS="${{ github.event.inputs.parallel_workers || '8' }}"
           
-          ARGS="--reporter=list,junit --workers=$WORKERS"
+          # 全并发: workers 设最大，fullyParallel 已在 config 中启用
+          ARGS="--reporter=junit,dot --workers=$WORKERS"
           
           if [ -n "$PROJECT" ]; then
             ARGS="$ARGS --project=$PROJECT"
@@ -87,7 +90,7 @@ jobs:
             ARGS="$ARGS --grep @smoke"
           fi
           
-          echo "🚀 并行执行: $WORKERS workers"
+          echo "🚀 全并发执行: $WORKERS workers | fullyParallel=true | FULL_RUN=1"
           export PLAYWRIGHT_JUNIT_OUTPUT_NAME=../../../TestResults/playwright-results.xml
           npx playwright test $ARGS 2>&1 | tee ../../../TestResults/playwright-output.txt || true
 
