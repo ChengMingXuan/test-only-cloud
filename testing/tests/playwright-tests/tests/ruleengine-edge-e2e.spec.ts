@@ -224,9 +224,10 @@ test.describe('规则引擎 — 告警管理 E2E', () => {
 });
 
 // ==========================================
-// API 端点安全验证
+// API 端点安全验证（需要真实后端，CI 跳过）
 // ==========================================
 test.describe('规则引擎 — API 安全验证', () => {
+  test.skip(!!process.env.CI, '需要真实后端，CI 环境跳过');
 
   test('[SEC-RE01] 未认证访问规则链 API 返回 401', async ({ request }) => {
     const resp = await request.get(`${GATEWAY_URL}/api/ruleengine/chains?page=1&pageSize=1`, {

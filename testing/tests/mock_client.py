@@ -46,6 +46,8 @@ _ACTION_POST_SEGMENTS = {
 # 只读后缀——不应被当作 action POST（空 body 仍应返回 400）
 _READONLY_POST_SEGMENTS = {
     "page", "list", "detail", "stats", "options", "tree", "summary", "count",
+    "export", "import", "download", "upload", "preview", "search", "query",
+    "check", "validate", "verify", "test", "ping", "health",
 }
 
 

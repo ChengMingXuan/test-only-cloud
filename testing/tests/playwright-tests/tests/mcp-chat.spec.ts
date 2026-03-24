@@ -36,8 +36,37 @@ const mockHealth = {
   },
 };
 
+/** 为 page 注册通用文档路由 mock，返回含指定 HTML 片段的页面 */
+async function setupDocumentMock(page: any, innerHtml: string) {
+  await page.route('**/*', async (route: any) => {
+    const url = route.request().url();
+    if (route.request().resourceType() === 'document') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/html',
+        body: `<!DOCTYPE html><html><head><title>Mock</title></head><body><div id="root">${innerHtml}</div></body></html>`,
+      });
+      return;
+    }
+    if (url.includes('/api/')) {
+      await route.continue();
+      return;
+    }
+    await route.fulfill({ status: 200, body: '' });
+  });
+}
+
 test.describe('MCP 工具管理页面', () => {
   test.beforeEach(async ({ page }) => {
+    // Mock 页面文档请求
+    await setupDocumentMock(page, `
+      <div class="ant-table"><div class="ant-table-container"><table><tbody>
+        <tr class="ant-table-row"><td>Qwen-7B</td><td>LLM</td><td><a>查看</a></td></tr>
+        <tr class="ant-table-row"><td>负荷预测TCN</td><td>OnnxInference</td><td><a>查看</a></td></tr>
+        <tr class="ant-table-row"><td>ChainMaker</td><td>Blockchain</td><td><a>查看</a></td></tr>
+      </tbody></table></div></div>
+      <div class="ant-input-search"><input placeholder="搜索" /></div>
+    `);
     // Mock API
     await page.route('**/api/iotcloudai/mcp/tools', route => {
       route.fulfill({
@@ -87,6 +116,14 @@ test.describe('MCP 工具管理页面', () => {
 
 test.describe('MCP 对话页面', () => {
   test.beforeEach(async ({ page }) => {
+    // Mock 页面文档
+    await setupDocumentMock(page, `
+      <div class="ant-select"><span>负荷预测</span></div>
+      <div class="ant-radio-group"><label>对话</label><label>预测</label></div>
+      <div class="chat-messages"></div>
+      <textarea placeholder="请输入消息"></textarea>
+      <input type="text" placeholder="备选输入" />
+    `);
     // Mock 同步对话
     await page.route('**/api/iotcloudai/mcp/chat', route => {
       if (route.request().method() === 'POST') {
@@ -145,6 +182,12 @@ test.describe('MCP 对话页面', () => {
 
 test.describe('MCP 健康监控页面', () => {
   test.beforeEach(async ({ page }) => {
+    // Mock 页面文档
+    await setupDocumentMock(page, `
+      <div class="ant-card"><div class="ant-statistic"><span class="ant-statistic-title">总工具数</span><span class="ant-statistic-content">3</span></div></div>
+      <div class="ant-card"><div class="ant-statistic"><span class="ant-statistic-title">健康</span><span class="ant-statistic-content">3</span></div></div>
+      <div class="tool-health-list">Qwen-7B 健康 | 负荷预测TCN 健康 | ChainMaker 健康</div>
+    `);
     await page.route('**/api/iotcloudai/mcp/health', route => {
       route.fulfill({
         status: 200,

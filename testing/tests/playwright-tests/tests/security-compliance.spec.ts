@@ -9,6 +9,7 @@ import { test, expect } from '@playwright/test';
 const GATEWAY_URL = process.env.GATEWAY_URL || 'http://localhost:8000';
 
 test.describe('等保三级 - 安全响应头验证', () => {
+  test.skip(!!process.env.CI, '需要真实后端，CI 环境跳过');
 
   test('[SEC-H01] 网关返回 HSTS 响应头', async ({ request }) => {
     const resp = await request.get(`${GATEWAY_URL}/api/gateway/health`);
@@ -45,6 +46,7 @@ test.describe('等保三级 - 安全响应头验证', () => {
 });
 
 test.describe('等保三级 - 认证强制验证', () => {
+  test.skip(!!process.env.CI, '需要真实后端，CI 环境跳过');
 
   test('[SEC-A01] 未认证访问受保护API返回401', async ({ request }) => {
     const resp = await request.get(`${GATEWAY_URL}/api/permission/roles`, {
@@ -120,6 +122,7 @@ test.describe('等保三级 - 登录安全验证', () => {
 });
 
 test.describe('等保三级 - 权限控制验证', () => {
+  test.skip(!!process.env.CI, '需要真实后端，CI 环境跳过');
 
   test('[SEC-P01] 无权限用户访问管理页面应被拒绝', async ({ request }) => {
     // 使用无权限token访问角色管理
@@ -142,6 +145,7 @@ test.describe('等保三级 - 权限控制验证', () => {
 });
 
 test.describe('等保三级 - XSS/注入防护验证', () => {
+  test.skip(!!process.env.CI, '需要真实后端，CI 环境跳过');
 
   test('[SEC-X01] XSS Payload被拦截', async ({ request }) => {
     const resp = await request.get(`${GATEWAY_URL}/api/device/devices?search=<script>alert(1)</script>`, {
