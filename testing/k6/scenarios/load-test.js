@@ -50,6 +50,10 @@ export function setup() {
 }
 
 export default function (data) {
+  if (!data || !data.users) {
+    sleep(1);
+    return;
+  }
   // 每20次迭代重新登录一次（模拟真实用户session）
   if (!authToken || __ITER % 20 === 0) {
     const user = randomItem(data.users);

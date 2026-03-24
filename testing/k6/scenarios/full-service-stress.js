@@ -13,6 +13,7 @@
 
 import http from "k6/http";
 import { check, group, sleep } from "k6";
+import { textSummary } from 'https://jslib.k6.io/k6-summary/0.0.1/index.js';
 import { Rate, Counter, Trend } from "k6/metrics";
 import { randomIntBetween } from "https://jslib.k6.io/k6-utils/1.4.0/index.js";
 
