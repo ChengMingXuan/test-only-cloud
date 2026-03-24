@@ -168,17 +168,24 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: 安装 Chrome + ChromeDriver
+        run: |
+          # ubuntu-latest 已预装 Chrome，确认版本
+          google-chrome --version || true
+          # 安装 chromedriver 匹配版本
+          CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+' | head -1)
+          echo "Chrome: $CHROME_VERSION"
       - run: |
-          pip install selenium pytest pytest-html webdriver-manager requests pytest-xdist
+          pip install selenium pytest pytest-html webdriver-manager requests
           [ -f testing/tests/selenium-tests/requirements.txt ] && pip install -r testing/tests/selenium-tests/requirements.txt || true
-      - name: 运行 Selenium（并行）
+      - name: 运行 Selenium（单进程避免端口冲突）
         working-directory: testing/tests/selenium-tests
         continue-on-error: true
         run: |
           mkdir -p ../../../TestResults
-          # -n auto 启用 pytest-xdist 并行执行
-          echo "🚀 并行执行 | pytest -n auto"
-          pytest --tb=short -q -n auto --junitxml=../../../TestResults/selenium-results.xml 2>&1 | tee ../../../TestResults/selenium-output.txt || true
+          # 单进程执行，避免 mock_server 端口冲突和浏览器资源竞争
+          echo "🚀 单进程执行 | pytest (headless Chrome)"
+          pytest --tb=short -q --junitxml=../../../TestResults/selenium-results.xml 2>&1 | tee ../../../TestResults/selenium-output.txt || true
         env:
           HEADLESS: "true"
       - uses: actions/upload-artifact@v4
