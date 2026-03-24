@@ -74,39 +74,67 @@ if [ -n "$XML_FILE" ] && [ -f "$XML_FILE" ]; then
   [ "$PASSED" -lt 0 ] && PASSED=0
 fi
 
+# 辅助函数：去除 ANSI 转义码
+strip_ansi() {
+  sed 's/\x1b\[[0-9;]*[a-zA-Z]//g; s/\x1b\][^\x07]*\x07//g'
+}
+
 # 方法2：从输出文本估算（Cypress、Playwright、Puppeteer、k6）
 if [ "$TOTAL" -eq 0 ] && [ -n "$OUTPUT_FILE" ] && [ -f "$OUTPUT_FILE" ]; then
+  # 预处理：生成去除 ANSI 码的临时文件
+  CLEAN_FILE=$(mktemp)
+  strip_ansi < "$OUTPUT_FILE" > "$CLEAN_FILE"
+  echo "[DEBUG] 原始输出 $(wc -l < "$OUTPUT_FILE") 行, 清理后 $(wc -l < "$CLEAN_FILE") 行" >&2
+
   case "$TOOL" in
     cypress)
-      # Cypress 输出: "N passing", "N failing", "N tests" 或 "Tests  N"
-      PASSED=$(grep -oP '\d+(?= passing)' "$OUTPUT_FILE" 2>/dev/null | tail -1 || echo "0")
-      FAILED=$(grep -oP '\d+(?= failing)' "$OUTPUT_FILE" 2>/dev/null | tail -1 || echo "0")
+      # Cypress 输出: "N passing", "N failing"
+      PASSED=$(grep -oP '\d+(?= passing)' "$CLEAN_FILE" 2>/dev/null | tail -1 || echo "0")
+      FAILED=$(grep -oP '\d+(?= failing)' "$CLEAN_FILE" 2>/dev/null | tail -1 || echo "0")
       [ -z "$PASSED" ] && PASSED=0
       [ -z "$FAILED" ] && FAILED=0
       # fallback: 数 ✓ 和 ✗
       if [ "$PASSED" -eq 0 ] && [ "$FAILED" -eq 0 ]; then
-        PASSED=$(grep -c '✓\|✔\|passing' "$OUTPUT_FILE" 2>/dev/null || true)
-        FAILED=$(grep -c '✗\|✘\|failing' "$OUTPUT_FILE" 2>/dev/null || true)
+        PASSED=$(grep -c '✓\|✔\|passing' "$CLEAN_FILE" 2>/dev/null || true)
+        FAILED=$(grep -c '✗\|✘\|failing' "$CLEAN_FILE" 2>/dev/null || true)
         [ -z "$PASSED" ] && PASSED=0
         [ -z "$FAILED" ] && FAILED=0
       fi
       TOTAL=$((PASSED + FAILED))
       ;;
     playwright)
-      # Playwright: "X passed", "Y failed", "Z skipped"
-      PASSED=$(grep -oP '\d+(?= passed)' "$OUTPUT_FILE" | tail -1 || echo "0")
-      FAILED=$(grep -oP '\d+(?= failed)' "$OUTPUT_FILE" | tail -1 || echo "0")
-      SKIPPED=$(grep -oP '\d+(?= skipped)' "$OUTPUT_FILE" | tail -1 || echo "0")
-      [ -z "$PASSED" ] && PASSED=0
-      [ -z "$FAILED" ] && FAILED=0
-      [ -z "$SKIPPED" ] && SKIPPED=0
-      TOTAL=$((PASSED + FAILED + SKIPPED))
+      # Playwright list reporter 输出: "X passed (Ym Zs)", "Y failed", "Z skipped"
+      # 也尝试匹配 JUnit XML（如果同时生成了 XML）
+      PW_XML="${OUTPUT_FILE%.txt}.xml"
+      [ ! -f "$PW_XML" ] && PW_XML="TestResults/playwright-results.xml"
+      if [ -f "$PW_XML" ]; then
+        echo "[DEBUG] 使用 Playwright JUnit XML: $PW_XML" >&2
+        TOTAL=$(grep -oP -m 1 'tests="\K[0-9]+' "$PW_XML" || echo "0")
+        FAILURES=$(grep -oP -m 1 'failures="\K[0-9]+' "$PW_XML" || echo "0")
+        ERRORS=$(grep -oP -m 1 'errors="\K[0-9]+' "$PW_XML" || echo "0")
+        SKIPPED=$(grep -oP -m 1 'skipped="\K[0-9]+' "$PW_XML" || echo "0")
+        DURATION=$(grep -oP -m 1 'time="\K[0-9.]+' "$PW_XML" || echo "0")
+        FAILED=$((FAILURES + ERRORS))
+        PASSED=$((TOTAL - FAILED - SKIPPED))
+        [ "$PASSED" -lt 0 ] && PASSED=0
+      fi
+      # fallback: 文本解析
+      if [ "$TOTAL" -eq 0 ]; then
+        PASSED=$(grep -oP '\d+(?= passed)' "$CLEAN_FILE" 2>/dev/null | tail -1 || echo "0")
+        FAILED=$(grep -oP '\d+(?= failed)' "$CLEAN_FILE" 2>/dev/null | tail -1 || echo "0")
+        SKIPPED=$(grep -oP '\d+(?= skipped)' "$CLEAN_FILE" 2>/dev/null | tail -1 || echo "0")
+        [ -z "$PASSED" ] && PASSED=0
+        [ -z "$FAILED" ] && FAILED=0
+        [ -z "$SKIPPED" ] && SKIPPED=0
+        TOTAL=$((PASSED + FAILED + SKIPPED))
+      fi
+      echo "[DEBUG] Playwright 解析结果: total=$TOTAL passed=$PASSED failed=$FAILED skipped=$SKIPPED" >&2
       ;;
     puppeteer)
       # Jest: "Tests: X passed, Y failed, Z total"
-      TOTAL=$(grep -oP 'Tests:\s+.*?(\d+)\s+total' "$OUTPUT_FILE" | grep -oP '\d+(?=\s+total)' | tail -1 || echo "0")
-      PASSED=$(grep -oP '\d+(?= passed)' "$OUTPUT_FILE" | tail -1 || echo "0")
-      FAILED=$(grep -oP '\d+(?= failed)' "$OUTPUT_FILE" | tail -1 || echo "0")
+      TOTAL=$(grep -oP 'Tests:\s+.*?(\d+)\s+total' "$CLEAN_FILE" | grep -oP '\d+(?=\s+total)' | tail -1 || echo "0")
+      PASSED=$(grep -oP '\d+(?= passed)' "$CLEAN_FILE" | tail -1 || echo "0")
+      FAILED=$(grep -oP '\d+(?= failed)' "$CLEAN_FILE" | tail -1 || echo "0")
       [ -z "$TOTAL" ] && TOTAL=0
       [ -z "$PASSED" ] && PASSED=0
       [ -z "$FAILED" ] && FAILED=0
@@ -114,11 +142,22 @@ if [ "$TOTAL" -eq 0 ] && [ -n "$OUTPUT_FILE" ] && [ -f "$OUTPUT_FILE" ]; then
       [ "$SKIPPED" -lt 0 ] && SKIPPED=0
       ;;
     k6)
-      # k6 输出格式: checks.........................: 100.00% ✓ 3495     ✗ 0
-      # 先从输出文本直接解析 checks 行
-      if [ -n "$OUTPUT_FILE" ] && [ -f "$OUTPUT_FILE" ]; then
-        CHECKS_LINE=$(grep -E 'checks.+:' "$OUTPUT_FILE" | tail -1 || true)
+      # k6 优先读取 summary JSON（最可靠）
+      K6_SUMMARY="TestResults/k6-summary.json"
+      if [ -f "$K6_SUMMARY" ]; then
+        echo "[DEBUG] 使用 k6 summary JSON: $K6_SUMMARY" >&2
+        PASSED=$(python3 -c "import json; d=json.load(open('$K6_SUMMARY')); print(int(d.get('metrics',{}).get('checks',{}).get('values',{}).get('passes',0)))" 2>/dev/null || echo "0")
+        FAILED=$(python3 -c "import json; d=json.load(open('$K6_SUMMARY')); print(int(d.get('metrics',{}).get('checks',{}).get('values',{}).get('fails',0)))" 2>/dev/null || echo "0")
+        [ -z "$PASSED" ] && PASSED=0
+        [ -z "$FAILED" ] && FAILED=0
+        TOTAL=$((PASSED + FAILED))
+        echo "[DEBUG] k6 JSON 解析: passes=$PASSED fails=$FAILED total=$TOTAL" >&2
+      fi
+      # fallback: 从文本输出解析 checks 行
+      if [ "$TOTAL" -eq 0 ]; then
+        CHECKS_LINE=$(grep -E 'checks' "$CLEAN_FILE" | grep -E '✓|✗|\d+%' | tail -1 || true)
         if [ -n "$CHECKS_LINE" ]; then
+          echo "[DEBUG] k6 checks 行: $CHECKS_LINE" >&2
           PASSED=$(echo "$CHECKS_LINE" | grep -oP '✓\s*\K\d+' || echo "0")
           FAILED=$(echo "$CHECKS_LINE" | grep -oP '✗\s*\K\d+' || echo "0")
           [ -z "$PASSED" ] && PASSED=0
@@ -126,19 +165,25 @@ if [ "$TOTAL" -eq 0 ] && [ -n "$OUTPUT_FILE" ] && [ -f "$OUTPUT_FILE" ]; then
           TOTAL=$((PASSED + FAILED))
         fi
       fi
-      # fallback: summary JSON
+      # fallback: 从工作流汇总行解析
       if [ "$TOTAL" -eq 0 ]; then
-        K6_SUMMARY="TestResults/k6-summary.json"
-        if [ -f "$K6_SUMMARY" ]; then
-          PASSED=$(python3 -c "import json; d=json.load(open('$K6_SUMMARY')); print(d.get('metrics',{}).get('checks',{}).get('values',{}).get('passes',0))" 2>/dev/null || echo "0")
-          FAILED=$(python3 -c "import json; d=json.load(open('$K6_SUMMARY')); print(d.get('metrics',{}).get('checks',{}).get('values',{}).get('fails',0))" 2>/dev/null || echo "0")
+        SUMMARY_LINE=$(grep -E '全量统计.*checks' "$CLEAN_FILE" | tail -1 || true)
+        if [ -n "$SUMMARY_LINE" ]; then
+          echo "[DEBUG] k6 汇总行: $SUMMARY_LINE" >&2
+          PASSED=$(echo "$SUMMARY_LINE" | grep -oP '✓\s*\K\d+' || echo "0")
+          FAILED=$(echo "$SUMMARY_LINE" | grep -oP '✗\s*\K\d+' || echo "0")
+          [ -z "$PASSED" ] && PASSED=0
+          [ -z "$FAILED" ] && FAILED=0
           TOTAL=$((PASSED + FAILED))
         fi
       fi
-      # k6 用 checks 数作度量
-      DURATION=$(grep -oP 'http_reqs\.+:\s+\K\d+' "$OUTPUT_FILE" 2>/dev/null | tail -1 || echo "0")
+      # k6 耗时
+      DURATION=$(grep -oP 'http_reqs\.+:\s+\K\d+' "$CLEAN_FILE" 2>/dev/null | tail -1 || echo "0")
+      [ -z "$DURATION" ] && DURATION=0
+      echo "[DEBUG] k6 最终结果: total=$TOTAL passed=$PASSED failed=$FAILED" >&2
       ;;
   esac
+  rm -f "$CLEAN_FILE"
 fi
 
 # 计算通过率

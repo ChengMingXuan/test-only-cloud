@@ -118,10 +118,12 @@ jobs:
           mkdir -p ../../../TestResults
           LEVEL="${{ github.event.inputs.test_level || 'full' }}"
           # --workers=4 启用多 Worker 并行
-          ARGS="--reporter=list --workers=4"
+          # 同时输出 list（控制台可读） + junit（XML 可靠解析）
+          ARGS="--reporter=list,junit --workers=4"
           if [ "$LEVEL" = "smoke" ]; then ARGS="$ARGS --grep @smoke"; fi
-          echo "🚀 并行执行 | Workers: 4"
-          npx playwright test $ARGS 2>&1 | tee ../../../TestResults/playwright-output.txt || true
+          echo "🚀 并行执行 | Workers: 4 | Reporter: list+junit"
+          PLAYWRIGHT_JUNIT_OUTPUT_NAME=../../../TestResults/playwright-results.xml \
+            npx playwright test $ARGS 2>&1 | tee ../../../TestResults/playwright-output.txt || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -348,6 +350,7 @@ jobs:
             --level "$LEVEL"
 
           ./.github/scripts/generate-ci-report.sh playwright \
+            --xml TestResults/playwright-results.xml \
             --output TestResults/playwright-output.txt \
             --level "$LEVEL"
 
