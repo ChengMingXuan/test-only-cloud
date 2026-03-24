@@ -30,6 +30,7 @@ from webdriver_manager.microsoft import EdgeChromiumDriverManager
 import os
 import json
 import shutil
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -61,6 +62,7 @@ def _check_frontend_available():
 
 
 _mock_server_instance = None
+_mock_server_lock_path = Path(__file__).with_name(".mock-server.lock")
 
 
 def _apply_mock_base_url(base_url: str):
@@ -69,6 +71,45 @@ def _apply_mock_base_url(base_url: str):
     os.environ["TEST_BASE_URL"] = normalized
     os.environ["BASE_URL"] = normalized
     os.environ["GATEWAY_URL"] = normalized
+
+
+def _acquire_mock_server_lock(timeout: float = 30.0, stale_after: float = 60.0):
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        try:
+            fd = os.open(str(_mock_server_lock_path), os.O_CREAT | os.O_EXCL | os.O_RDWR)
+            os.write(fd, str(os.getpid()).encode("ascii", errors="ignore"))
+            return fd
+        except FileExistsError:
+            try:
+                age = time.time() - _mock_server_lock_path.stat().st_mtime
+            except FileNotFoundError:
+                continue
+
+            if age > stale_after:
+                try:
+                    _mock_server_lock_path.unlink()
+                    continue
+                except FileNotFoundError:
+                    continue
+                except OSError:
+                    pass
+
+            time.sleep(0.1)
+
+    raise TimeoutError("获取 mock_server 启动锁超时")
+
+
+def _release_mock_server_lock(lock_fd):
+    if lock_fd is None:
+        return
+    try:
+        os.close(lock_fd)
+    finally:
+        try:
+            _mock_server_lock_path.unlink()
+        except FileNotFoundError:
+            pass
 
 
 def _ensure_mock_server():
@@ -88,14 +129,33 @@ def _ensure_mock_server():
             return _mock_server_instance
 
     preferred_url = "http://127.0.0.1:8000"
+    existing = wait_for_mock_server(preferred_url, retries=3, delay=0.1)
+    if existing is not None:
+        _mock_server_instance = existing
+        _apply_mock_base_url(existing.base_url)
+        print(f"\n⚡ [Selenium] Mock 模式 → 复用已有 mock_server: {_mock_server_instance.base_url}")
+        return _mock_server_instance
+
+    lock_fd = None
     try:
+        lock_fd = _acquire_mock_server_lock()
+
+        existing = wait_for_mock_server(preferred_url, retries=10, delay=0.1)
+        if existing is not None:
+            _mock_server_instance = existing
+            _apply_mock_base_url(existing.base_url)
+            print(f"\n⚡ [Selenium] Mock 模式 → 复用已有 mock_server: {_mock_server_instance.base_url}")
+            return _mock_server_instance
+
         server = MockServer(port=8000)
         server.start()
-        _mock_server_instance = server
-        _apply_mock_base_url(server.base_url)
+
+        ready = wait_for_mock_server(server.base_url, retries=30, delay=0.1)
+        _mock_server_instance = ready or server
+        _apply_mock_base_url(_mock_server_instance.base_url)
         print(f"\n⚡ [Selenium] Mock 模式 → mock_server 已启动: {_mock_server_instance.base_url}")
     except OSError:
-        existing = wait_for_mock_server(preferred_url, retries=30, delay=0.1)
+        existing = wait_for_mock_server(preferred_url, retries=50, delay=0.1)
         if existing is not None:
             _mock_server_instance = existing
             _apply_mock_base_url(existing.base_url)
@@ -104,9 +164,12 @@ def _ensure_mock_server():
 
         server = MockServer()
         server.start()
-        _mock_server_instance = server
-        _apply_mock_base_url(server.base_url)
+        ready = wait_for_mock_server(server.base_url, retries=30, delay=0.1)
+        _mock_server_instance = ready or server
+        _apply_mock_base_url(_mock_server_instance.base_url)
         print(f"\n⚡ [Selenium] Mock 模式 → mock_server 已启动（备用端口）: {_mock_server_instance.base_url}")
+    finally:
+        _release_mock_server_lock(lock_fd)
     return _mock_server_instance
 
 
