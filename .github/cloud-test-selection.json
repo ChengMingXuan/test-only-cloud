@@ -1,6 +1,6 @@
 ﻿{
     "selectedTools":  [
-                          "puppeteer"
+                          "pytest"
                       ],
     "integrationLocalOnly":  true,
     "executionTarget":  "cloud",
@@ -8,5 +8,5 @@
     "defaultLocalDataMode":  "real",
     "syncMode":  "Push",
     "runMode":  "full",
-    "generatedAt":  "2026-03-25T07:12:07"
+    "generatedAt":  "2026-03-25T07:15:08"
 }
