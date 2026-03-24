@@ -1,0 +1,192 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# JGSY.AGI CI/CD Pipeline (Legacy — 仅手动触发)
+# ═══════════════════════════════════════════════════════════════════════════════
+# 注意: 自动 CI 由 ci.yml 处理，本工作流仅用于手动触发
+# 阶段：
+#   1. Build & Test → 2. Security Scan → 3. Docker Build → 4. Deploy
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: CI/CD Pipeline (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: '触发原因'
+        required: false
+        type: string
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository_owner }}/jgsy-agi
+
+jobs:
+  # ─── Stage 1: 编译 + 测试 ─────────────────────────────────────────────────
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: NuGet Cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Restore
+        run: dotnet restore AIOPS.sln
+
+      - name: Build
+        run: dotnet build AIOPS.sln --no-restore -c Release -warnaserror
+
+      - name: Test
+        run: dotnet test testing/JGSY.AGI.Test/JGSY.AGI.Test.csproj --no-build -c Release --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage"
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: '**/TestResults/**'
+
+  # ─── Stage 2: 安全扫描 ────────────────────────────────────────────────────
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: NuGet Vulnerability Audit
+        run: dotnet restore AIOPS.sln && dotnet list package --vulnerable --include-transitive 2>&1 | tee vulnerability-report.txt
+
+      - name: Check Critical Vulnerabilities
+        run: |
+          if grep -q "Critical" vulnerability-report.txt; then
+            echo "::error::发现关键漏洞，请修复后重试"
+            exit 1
+          fi
+
+      - name: Upload Vulnerability Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vulnerability-report
+          path: vulnerability-report.txt
+
+  # ─── Stage 3: 构建 Docker 镜像 ────────────────────────────────────────────
+  docker-build:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: [build-and-test, security-scan]
+    if: github.ref == 'refs/heads/main'
+    strategy:
+      matrix:
+        service:
+          - { name: gateway, port: 5000 }
+          - { name: tenant, port: 8001 }
+          - { name: identity, port: 8002 }
+          - { name: permission, port: 8003 }
+          - { name: observability, port: 8005 }
+          - { name: storage, port: 8006 }
+          - { name: account, port: 8008 }
+          - { name: analytics, port: 8009 }
+          - { name: charging, port: 8010 }
+          - { name: device, port: 8011 }
+          - { name: digital-twin, port: 8012 }
+          - { name: ingestion, port: 8013 }
+          - { name: settlement, port: 8014 }
+          - { name: station, port: 8015 }
+          - { name: work-order, port: 8016 }
+          - { name: content-platform, port: 8017 }
+          - { name: blockchain, port: 8021 }
+
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Publish Service
+        run: |
+          # Convert hyphenated name to PascalCase (e.g., digital-twin → DigitalTwin)
+          PASCAL_NAME=$(echo "${{ matrix.service.name }}" | sed -r 's/(^|[-])([a-z])/\U\2/g')
+          SERVICE_DIR="./JGSY.AGI.${PASCAL_NAME}"
+          if [ ! -d "$SERVICE_DIR" ]; then
+            echo "::error::Service directory not found: $SERVICE_DIR (from ${{ matrix.service.name }})"
+            exit 1
+          fi
+          dotnet publish "$SERVICE_DIR" -c Release -r linux-x64 --self-contained false -o Configuration2.0/docker/publish/${{ matrix.service.name }}
+
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Image
+        uses: docker/build-push-action@v5
+        with:
+          context: Configuration2.0/docker
+          file: Configuration2.0/docker/Dockerfile.runtime
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service.name }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service.name }}:latest
+          build-args: |
+            SERVICE_NAME=${{ matrix.service.name }}
+            SERVICE_PORT=${{ matrix.service.port }}
+
+  # ─── Stage 4: 部署（手动审批） ─────────────────────────────────────────────
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: docker-build
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy Notification
+        run: |
+          echo "═══════════════════════════════════════════════════"
+          echo "  JGSY.AGI 部署到生产环境"
+          echo "  镜像版本: ${{ github.sha }}"
+          echo "  触发者: ${{ github.actor }}"
+          echo "═══════════════════════════════════════════════════"
+
+      # 实际部署步骤根据目标环境配置：
+      # - Docker Compose: SSH + docker-compose pull + up
+      # - Kubernetes: helm upgrade
+      - name: Deploy via Helm (K8s)
+        if: false  # 启用时设为 true
+        run: |
+          helm upgrade --install jgsy-agi ./Configuration2.0/helm/jgsy-agi \
+            --set global.image.tag=${{ github.sha }} \
+            --namespace jgsy-agi \
+            --wait --timeout 600s

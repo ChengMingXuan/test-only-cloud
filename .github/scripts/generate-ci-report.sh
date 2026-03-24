@@ -117,7 +117,7 @@ if [ "$TOTAL" -eq 0 ] && [ -n "$OUTPUT_FILE" ] && [ -f "$OUTPUT_FILE" ]; then
       # k6 输出格式: checks.........................: 100.00% ✓ 3495     ✗ 0
       # 先从输出文本直接解析 checks 行
       if [ -n "$OUTPUT_FILE" ] && [ -f "$OUTPUT_FILE" ]; then
-        CHECKS_LINE=$(grep 'checks\.\+:' "$OUTPUT_FILE" | tail -1 || true)
+        CHECKS_LINE=$(grep -E 'checks.+:' "$OUTPUT_FILE" | tail -1 || true)
         if [ -n "$CHECKS_LINE" ]; then
           PASSED=$(echo "$CHECKS_LINE" | grep -oP '✓\s*\K\d+' || echo "0")
           FAILED=$(echo "$CHECKS_LINE" | grep -oP '✗\s*\K\d+' || echo "0")

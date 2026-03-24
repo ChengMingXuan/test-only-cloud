@@ -227,10 +227,12 @@ jobs:
 
               k6 run --env BASE_URL=http://localhost:8000 \
                 --summary-export="TestResults/k6-${SCENARIO_NAME}-summary.json" \
-                "$SCENARIO" 2>&1 | tee -a "$COMBINED_OUTPUT" || true
+                "$SCENARIO" 2>&1 | tee "TestResults/k6-${SCENARIO_NAME}-output.txt"
+              # 同时追加到汇总输出
+              cat "TestResults/k6-${SCENARIO_NAME}-output.txt" >> "$COMBINED_OUTPUT" || true
 
-              # 从输出提取 checks 统计
-              CHECKS_LINE=$(grep 'checks\.\+:' "$COMBINED_OUTPUT" | tail -1 || true)
+              # 从单场景输出提取 checks 统计（避免累计文件重复匹配）
+              CHECKS_LINE=$(grep -E 'checks.+:' "TestResults/k6-${SCENARIO_NAME}-output.txt" | tail -1 || true)
               if [ -n "$CHECKS_LINE" ]; then
                 P=$(echo "$CHECKS_LINE" | grep -oP '✓\s*\K\d+' || echo "0")
                 F=$(echo "$CHECKS_LINE" | grep -oP '✗\s*\K\d+' || echo "0")
@@ -286,19 +288,12 @@ jobs:
         continue-on-error: true
         run: |
           mkdir -p ../../TestResults
-          dotnet test --no-build --logger "trx;LogFileName=../../TestResults/integration-results.trx" \
+          dotnet restore || true
+          dotnet build --no-restore -c Release || true
+          dotnet test --no-build -c Release --logger "trx;LogFileName=../../TestResults/integration-results.trx" \
             --logger "junit;LogFilePath=../../TestResults/integration-results.xml" \
             --results-directory ../../TestResults \
             2>&1 | tee ../../TestResults/integration-output.txt || true
-          # 如果 build 失败则先 restore + build
-          if [ $? -ne 0 ]; then
-            dotnet restore || true
-            dotnet build --no-restore || true
-            dotnet test --logger "trx;LogFileName=../../TestResults/integration-results.trx" \
-              --logger "junit;LogFilePath=../../TestResults/integration-results.xml" \
-              --results-directory ../../TestResults \
-              2>&1 | tee ../../TestResults/integration-output.txt || true
-          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -8,8 +8,3 @@ __pycache__/
 playwright-report/
 test-results/
 
-
-# 大文件排除
-testing/JGSY.AGI.Test/coverage/
-testing/tests/blockchain/performance_results.txt
-
