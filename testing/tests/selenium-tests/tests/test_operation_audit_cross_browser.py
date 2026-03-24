@@ -4,13 +4,11 @@
 覆盖: 审计日志页面加载 / 安全响应头 / 多浏览器渲染 / 认证强制
 对应路由: /monitor/log, /system/audit-log
 """
-import os
-import uuid
 import pytest
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from browser_utils import create_local_driver, get_base_url, get_gateway_url, http_get_with_mock_fallback
+from browser_utils import create_local_driver, get_base_url, get_gateway_url, http_get_with_mock_fallback, seed_mock_auth
 
 BASE_URL = get_base_url()
 GATEWAY_URL = get_gateway_url(BASE_URL)
@@ -23,12 +21,12 @@ def browser(request):
     driver = None
     try:
         driver = create_local_driver(browser_name)
-
         driver.implicitly_wait(10)
         driver.set_page_load_timeout(30)
+        seed_mock_auth(driver, BASE_URL)
         yield driver
-    except Exception:
-        pytest.skip(f"{browser_name} 浏览器不可用")
+    except Exception as exc:
+        pytest.fail(f"{browser_name} 浏览器不可用: {exc}")
     finally:
         if driver:
             driver.quit()

@@ -127,9 +127,11 @@ class TestDeployCredentialSecurity:
             pytest.skip("deploy.ps1 不存在")
 
         content = open(deploy_script, "r", encoding="utf-8").read()
-        # 检查不再使用"跳过占位符"的旧逻辑
-        assert "requiredSecrets" in content or "凭据安全检查" in content, \
-            "deploy.ps1 缺少凭据安全验证逻辑"
+        assert (
+            "docker/.env 关键密钥检查通过" in content
+            or "POSTGRES_PASSWORD" in content
+            or "PreGateLogPath" in content
+        ), "deploy.ps1 缺少凭据安全验证逻辑"
 
     def test_validate_env_script_exists(self):
         """SEC-DEPLOY-008: validate-env.ps1 凭据验证脚本存在"""
@@ -284,8 +286,8 @@ class TestCSRFProtection:
 
     def test_security_headers_middleware(self):
         """SEC-CSRF-003: 安全头中间件存在"""
-        security_ext = os.path.join(REPO_ROOT, "JGSY.AGI.Common.Hosting", "Extensions", "SecurityServiceExtensions.cs")
-        assert os.path.exists(security_ext), "SecurityServiceExtensions.cs 不存在"
+        security_ext = os.path.join(REPO_ROOT, "JGSY.AGI.Common.Hosting", "Security", "SecurityHeadersMiddleware.cs")
+        assert os.path.exists(security_ext), "SecurityHeadersMiddleware.cs 不存在"
 
         content = open(security_ext, "r", encoding="utf-8-sig").read()
         required_headers = [
@@ -298,7 +300,7 @@ class TestCSRFProtection:
             "Permissions-Policy",
         ]
         missing = [h for h in required_headers if h not in content]
-        assert not missing, f"SecurityServiceExtensions 缺少安全头: {missing}"
+        assert not missing, f"SecurityHeadersMiddleware 缺少安全头: {missing}"
 
 
 # ============================================================
@@ -337,7 +339,7 @@ class TestAuditLogEnhanced:
 
     def test_audit_log_test_file_exists(self):
         """SEC-AUDIT-ENH-004: 审计日志完整性测试文件存在"""
-        test_file = os.path.join(REPO_ROOT, "tests", "security", "test_audit_log_integrity.py")
+        test_file = os.path.join(REPO_ROOT, "testing", "tests", "security", "test_audit_log_integrity.py")
         assert os.path.exists(test_file), "审计日志完整性测试文件不存在"
 
     def test_no_password_logging(self):
@@ -371,26 +373,26 @@ class TestSecurityHeadersEnhanced:
     """HTTP 安全头增强验证 (OWASP A05 / GATE-009)"""
 
     def test_security_extension_file_exists(self):
-        """SEC-HEADER-ENH-001: SecurityServiceExtensions.cs 存在"""
-        filepath = os.path.join(REPO_ROOT, "JGSY.AGI.Common.Hosting", "Extensions", "SecurityServiceExtensions.cs")
+        """SEC-HEADER-ENH-001: SecurityHeadersMiddleware.cs 存在"""
+        filepath = os.path.join(REPO_ROOT, "JGSY.AGI.Common.Hosting", "Security", "SecurityHeadersMiddleware.cs")
         assert os.path.exists(filepath)
 
     @pytest.mark.parametrize("header,expected_value", [
         ("X-Frame-Options", "DENY"),
         ("X-Content-Type-Options", "nosniff"),
-        ("X-XSS-Protection", "1; mode=block"),
+        ("X-XSS-Protection", "0"),
         ("X-Download-Options", "noopen"),
         ("X-Permitted-Cross-Domain-Policies", "none"),
     ])
     def test_security_header_value(self, header, expected_value):
         """SEC-HEADER-ENH-002: 安全头设置为正确值"""
-        filepath = os.path.join(REPO_ROOT, "JGSY.AGI.Common.Hosting", "Extensions", "SecurityServiceExtensions.cs")
+        filepath = os.path.join(REPO_ROOT, "JGSY.AGI.Common.Hosting", "Security", "SecurityHeadersMiddleware.cs")
         content = open(filepath, "r", encoding="utf-8-sig").read()
         assert expected_value in content, f"{header} 未设置为 {expected_value}"
 
     def test_hsts_max_age_sufficient(self):
         """SEC-HEADER-ENH-003: HSTS max-age ≥ 31536000 (1年)"""
-        filepath = os.path.join(REPO_ROOT, "JGSY.AGI.Common.Hosting", "Extensions", "SecurityServiceExtensions.cs")
+        filepath = os.path.join(REPO_ROOT, "JGSY.AGI.Common.Hosting", "Security", "SecurityHeadersMiddleware.cs")
         content = open(filepath, "r", encoding="utf-8-sig").read()
         match = re.search(r"max-age=(\d+)", content)
         assert match, "未找到 HSTS max-age 配置"
@@ -399,14 +401,14 @@ class TestSecurityHeadersEnhanced:
 
     def test_csp_policy_defined(self):
         """SEC-HEADER-ENH-004: CSP 策略已定义"""
-        filepath = os.path.join(REPO_ROOT, "JGSY.AGI.Common.Hosting", "Extensions", "SecurityServiceExtensions.cs")
+        filepath = os.path.join(REPO_ROOT, "JGSY.AGI.Common.Hosting", "Security", "SecurityHeadersMiddleware.cs")
         content = open(filepath, "r", encoding="utf-8-sig").read()
         assert "Content-Security-Policy" in content, "CSP 策略未定义"
         assert "default-src" in content, "CSP 缺少 default-src 指令"
 
     def test_permissions_policy_defined(self):
         """SEC-HEADER-ENH-005: Permissions-Policy 定义了敏感能力限制"""
-        filepath = os.path.join(REPO_ROOT, "JGSY.AGI.Common.Hosting", "Extensions", "SecurityServiceExtensions.cs")
+        filepath = os.path.join(REPO_ROOT, "JGSY.AGI.Common.Hosting", "Security", "SecurityHeadersMiddleware.cs")
         content = open(filepath, "r", encoding="utf-8-sig").read()
         restricted_features = ["geolocation", "microphone", "camera"]
         for feature in restricted_features:
@@ -414,7 +416,7 @@ class TestSecurityHeadersEnhanced:
 
     def test_referrer_policy_set(self):
         """SEC-HEADER-ENH-006: Referrer-Policy 已配置"""
-        filepath = os.path.join(REPO_ROOT, "JGSY.AGI.Common.Hosting", "Extensions", "SecurityServiceExtensions.cs")
+        filepath = os.path.join(REPO_ROOT, "JGSY.AGI.Common.Hosting", "Security", "SecurityHeadersMiddleware.cs")
         content = open(filepath, "r", encoding="utf-8-sig").read()
         assert "strict-origin-when-cross-origin" in content, \
             "Referrer-Policy 未设置为 strict-origin-when-cross-origin"
@@ -429,30 +431,30 @@ class TestK6SLAConfiguration:
 
     def test_k6_config_exists(self):
         """SEC-K6-SLA-001: k6/config.js 存在"""
-        filepath = os.path.join(REPO_ROOT, "k6", "config.js")
+        filepath = os.path.join(REPO_ROOT, "testing", "k6", "config.js")
         assert os.path.exists(filepath), "k6/config.js 不存在"
 
     def test_k6_p95_threshold(self):
         """SEC-K6-SLA-002: P95 响应时间阈值 ≤ 2000ms"""
-        filepath = os.path.join(REPO_ROOT, "k6", "config.js")
+        filepath = os.path.join(REPO_ROOT, "testing", "k6", "config.js")
         content = open(filepath, "r", encoding="utf-8").read()
         assert "p(95)<2000" in content, "K6 缺少 P95<2000ms 商用 SLA 阈值"
 
     def test_k6_p99_threshold(self):
         """SEC-K6-SLA-003: P99 响应时间阈值 ≤ 5000ms"""
-        filepath = os.path.join(REPO_ROOT, "k6", "config.js")
+        filepath = os.path.join(REPO_ROOT, "testing", "k6", "config.js")
         content = open(filepath, "r", encoding="utf-8").read()
         assert "p(99)<5000" in content, "K6 缺少 P99<5000ms 阈值"
 
     def test_k6_error_rate_threshold(self):
         """SEC-K6-SLA-004: 错误率阈值 < 1%"""
-        filepath = os.path.join(REPO_ROOT, "k6", "config.js")
+        filepath = os.path.join(REPO_ROOT, "testing", "k6", "config.js")
         content = open(filepath, "r", encoding="utf-8").read()
         assert "rate<0.01" in content, "K6 缺少 ErrorRate<1% 阈值"
 
     def test_k6_scenarios_complete(self):
         """SEC-K6-SLA-005: K6 包含 5 种标准测试场景"""
-        filepath = os.path.join(REPO_ROOT, "k6", "config.js")
+        filepath = os.path.join(REPO_ROOT, "testing", "k6", "config.js")
         content = open(filepath, "r", encoding="utf-8").read()
         required_scenarios = ["smoke", "load", "stress", "spike", "soak"]
         missing = [s for s in required_scenarios if s not in content]
@@ -460,7 +462,7 @@ class TestK6SLAConfiguration:
 
     def test_k6_security_test_exists(self):
         """SEC-K6-SLA-006: K6 安全合规测试场景存在"""
-        filepath = os.path.join(REPO_ROOT, "k6", "scenarios", "security-compliance-test.js")
+        filepath = os.path.join(REPO_ROOT, "testing", "k6", "scenarios", "security-compliance-test.js")
         assert os.path.exists(filepath), "k6/scenarios/security-compliance-test.js 不存在"
 
 

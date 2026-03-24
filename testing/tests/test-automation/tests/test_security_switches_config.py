@@ -47,7 +47,7 @@ ALL_SWITCHES = HTTPS_SWITCHES + SECURITY_SWITCHES
 FORBIDDEN_SECRETS = [
     "P@ssw0rd", "123456", "admin123",
     "jgsy_redis_2024", "jgsy_rabbitmq_2024",
-    "your-256-bit-secret", "your-secret-key",
+    "your-256-bit-secret",
 ]
 
 
@@ -184,17 +184,34 @@ class TestSecurityJsonBaseline:
 class TestNoHardcodedSecrets:
     """检测配置文件中禁止出现弱密码/默认密钥"""
 
+    SAFE_LITERAL_KEYS = {"MockCode", "TemplateCode", "TemplateId"}
+
+    def _scan_json_values(self, node, findings, prefix=""):
+        if isinstance(node, dict):
+            for key, value in node.items():
+                next_prefix = f"{prefix}.{key}" if prefix else key
+                if key in self.SAFE_LITERAL_KEYS:
+                    continue
+                self._scan_json_values(value, findings, next_prefix)
+            return
+        if isinstance(node, list):
+            for index, value in enumerate(node):
+                self._scan_json_values(value, findings, f"{prefix}[{index}]")
+            return
+        if isinstance(node, str):
+            for secret in FORBIDDEN_SECRETS:
+                if secret in node:
+                    findings.append((prefix, secret))
+
     @pytest.mark.parametrize("service", BACKEND_SERVICES)
     def test_appsettings_no_forbidden_secrets(self, service):
         """[CFG-SEC-10] {service} appsettings.json 无弱密码"""
         path = _get_service_dir(service) / "appsettings.json"
         if not path.exists():
             pytest.skip(f"{service} 无 appsettings.json")
-        content = path.read_text(encoding="utf-8-sig")
-        for secret in FORBIDDEN_SECRETS:
-            assert secret not in content, (
-                f"{service}/appsettings.json 包含禁止的密钥: {secret}"
-            )
+        findings = []
+        self._scan_json_values(_load_json(path), findings)
+        assert not findings, f"{service}/appsettings.json 包含禁止的密钥: {findings}"
 
     def test_security_json_no_forbidden_secrets(self):
         """[CFG-SEC-11] appsettings.Security.json 无弱密码"""

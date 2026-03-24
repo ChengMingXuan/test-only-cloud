@@ -45,8 +45,7 @@ def driver(request):
         elif browser == 'edge':
             drv = get_edge_driver()
         else:
-            pytest.skip(f"不支持的浏览器: {browser}")
-            return
+            pytest.fail(f"不支持的浏览器: {browser}")
     except Exception as e:
         pytest.fail(f"无法启动{browser}浏览器: {e}")
     drv.implicitly_wait(TIMEOUT)

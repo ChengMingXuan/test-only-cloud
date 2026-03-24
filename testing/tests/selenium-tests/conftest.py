@@ -307,12 +307,12 @@ def _create_local_driver(browser: str, headless: bool = False):
 
 
 def _create_remote_driver(browser: str, headless: bool = False):
-    """创建Selenium Grid远程WebDriver（Grid 不可用时抛出 pytest.skip）"""
+    """创建Selenium Grid远程WebDriver。Grid 不可用时明确失败。"""
     # 先检查 Grid 是否可用
     try:
         _requests.get(TEST_CONFIG["grid_url"] + "/status", timeout=3)
-    except Exception:
-        pytest.skip(f"Selenium Grid ({TEST_CONFIG['grid_url']}) 不可用，跳过 Grid 测试")
+    except Exception as exc:
+        pytest.fail(f"Selenium Grid ({TEST_CONFIG['grid_url']}) 不可用: {exc}")
 
     capabilities = {
         "browserName": browser,

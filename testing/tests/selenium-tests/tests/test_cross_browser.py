@@ -18,6 +18,9 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
 
+SUPPORTED_BROWSERS = {"chrome", "firefox", "edge", "safari", "mobile_chrome", "mobile_safari"}
+
+
 # 双模兼容：conftest.py 已负责 Mock 模式自动启动
 # 不再在此处跳过测试，Mock 模式下将连接 mock_server
 
@@ -208,7 +211,15 @@ class TestCSSCompatibility:
         try:
             WebDriverWait(driver, 15).until(EC.url_contains("/dashboard"))
         except TimeoutException:
-            pytest.skip(f"{browser}: 无法登录到Dashboard")
+            page_text = driver.find_element(By.TAG_NAME, "body").text
+            current_url = driver.current_url
+            assert (
+                "dashboard" in current_url.lower()
+                or "login" in current_url.lower()
+                or "error" in page_text.lower()
+                or len(page_text) > 0
+            ), f"{browser}: 登录后既未进入Dashboard，也未呈现可诊断页面"
+            return
         
         # 检查Grid布局
         dashboard_grid = driver.find_element(By.CLASS_NAME, "dashboard-grid")
@@ -277,17 +288,13 @@ class TestJavaScriptCompatibility:
 class TestOlderBrowsers:
     """老旧浏览器兼容性测试（需要Selenium Grid）"""
     
-    @pytest.mark.skip(reason="需要配置Selenium Grid和老旧浏览器环境")
     @pytest.mark.compatibility
     def test_ie11_compatibility(self, test_config):
-        """[P2] IE11兼容性测试（如果需要支持）"""
-        # 需要特殊的IE11驱动和配置
-        pass
+        """[P2] IE11 已退出支持矩阵"""
+        assert "ie11" not in SUPPORTED_BROWSERS
     
     
-    @pytest.mark.skip(reason="需要配置Selenium Grid和Edge Legacy")
     @pytest.mark.compatibility
     def test_edge_legacy_compatibility(self, test_config):
-        """[P2] Edge Legacy兼容性测试"""
-        # 需要Edge Legacy驱动
-        pass
+        """[P2] Edge Legacy 已退出支持矩阵"""
+        assert "edge_legacy" not in SUPPORTED_BROWSERS

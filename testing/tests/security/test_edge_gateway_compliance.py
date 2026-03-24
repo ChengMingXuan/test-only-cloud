@@ -302,6 +302,15 @@ class TestGatewayYarpRouting:
     YARP_PATH = os.path.join(ROOT, "JGSY.AGI.Gateway", "yarp.json")
     YARP_EDGE_PATH = os.path.join(ROOT, "JGSY.AGI.Gateway", "yarp.edge.json")
 
+    def _load_all_routes(self):
+        route_files = sorted(glob.glob(os.path.join(ROOT, "JGSY.AGI.Gateway", "yarp.routes.*.json")))
+        route_ids = []
+        for route_file in route_files:
+            with open(route_file, "r", encoding="utf-8-sig") as f:
+                yarp = json.load(f)
+            route_ids.extend((yarp.get("ReverseProxy", {}).get("Routes", {}) or {}).keys())
+        return route_ids
+
     def test_yarp_config_exists(self):
         """YARP 路由配置应存在"""
         assert os.path.exists(self.YARP_PATH), \
@@ -314,18 +323,14 @@ class TestGatewayYarpRouting:
 
     def test_yarp_has_blockchain_route(self):
         """YARP 应包含 blockchain 服务路由"""
-        with open(self.YARP_PATH, "r", encoding="utf-8-sig") as f:
-            yarp = json.load(f)
-        routes = yarp.get("ReverseProxy", {}).get("Routes", {})
+        routes = self._load_all_routes()
         blockchain_routes = [k for k in routes if "blockchain" in k.lower()]
         assert len(blockchain_routes) > 0, \
             "YARP 缺少 blockchain 服务路由"
 
     def test_yarp_has_evidence_route(self):
         """YARP 应支持 evidence API 路由"""
-        with open(self.YARP_PATH, "r", encoding="utf-8-sig") as f:
-            yarp = json.load(f)
-        routes = yarp.get("ReverseProxy", {}).get("Routes", {})
+        routes = self._load_all_routes()
         evidence_routes = [k for k in routes if "evidence" in k.lower()]
         assert len(evidence_routes) > 0, \
             "YARP 缺少 evidence API 路由"
