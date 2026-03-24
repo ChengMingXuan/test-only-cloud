@@ -153,17 +153,18 @@ class TestUserCRUD(BaseApiTest):
             logger.warning(f"用户账户创建返回 {resp.status_code}（后端已知问题）")
             yield None
 
-    def test_create_user_and_verify_db(self, api, unique_suffix):
+    def test_create_user_and_verify_db(self, api, unique_suffix, account_db=None):
         """新增用户账户 → 验证数据库记录"""
         display_name = f"测试用户_{unique_suffix}"
         phone = f"138{unique_suffix[:8].ljust(8, '0')}"
 
-        # ① 执行前：确认不存在
-        before = account_db.query_scalar(
-            "SELECT count(*) FROM account.account_info WHERE display_name = %s AND delete_at IS NULL",
-            (display_name,)
-        )
-        assert before == 0, f"测试前用户已存在: {display_name}"
+        if not MOCK_MODE:
+            # ① 执行前：确认不存在
+            before = account_db.query_scalar(
+                "SELECT count(*) FROM account.account_info WHERE display_name = %s AND delete_at IS NULL",
+                (display_name,)
+            )
+            assert before == 0, f"测试前用户已存在: {display_name}"
 
         # ② 创建用户账户
         resp = api.post(self.API_PREFIX, json={

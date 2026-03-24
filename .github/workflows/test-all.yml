@@ -544,12 +544,43 @@ jobs:
           path: TestResults/
           retention-days: 7
 
-  k6:
-    name: "⚡ k6"
+  k6-discover:
+    name: "⚡ k6 发现场景"
     needs: detect-selection
     if: needs.detect-selection.outputs.execute_k6 == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    outputs:
+      scenarios: ${{ steps.discover.outputs.scenarios }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: 发现 k6 场景
+        id: discover
+        shell: bash
+        run: |
+          python3 <<'PY'
+          import json
+          from pathlib import Path
+
+          scenario_dir = Path('testing/k6/scenarios')
+          scenarios = sorted(path.stem for path in scenario_dir.glob('*.js')) if scenario_dir.exists() else []
+
+          with open(__import__('os').environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as fh:
+            fh.write(f"scenarios={json.dumps(scenarios, ensure_ascii=False)}\n")
+
+          print(f"发现 {len(scenarios)} 个场景")
+          PY
+
+  k6-matrix:
+    name: "⚡ k6 [${{ matrix.scenario }}]"
+    needs: [detect-selection, k6-discover]
+    if: needs.detect-selection.outputs.execute_k6 == 'true' && needs.k6-discover.outputs.scenarios != '[]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        scenario: ${{ fromJson(needs.k6-discover.outputs.scenarios) }}
     steps:
       - uses: actions/checkout@v4
       - name: 安装 k6
@@ -571,70 +602,92 @@ jobs:
             sleep 2
             curl -sf http://localhost:8000/health || echo "Mock 服务器未就绪"
           fi
-      - name: 运行 k6（全量 - 全部场景）
+      - name: 运行 k6 场景 ${{ matrix.scenario }}
         continue-on-error: true
         run: |
           rm -rf TestResults
-          mkdir -p TestResults
-          K6_DIR="testing/k6/scenarios"
-          COMBINED_OUTPUT="TestResults/k6-output.txt"
-          TOTAL_PASS=0
-          TOTAL_FAIL=0
-          SCENARIO_COUNT=0
+          mkdir -p TestResults/k6-scenarios
+          SCENARIO="${{ matrix.scenario }}"
+          SCENARIO_FILE="testing/k6/scenarios/${SCENARIO}.js"
 
-          echo "═══════════════════════════════════════" > "$COMBINED_OUTPUT"
-          echo "k6 全量测试 - 全部场景" >> "$COMBINED_OUTPUT"
-          echo "═══════════════════════════════════════" >> "$COMBINED_OUTPUT"
-
-          if [ -d "$K6_DIR" ]; then
-            for SCENARIO in "$K6_DIR"/*.js; do
-              [ -f "$SCENARIO" ] || continue
-              SCENARIO_NAME=$(basename "$SCENARIO" .js)
-              SCENARIO_COUNT=$((SCENARIO_COUNT + 1))
-              echo "" >> "$COMBINED_OUTPUT"
-              echo "──── 场景: $SCENARIO_NAME ────" >> "$COMBINED_OUTPUT"
-
-              k6 run --env BASE_URL=http://localhost:8000 \
-                --duration 30s \
-                --summary-export="TestResults/k6-${SCENARIO_NAME}-summary.json" \
-                "$SCENARIO" 2>&1 | tee "TestResults/k6-${SCENARIO_NAME}-output.txt"
-              cat "TestResults/k6-${SCENARIO_NAME}-output.txt" >> "$COMBINED_OUTPUT" || true
-
-              CHECKS_LINE=$(grep -E 'checks.+:' "TestResults/k6-${SCENARIO_NAME}-output.txt" | tail -1 || true)
-              if [ -n "$CHECKS_LINE" ]; then
-                P=$(echo "$CHECKS_LINE" | grep -oP '✓\s*\K\d+' || echo "0")
-                F=$(echo "$CHECKS_LINE" | grep -oP '✗\s*\K\d+' || echo "0")
-                [ -z "$P" ] && P=0
-                [ -z "$F" ] && F=0
-                TOTAL_PASS=$((TOTAL_PASS + P))
-                TOTAL_FAIL=$((TOTAL_FAIL + F))
-              fi
-            done
+          if [ -f "$SCENARIO_FILE" ]; then
+            k6 run \
+              --env BASE_URL=http://localhost:8000 \
+              --duration 30s \
+              --summary-export="TestResults/k6-scenarios/k6-${SCENARIO}-summary.json" \
+              "$SCENARIO_FILE" 2>&1 | tee "TestResults/k6-scenarios/k6-${SCENARIO}-output.txt" || true
+          else
+            echo "场景文件不存在: $SCENARIO_FILE" | tee "TestResults/k6-scenarios/k6-${SCENARIO}-output.txt"
           fi
+      - name: 停止 Mock 服务器
+        if: always()
+        run: |
+          if [ -n "$MOCK_PID" ]; then
+            kill "$MOCK_PID" 2>/dev/null || true
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: k6-scenario-${{ matrix.scenario }}
+          path: TestResults/k6-scenarios/
+          retention-days: 7
 
-          echo "" >> "$COMBINED_OUTPUT"
-          echo "═══════════════════════════════════════" >> "$COMBINED_OUTPUT"
-          echo "全量统计: $SCENARIO_COUNT 个场景, checks: ✓ $TOTAL_PASS  ✗ $TOTAL_FAIL" >> "$COMBINED_OUTPUT"
+  k6-aggregate:
+    name: "📊 k6 聚合"
+    needs: [detect-selection, k6-discover, k6-matrix]
+    if: always() && needs.detect-selection.outputs.execute_k6 == 'true' && needs.k6-discover.outputs.scenarios != '[]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: k6-scenario-*
+          path: TestResults/k6-scenarios/
+          merge-multiple: true
+      - name: 聚合 k6 结果
+        shell: bash
+        run: |
+          mkdir -p TestResults
 
-            python3 -c "
-          import json, glob
-          summaries = glob.glob('TestResults/k6-*-summary.json')
+          python3 <<'PY'
+          import glob
+          import json
+
+          summaries = sorted(glob.glob('TestResults/k6-scenarios/**/k6-*-summary.json', recursive=True))
           total_pass = 0
           total_fail = 0
-            total_scenarios = 0
-          for f in summaries:
-              try:
-                  d = json.load(open(f))
-                checks = d.get('metrics', {}).get('checks', {})
-                total_pass += int(checks.get('passes', 0))
-                total_fail += int(checks.get('fails', 0))
-                total_scenarios += 1
-              except Exception:
-                  pass
-            combined = {'metrics': {'checks': {'passes': total_pass, 'fails': total_fail}}, 'scenarios': total_scenarios}
-          json.dump(combined, open('TestResults/k6-summary.json', 'w'), indent=2)
-            print(f'Combined: {len(summaries)} summaries, passes={total_pass}, fails={total_fail}')
-          " 2>/dev/null || true
+
+          for path in summaries:
+            try:
+              data = json.load(open(path, encoding='utf-8'))
+              checks = data.get('metrics', {}).get('checks', {})
+              total_pass += int(checks.get('passes', 0) or 0)
+              total_fail += int(checks.get('fails', 0) or 0)
+            except Exception as exc:
+              print(f'警告: 无法解析 {path}: {exc}')
+
+          combined = {
+            'metrics': {
+              'checks': {
+                'passes': total_pass,
+                'fails': total_fail
+              }
+            },
+            'scenarios': len(summaries)
+          }
+
+          with open('TestResults/k6-summary.json', 'w', encoding='utf-8') as fh:
+            json.dump(combined, fh, indent=2, ensure_ascii=False)
+
+          print(f'✅ 聚合完成: {len(summaries)} 个场景, passes={total_pass}, fails={total_fail}')
+          PY
+
+          {
+            echo "═══════════════════════════════════════"
+            echo "k6 全量测试 - 并发场景聚合"
+            echo "═══════════════════════════════════════"
+            find TestResults/k6-scenarios -name 'k6-*-output.txt' -print0 | sort -z | xargs -0 cat
+          } > TestResults/k6-output.txt
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -644,7 +697,7 @@ jobs:
 
   summary:
     name: "📊 独立报告整理"
-    needs: [detect-selection, pytest, cypress, playwright, puppeteer-aggregate, selenium, k6]
+    needs: [detect-selection, pytest, cypress, playwright, puppeteer-aggregate, selenium, k6-aggregate]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 15
