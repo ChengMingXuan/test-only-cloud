@@ -92,7 +92,12 @@ jobs:
           elif os.path.exists('.github/cloud-test-selection.json'):
               try:
                   manifest = json.load(open('.github/cloud-test-selection.json', encoding='utf-8'))
-                  selected = [item for item in manifest.get('selectedTools', []) if item in all_tools]
+                raw_selected = manifest.get('selectedTools', [])
+                if isinstance(raw_selected, str):
+                  raw_selected = [raw_selected]
+                elif not isinstance(raw_selected, list):
+                  raw_selected = []
+                selected = [item for item in raw_selected if item in all_tools]
               except Exception:
                   selected = []
                   manifest = {}

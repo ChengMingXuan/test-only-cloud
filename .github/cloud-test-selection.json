@@ -1,10 +1,12 @@
 ﻿{
-    "selectedTools":  "selenium",
+    "selectedTools":  [
+                          "selenium"
+                      ],
     "integrationLocalOnly":  true,
     "executionTarget":  "cloud",
     "dataMode":  "mock",
     "defaultLocalDataMode":  "real",
     "syncMode":  "Push",
     "runMode":  "unpassed",
-    "generatedAt":  "2026-03-25T06:07:43"
+    "generatedAt":  "2026-03-25T06:12:29"
 }
