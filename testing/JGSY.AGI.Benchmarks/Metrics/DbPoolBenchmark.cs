@@ -5,11 +5,19 @@ using System.Linq;
 using System.Threading.Tasks;
 using Npgsql;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace JGSY.AGI.Benchmarks.Metrics
 {
     public class DbPoolBenchmark
     {
+        private readonly ITestOutputHelper _output;
+
+        public DbPoolBenchmark(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
         private static string GetConn(string defaultDb)
         {
             var env = Environment.GetEnvironmentVariable("BENCH_CONN");
@@ -69,9 +77,9 @@ namespace JGSY.AGI.Benchmarks.Metrics
             double p99 = ordered[(int)Math.Floor(ordered.Length * 0.99)];
             double throughputQps = totalOps / (start.Elapsed.TotalSeconds);
 
-            Console.WriteLine($"DB: {database} | Concurrency: {concurrency} | Iter/Worker: {iterationsPerWorker}");
-            Console.WriteLine($"Total Ops: {totalOps} | Total Time: {start.Elapsed.TotalSeconds:F2}s | Throughput: {throughputQps:F1} ops/s");
-            Console.WriteLine($"Avg: {avg:F1} ms | P95: {p95:F1} ms | P99: {p99:F1} ms | Errors: {errors.Count}");
+            _output.WriteLine($"DB: {database} | Concurrency: {concurrency} | Iter/Worker: {iterationsPerWorker}");
+            _output.WriteLine($"Total Ops: {totalOps} | Total Time: {start.Elapsed.TotalSeconds:F2}s | Throughput: {throughputQps:F1} ops/s");
+            _output.WriteLine($"Avg: {avg:F1} ms | P95: {p95:F1} ms | P99: {p99:F1} ms | Errors: {errors.Count}");
 
             Assert.True(throughputQps > 50, "Throughput too low, pool may not be effective.");
             Assert.True(avg < 50, "Average latency too high; investigate indexes/pool config.");

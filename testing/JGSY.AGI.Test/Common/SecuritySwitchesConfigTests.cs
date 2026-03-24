@@ -6,8 +6,8 @@ using Xunit;
 namespace JGSY.AGI.Test.Common;
 
 /// <summary>
-/// SecuritySwitches 双环境配置 - 集成回归测试（v2.4.6）
-/// 验证：配置文件完整性、代码模式正确性、Dev/Prod 一致性
+/// SecuritySwitches 配置合规 - 集成回归测试（v2.5）
+/// 验证：本地即生产、配置文件完整性、代码模式正确性、Prod 一致性
 /// </summary>
 public class SecuritySwitchesConfigTests
 {
@@ -40,14 +40,14 @@ public class SecuritySwitchesConfigTests
         "UseHttps", "ForceHttpsRedirection", "RequireHttpsMetadata", "HstsEnabled",
     };
 
-    // ==================== 1. 环境配置文件存在 ====================
+    // ==================== 1. 环境配置文件存在性 ====================
 
     [Theory]
     [MemberData(nameof(GetServices))]
-    public void DevelopmentJson_ShouldExist(string service)
+    public void DevelopmentJson_ShouldNotExist(string service)
     {
         var path = Path.Combine(RepoRoot, $"JGSY.AGI.{service}", "appsettings.Development.json");
-        File.Exists(path).Should().BeTrue($"{service} 应存在 appsettings.Development.json");
+        File.Exists(path).Should().BeFalse($"{service} 不应存在 appsettings.Development.json");
     }
 
     [Theory]
@@ -58,23 +58,7 @@ public class SecuritySwitchesConfigTests
         File.Exists(path).Should().BeTrue($"{service} 应存在 appsettings.Production.json");
     }
 
-    // ==================== 2. Dev 配置 HTTPS=false ====================
-
-    [Theory]
-    [MemberData(nameof(GetServices))]
-    public void DevelopmentJson_HttpsSwitches_ShouldBeFalse(string service)
-    {
-        var path = Path.Combine(RepoRoot, $"JGSY.AGI.{service}", "appsettings.Development.json");
-        var json = JsonDocument.Parse(File.ReadAllText(path));
-        var ss = json.RootElement.GetProperty("SecuritySwitches");
-
-        foreach (var sw in HttpsSwitches)
-        {
-            ss.GetProperty(sw).GetBoolean().Should().BeFalse($"{service} Dev: {sw} 应为 false");
-        }
-    }
-
-    // ==================== 3. Prod 配置 HTTPS=true ====================
+    // ==================== 2. Prod 配置 HTTPS=true ====================
 
     [Theory]
     [MemberData(nameof(GetServices))]
@@ -90,7 +74,7 @@ public class SecuritySwitchesConfigTests
         }
     }
 
-    // ==================== 4. Security.json 基线 ====================
+    // ==================== 3. Security.json 基线 ====================
 
     [Fact]
     public void SecurityJson_ShouldContainAll11Switches()
@@ -107,7 +91,7 @@ public class SecuritySwitchesConfigTests
         }
     }
 
-    // ==================== 5. SecuritySwitchesOptions 类 ====================
+    // ==================== 4. SecuritySwitchesOptions 类 ====================
 
     [Fact]
     public void SecuritySwitchesOptions_ShouldContainAll11Properties()
@@ -122,7 +106,7 @@ public class SecuritySwitchesConfigTests
         content.Should().Contain("SectionName", "应包含 SectionName 常量");
     }
 
-    // ==================== 6. 代码模式正确性 ====================
+    // ==================== 5. 代码模式正确性 ====================
 
     [Fact]
     public void JwtExtensions_ShouldUseConfigDriven_RequireHttpsMetadata()
@@ -171,7 +155,7 @@ public class SecuritySwitchesConfigTests
         content.Should().Contain("SecuritySwitchesOptions", "应注册 SecuritySwitchesOptions");
     }
 
-    // ==================== 7. 无硬编码密码 ====================
+    // ==================== 6. 无硬编码密码 ====================
 
     [Theory]
     [MemberData(nameof(GetServices))]
@@ -189,18 +173,7 @@ public class SecuritySwitchesConfigTests
         }
     }
 
-    // ==================== 8. Dev/Prod Swagger 配置 ====================
-
-    [Theory]
-    [MemberData(nameof(GetServices))]
-    public void DevelopmentJson_SwaggerEnabled(string service)
-    {
-        var path = Path.Combine(RepoRoot, $"JGSY.AGI.{service}", "appsettings.Development.json");
-        var json = JsonDocument.Parse(File.ReadAllText(path));
-
-        json.RootElement.GetProperty("Swagger").GetProperty("Enabled").GetBoolean()
-            .Should().BeTrue($"{service} Dev: Swagger.Enabled 应为 true");
-    }
+    // ==================== 7. Prod Swagger 配置 ====================
 
     [Theory]
     [MemberData(nameof(GetServices))]
