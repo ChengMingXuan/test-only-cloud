@@ -1,4 +1,4 @@
-"""
+﻿"""
 ═══════════════════════════════════════════════════════════════════════════════
 JGSY.AGI 双端部署合规测试套件
 ═══════════════════════════════════════════════════════════════════════════════
@@ -170,13 +170,13 @@ class TestEdgeComposeNaming:
 
     @pytest.fixture
     def edge_compose(self):
-        f = os.path.join(WORKSPACE, "docker", "docker-compose.edge-full.yml")
+        f = os.path.join(WORKSPACE, "Configuration2.0", "docker", "docker-compose.edge-full.yml")
         with open(f, "r", encoding="utf-8") as fp:
             return yaml.safe_load(fp)
 
     @pytest.fixture
     def edge_compose_raw(self):
-        f = os.path.join(WORKSPACE, "docker", "docker-compose.edge-full.yml")
+        f = os.path.join(WORKSPACE, "Configuration2.0", "docker", "docker-compose.edge-full.yml")
         return Path(f).read_text(encoding="utf-8")
 
     def test_service_naming_convention(self, edge_compose):
@@ -278,7 +278,7 @@ class TestSecurityZoneIsolation:
 
     @pytest.fixture
     def edge_compose(self):
-        f = os.path.join(WORKSPACE, "docker", "docker-compose.edge-full.yml")
+        f = os.path.join(WORKSPACE, "Configuration2.0", "docker", "docker-compose.edge-full.yml")
         with open(f, "r", encoding="utf-8") as fp:
             return yaml.safe_load(fp)
 
@@ -342,19 +342,19 @@ class TestInfrastructureCompleteness:
 
     def test_clamav_in_infrastructure_compose(self):
         """ClamAV 在基础设施 compose 中"""
-        f = os.path.join(WORKSPACE, "docker", "docker-compose.infrastructure.yml")
+        f = os.path.join(WORKSPACE, "Configuration2.0", "docker", "docker-compose.infrastructure.yml")
         content = Path(f).read_text(encoding="utf-8")
         assert "clamav" in content, "ClamAV 服务未添加到基础设施 compose"
 
     def test_clamav_image_version(self):
         """ClamAV 镜像版本"""
-        f = os.path.join(WORKSPACE, "docker", "docker-compose.infrastructure.yml")
+        f = os.path.join(WORKSPACE, "Configuration2.0", "docker", "docker-compose.infrastructure.yml")
         content = Path(f).read_text(encoding="utf-8")
         assert "clamav/clamav:" in content, "ClamAV 官方镜像缺失"
 
     def test_clamav_port(self):
         """ClamAV 端口暴露 3310"""
-        f = os.path.join(WORKSPACE, "docker", "docker-compose.infrastructure.yml")
+        f = os.path.join(WORKSPACE, "Configuration2.0", "docker", "docker-compose.infrastructure.yml")
         content = Path(f).read_text(encoding="utf-8")
         assert "3310" in content, "ClamAV 3310 端口缺失"
 
@@ -374,12 +374,12 @@ class TestInfrastructureCompleteness:
 
     def test_edge_compose_basic_exists(self):
         """轻量边缘 compose 存在"""
-        f = os.path.join(WORKSPACE, "docker", "docker-compose.edge.yml")
+        f = os.path.join(WORKSPACE, "Configuration2.0", "docker", "docker-compose.edge.yml")
         assert os.path.exists(f), "轻量边缘 compose 缺失"
 
     def test_edge_compose_full_exists(self):
         """完整边缘 compose 存在"""
-        f = os.path.join(WORKSPACE, "docker", "docker-compose.edge-full.yml")
+        f = os.path.join(WORKSPACE, "Configuration2.0", "docker", "docker-compose.edge-full.yml")
         assert os.path.exists(f), "完整边缘 compose 缺失"
 
 
@@ -468,7 +468,7 @@ class TestChargingDualDeployment:
 
     def test_charging_in_edge_compose(self):
         """Charging 出现在边缘 compose"""
-        f = os.path.join(WORKSPACE, "docker", "docker-compose.edge-full.yml")
+        f = os.path.join(WORKSPACE, "Configuration2.0", "docker", "docker-compose.edge-full.yml")
         content = Path(f).read_text(encoding="utf-8")
         assert "edge-charging" in content, "Charging 未包含在边缘部署中"
         assert "Charging-Local" in content, "Charging 缺少 -Local 合规标签"
@@ -483,7 +483,7 @@ class TestDualDeployComplianceSummary:
 
     def test_zone_i_service_count(self):
         """Ⅰ区至少 5 个实时控制服务"""
-        f = os.path.join(WORKSPACE, "docker", "docker-compose.edge-full.yml")
+        f = os.path.join(WORKSPACE, "Configuration2.0", "docker", "docker-compose.edge-full.yml")
         with open(f, "r", encoding="utf-8") as fp:
             compose = yaml.safe_load(fp)
         services = compose.get("services", {})
@@ -493,7 +493,7 @@ class TestDualDeployComplianceSummary:
 
     def test_zone_ii_service_count(self):
         """Ⅱ区至少 7 个非实时控制服务"""
-        f = os.path.join(WORKSPACE, "docker", "docker-compose.edge-full.yml")
+        f = os.path.join(WORKSPACE, "Configuration2.0", "docker", "docker-compose.edge-full.yml")
         with open(f, "r", encoding="utf-8") as fp:
             compose = yaml.safe_load(fp)
         services = compose.get("services", {})
@@ -503,7 +503,7 @@ class TestDualDeployComplianceSummary:
 
     def test_all_edge_services_have_healthcheck(self):
         """所有边缘服务都配置了健康检查"""
-        f = os.path.join(WORKSPACE, "docker", "docker-compose.edge-full.yml")
+        f = os.path.join(WORKSPACE, "Configuration2.0", "docker", "docker-compose.edge-full.yml")
         with open(f, "r", encoding="utf-8") as fp:
             compose = yaml.safe_load(fp)
         services = compose.get("services", {})
@@ -512,7 +512,7 @@ class TestDualDeployComplianceSummary:
 
     def test_all_edge_env_no_hardcoded_password(self):
         """所有边缘服务密码通过环境变量注入"""
-        f = os.path.join(WORKSPACE, "docker", "docker-compose.edge-full.yml")
+        f = os.path.join(WORKSPACE, "Configuration2.0", "docker", "docker-compose.edge-full.yml")
         content = Path(f).read_text(encoding="utf-8")
         # 密码应使用 ${VAR} 格式，不应硬编码
         # 搜索 Password= 后面不跟 ${
@@ -527,3 +527,4 @@ class TestDualDeployComplianceSummary:
         for forbidden_pkg in ["Npgsql", "StackExchange.Redis", "MQTTnet", "Dapper"]:
             assert forbidden_pkg not in content, \
                 f"Common.Abstractions 不应依赖 {forbidden_pkg}"
+

@@ -24,9 +24,17 @@ MOCK_HTML = b"""<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <title>AIOPS Mock</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body { display: flex; margin: 0; height: 100vh; }
+    :root { --primary-color: #1677ff; }
+    body { display: flex; margin: 0; height: 100vh; font-family: sans-serif; }
     .ant-layout { display: grid; min-height: 100px; }
+    .login-form { display: flex; flex-direction: column; gap: 12px; max-width: 360px; padding: 16px; }
+    .dashboard-grid { display: grid; grid-template-columns: repeat(2, minmax(120px, 1fr)); gap: 12px; }
+    .ant-tag { display: inline-block; background: #e6f4ff; color: #0958d9; padding: 2px 8px; }
+    .ant-btn-primary { background: var(--primary-color); color: #fff; border: none; }
+    .field-error, .invalid-feedback, .error-message, .alert-danger { color: #cf1322; display: none; }
+    .ant-table-row { height: 32px; }
   </style>
 </head>
 <body class="ant-layout layout" style="overflow-y: auto; overflow-x: hidden;">
@@ -37,22 +45,58 @@ MOCK_HTML = b"""<!DOCTYPE html>
     <main class="main-content" data-testid="content" style="display:block; flex:1;">
       <h1 data-testid="page-title">AIOPS</h1>
       <div class="content-area" data-testid="content">
-        <button type="button">Click</button>
-        <form action="#">
-          <input id="username" name="username" type="text" autocomplete="username" />
-          <input id="password" name="password" type="password" />
+        <button type="button" class="ant-btn ant-btn-primary">Click</button>
+        <form action="#" class="login-form ant-form">
+          <input id="username" name="username" type="text" autocomplete="username" required />
+          <input id="password" name="password" type="password" required />
           <select><option value="a">Option A</option></select>
           <input type="checkbox" id="check" />
           <input type="date" />
-          <button type="submit">Login</button>
+          <button type="submit" class="ant-btn ant-btn-primary">Login</button>
+          <div class="field-error">请输入用户名和密码</div>
+          <div class="invalid-feedback">表单校验失败</div>
+          <div class="error-message">登录失败</div>
+          <div class="alert-danger">Invalid credentials</div>
         </form>
-        <table>
+        <div class="dashboard-grid">
+          <div class="ant-card">Card 1</div>
+          <div class="ant-card">Card 2</div>
+        </div>
+        <div class="ant-tabs-tab">Tab 1</div>
+        <div class="ant-tabs-tab">Tab 2</div>
+        <span class="ant-tag">正常</span>
+        <span class="ant-tag">告警</span>
+        <table class="ant-table ant-table-wrapper">
           <thead><tr><th>Name</th><th>Status</th></tr></thead>
-          <tbody><tr><td>Item 1</td><td>Active</td></tr></tbody>
+          <tbody><tr class="ant-table-row"><td>Item 1</td><td>Active</td></tr></tbody>
         </table>
+        <canvas id="mock-chart"></canvas>
       </div>
     </main>
   </div>
+  <script>
+    (function () {
+      const form = document.querySelector('.login-form');
+      const fieldError = document.querySelector('.field-error');
+      const invalidFeedback = document.querySelector('.invalid-feedback');
+      if (!form) {
+        return;
+      }
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        const username = document.getElementById('username');
+        const password = document.getElementById('password');
+        const hasCredentials = username && password && username.value && password.value;
+        if (!hasCredentials) {
+          if (fieldError) fieldError.style.display = 'block';
+          if (invalidFeedback) invalidFeedback.style.display = 'block';
+          return;
+        }
+        history.pushState({}, '', '/dashboard');
+        document.title = 'AIOPS Dashboard';
+      });
+    })();
+  </script>
 </body>
 </html>
 """

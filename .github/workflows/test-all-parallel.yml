@@ -502,10 +502,40 @@ jobs:
         with:
           python-version: '3.11'
       
+      - name: 🌐 安装浏览器
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y firefox
+          sudo bash -c 'if ! command -v microsoft-edge >/dev/null 2>&1; then curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /usr/share/keyrings/microsoft-edge.gpg; echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-edge.gpg] https://packages.microsoft.com/repos/edge stable main" > /etc/apt/sources.list.d/microsoft-edge.list; apt-get update; apt-get install -y microsoft-edge-stable; fi'
+          sudo ln -sf /usr/bin/google-chrome /usr/bin/chrome || true
+          sudo ln -sf /usr/bin/microsoft-edge /usr/bin/msedge || true
+
       - name: 📦 安装依赖
         run: |
           pip install selenium pytest pytest-html webdriver-manager requests pytest-xdist
           [ -f testing/tests/selenium-tests/requirements.txt ] && pip install -r testing/tests/selenium-tests/requirements.txt || true
+
+      - name: 🔧 预热 Selenium Manager
+        run: |
+          python - <<'PY'
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.edge.options import Options as EdgeOptions
+
+def warmup(factory, label):
+    driver = None
+    try:
+        driver = factory()
+        print(f"{label}: ok")
+    finally:
+        if driver is not None:
+            driver.quit()
+
+warmup(lambda: webdriver.Chrome(options=(lambda o: [o.add_argument('--headless=new'), o.add_argument('--no-sandbox'), o.add_argument('--disable-dev-shm-usage'), o][3])(ChromeOptions())), 'chrome')
+warmup(lambda: webdriver.Firefox(options=(lambda o: [o.add_argument('-headless'), o][1])(FirefoxOptions())), 'firefox')
+warmup(lambda: webdriver.Edge(options=(lambda o: [o.add_argument('--headless=new'), o.add_argument('--no-sandbox'), o.add_argument('--disable-dev-shm-usage'), o][3])(EdgeOptions())), 'edge')
+PY
       
       - name: 🧪 运行 Selenium 分片 ${{ matrix.shard }}/8
         working-directory: testing/tests/selenium-tests

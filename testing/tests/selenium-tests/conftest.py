@@ -29,6 +29,7 @@ from webdriver_manager.firefox import GeckoDriverManager
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
 import os
 import json
+import shutil
 from datetime import datetime
 from pathlib import Path
 
@@ -272,22 +273,42 @@ def _create_local_driver(browser: str, headless: bool = False):
             options.add_argument("--headless")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
-        service = ChromeService(ChromeDriverManager().install())
-        return webdriver.Chrome(service=service, options=options)
+        chrome_binary = shutil.which("chromedriver") or shutil.which("chromedriver.exe")
+        if chrome_binary:
+            return webdriver.Chrome(service=ChromeService(chrome_binary), options=options)
+        try:
+            return webdriver.Chrome(options=options)
+        except Exception:
+            service = ChromeService(ChromeDriverManager().install())
+            return webdriver.Chrome(service=service, options=options)
     
     elif browser == "firefox":
         options = FirefoxOptions()
         if headless:
             options.add_argument("--headless")
-        service = FirefoxService(GeckoDriverManager().install())
-        return webdriver.Firefox(service=service, options=options)
+        gecko_binary = shutil.which("geckodriver") or shutil.which("geckodriver.exe")
+        if gecko_binary:
+            return webdriver.Firefox(service=FirefoxService(gecko_binary), options=options)
+        try:
+            return webdriver.Firefox(options=options)
+        except Exception:
+            service = FirefoxService(GeckoDriverManager().install())
+            return webdriver.Firefox(service=service, options=options)
     
     elif browser == "edge":
         options = EdgeOptions()
         if headless:
             options.add_argument("--headless")
-        service = EdgeService(EdgeChromiumDriverManager().install())
-        return webdriver.Edge(service=service, options=options)
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        edge_binary = shutil.which("msedgedriver") or shutil.which("msedgedriver.exe")
+        if edge_binary:
+            return webdriver.Edge(service=EdgeService(edge_binary), options=options)
+        try:
+            return webdriver.Edge(options=options)
+        except Exception:
+            service = EdgeService(EdgeChromiumDriverManager().install())
+            return webdriver.Edge(service=service, options=options)
     
     elif browser == "safari":
         # Safari不需要service（仅macOS）

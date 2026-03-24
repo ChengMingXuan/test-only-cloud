@@ -1,4 +1,4 @@
-"""
+﻿"""
 ═══════════════════════════════════════════════════════════════════════════════
 JGSY.AGI 三场景合规测试套件
 ═══════════════════════════════════════════════════════════════════════════════
@@ -164,7 +164,7 @@ class TestScenario1_DATA:
     def test_data003_log_retention_6months(self):
         """DATA-003: 日志保存 ≥ 6 个月（等保三级一票否决项）"""
         loki_configs = [
-            os.path.join(WORKSPACE, "docker", "observability", "loki", "loki-config.yaml"),
+            os.path.join(WORKSPACE, "Configuration2.0", "docker", "observability", "loki", "loki-config.yaml"),
             os.path.join(WORKSPACE, "deploy", "configs", "loki", "loki-config.yaml"),
         ]
         for config_path in loki_configs:
@@ -301,12 +301,12 @@ class TestScenario2_DEPLOY:
 
     def test_deploy001_edge_compose_exists(self):
         """DEPLOY-001: 本地部署 compose 文件存在"""
-        edge_compose = os.path.join(WORKSPACE, "docker", "docker-compose.edge-full.yml")
+        edge_compose = os.path.join(WORKSPACE, "Configuration2.0", "docker", "docker-compose.edge-full.yml")
         assert os.path.exists(edge_compose), "本地完整部署 compose 缺失"
 
     def test_deploy001_edge_services_count(self):
         """DEPLOY-001: 本地部署包含 ≥ 10 个控制服务"""
-        edge_compose = os.path.join(WORKSPACE, "docker", "docker-compose.edge-full.yml")
+        edge_compose = os.path.join(WORKSPACE, "Configuration2.0", "docker", "docker-compose.edge-full.yml")
         with open(edge_compose, "r", encoding="utf-8") as f:
             content = f.read()
         # 统计 edge- 前缀的服务定义
@@ -317,7 +317,7 @@ class TestScenario2_DEPLOY:
 
     def test_deploy004_security_zones(self):
         """DEPLOY-004: 安全分区网络隔离"""
-        edge_compose = os.path.join(WORKSPACE, "docker", "docker-compose.edge-full.yml")
+        edge_compose = os.path.join(WORKSPACE, "Configuration2.0", "docker", "docker-compose.edge-full.yml")
         with open(edge_compose, "r", encoding="utf-8") as f:
             content = f.read()
         assert "zone-realtime" in content, "Ⅰ区（实时控制）网络缺失"
@@ -326,7 +326,7 @@ class TestScenario2_DEPLOY:
 
     def test_deploy009_offline_auth(self):
         """DEPLOY-009: 本地鉴权可离线工作"""
-        edge_compose = os.path.join(WORKSPACE, "docker", "docker-compose.edge-full.yml")
+        edge_compose = os.path.join(WORKSPACE, "Configuration2.0", "docker", "docker-compose.edge-full.yml")
         with open(edge_compose, "r", encoding="utf-8") as f:
             content = f.read()
         assert "edge-identity" in content, "本地认证服务缺失"
@@ -334,7 +334,7 @@ class TestScenario2_DEPLOY:
 
     def test_deploy_edge_package_script(self):
         """DEPLOY: 边缘部署包打包脚本"""
-        script = os.path.join(WORKSPACE, "docker", "build-edge-package.ps1")
+        script = os.path.join(WORKSPACE, "Configuration2.0", "docker", "build-edge-package.ps1")
         assert os.path.exists(script), "边缘部署包打包脚本缺失"
 
 
@@ -387,7 +387,7 @@ class TestScenario2_ZONE:
 
     def test_zone_network_isolation(self):
         """ZONE-001~003: 安全分区网络隔离"""
-        edge_compose = os.path.join(WORKSPACE, "docker", "docker-compose.edge-full.yml")
+        edge_compose = os.path.join(WORKSPACE, "Configuration2.0", "docker", "docker-compose.edge-full.yml")
         with open(edge_compose, "r", encoding="utf-8") as f:
             compose = yaml.safe_load(f)
         networks = compose.get("networks", {})
@@ -396,7 +396,7 @@ class TestScenario2_ZONE:
 
     def test_zone_i_services(self):
         """ZONE-001: Ⅰ区服务清单（实时控制）"""
-        edge_compose = os.path.join(WORKSPACE, "docker", "docker-compose.edge-full.yml")
+        edge_compose = os.path.join(WORKSPACE, "Configuration2.0", "docker", "docker-compose.edge-full.yml")
         with open(edge_compose, "r", encoding="utf-8") as f:
             compose = yaml.safe_load(f)
         services = compose.get("services", {})
@@ -411,7 +411,7 @@ class TestScenario2_ZONE:
 
     def test_zone_ii_services(self):
         """ZONE-002: Ⅱ区服务清单（非实时控制）"""
-        edge_compose = os.path.join(WORKSPACE, "docker", "docker-compose.edge-full.yml")
+        edge_compose = os.path.join(WORKSPACE, "Configuration2.0", "docker", "docker-compose.edge-full.yml")
         with open(edge_compose, "r", encoding="utf-8") as f:
             compose = yaml.safe_load(f)
         services = compose.get("services", {})
@@ -496,12 +496,12 @@ class TestInfraCompliance:
 
     def test_docker_compose_infrastructure(self):
         """基础设施 compose 存在"""
-        infra_file = os.path.join(WORKSPACE, "docker", "docker-compose.infrastructure.yml")
+        infra_file = os.path.join(WORKSPACE, "Configuration2.0", "docker", "docker-compose.infrastructure.yml")
         assert os.path.exists(infra_file), "基础设施 compose 缺失"
 
     def test_services_json_complete(self):
         """services.json 定义 31 个服务"""
-        svc_file = os.path.join(WORKSPACE, "docker", "services.json")
+        svc_file = os.path.join(WORKSPACE, "Configuration2.0", "docker", "services.json")
         assert os.path.exists(svc_file), "services.json 缺失"
         with open(svc_file, "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -515,7 +515,7 @@ class TestInfraCompliance:
 
     def test_dapr_compose(self):
         """Dapr sidecar 配置"""
-        dapr_file = os.path.join(WORKSPACE, "docker", "docker-compose.dapr.yml")
+        dapr_file = os.path.join(WORKSPACE, "Configuration2.0", "docker", "docker-compose.dapr.yml")
         assert os.path.exists(dapr_file), "Dapr compose 缺失"
 
     def test_no_hardcoded_secrets(self):
@@ -564,7 +564,7 @@ class TestComplianceSummary:
         # FIX-001: 三员分立
         assert os.path.exists(os.path.join(WORKSPACE, "JGSY.AGI.Permission", "Data", "Migrations", "006_three_admin_separation.sql"))
         # FIX-003: 日志 ≥ 6 月
-        loki = Path(os.path.join(WORKSPACE, "docker", "observability", "loki", "loki-config.yaml")).read_text()
+        loki = Path(os.path.join(WORKSPACE, "Configuration2.0", "docker", "observability", "loki", "loki-config.yaml")).read_text()
         assert "4320h" in loki
         # FIX-004: 审计防篡改
         assert os.path.exists(os.path.join(WORKSPACE, "JGSY.AGI.Blockchain", "Services", "AuditChainHashService.cs"))
@@ -591,8 +591,8 @@ class TestComplianceSummary:
     def test_scenario2_edge_infrastructure(self):
         """场景2 边缘基础设施完整性"""
         required_files = [
-            "docker/docker-compose.edge-full.yml",
-            "docker/build-edge-package.ps1",
+            "Configuration2.0/docker/docker-compose.edge-full.yml",
+            "Configuration2.0/docker/build-edge-package.ps1",
             "JGSY.AGI.Common.Abstractions/Interfaces/IEdgeSyncService.cs",
         ]
         for f in required_files:
@@ -612,3 +612,4 @@ class TestComplianceSummary:
         for svc in vpp_services:
             svc_dir = os.path.join(WORKSPACE, svc)
             assert os.path.exists(svc_dir), f"VPP 服务缺失: {svc}"
+

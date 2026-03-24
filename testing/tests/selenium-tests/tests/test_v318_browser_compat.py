@@ -84,7 +84,7 @@ def driver(request):
 @pytest.fixture
 def mock_auth(driver):
     """Mock认证状态"""
-    # 注入localStorage
+    driver.get(BASE_URL)
     driver.execute_script("""
         localStorage.setItem('token', 'mock_token');
         localStorage.setItem('user', JSON.stringify({id: 'user-001', name: 'admin'}));

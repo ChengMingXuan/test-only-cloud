@@ -13,12 +13,12 @@ import pytest
 from pathlib import Path
 
 # 项目根目录
-ROOT = Path(__file__).resolve().parent.parent.parent
+ROOT = Path(__file__).resolve().parent.parent.parent.parent
 COMMON_AUTH = ROOT / "JGSY.AGI.Common.Auth"
 COMMON_ABSTRACTIONS = ROOT / "JGSY.AGI.Common.Abstractions"
 COMMON_HOSTING = ROOT / "JGSY.AGI.Common.Hosting"
 COMMON_INFRA = ROOT / "JGSY.AGI.Common.Infra"
-DOCKER_DIR = ROOT / "docker"
+DOCKER_DIR = ROOT / "Configuration2.0" / "docker"
 GATEWAY_DIR = ROOT / "JGSY.AGI.Gateway"
 
 # 所有微服务项目目录
@@ -108,7 +108,7 @@ class TestAuthCompliance:
                 break
         # 也检查种子数据中的角色定义
         if not three_admin_found:
-            for sql_file in (ROOT / "docker" / "seed-data").rglob("*.sql"):
+            for sql_file in (ROOT / "Configuration2.0" / "docker" / "seed-data").rglob("*.sql"):
                 content = sql_file.read_text(encoding="utf-8-sig", errors="ignore")
                 if any(kw in content for kw in ["安全管理员", "审计管理员", "SECURITY_ADMIN", "AUDIT_ADMIN"]):
                     three_admin_found = True

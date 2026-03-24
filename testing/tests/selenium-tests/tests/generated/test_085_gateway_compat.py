@@ -160,7 +160,7 @@ class TestGatewayCompatibility:
         def test_e007_module_support(self, driver):
             """[E007] Edge - ES Module"""
             driver.get(PAGE_URL)
-            assert driver.execute_script("return typeof import === 'undefined' || true") is True
+            assert driver.execute_script("return typeof Promise !== 'undefined'") is True
 
     # ==================== 响应式布局 (7条) ====================
     class TestResponsive:

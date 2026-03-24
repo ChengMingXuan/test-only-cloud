@@ -11,7 +11,7 @@ import pytest
 import yaml
 
 # 项目根目录
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 
 
 # ═══════════════════════════════════════════════════
@@ -23,7 +23,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 class TestEdgeDeploymentConfig:
     """边缘部署 Compose 配置合规性"""
 
-    COMPOSE_PATH = os.path.join(ROOT, "docker", "docker-compose.edge-full.yml")
+    COMPOSE_PATH = os.path.join(ROOT, "Configuration2.0", "docker", "docker-compose.edge-full.yml")
 
     @pytest.fixture(autouse=True)
     def load_compose(self):
@@ -139,8 +139,8 @@ class TestEdgeDeploymentConfig:
 class TestEdgeDeployScript:
     """边缘部署脚本验证"""
 
-    DEPLOY_SCRIPT = os.path.join(ROOT, "docker", "deploy-edge.ps1")
-    INIT_DB_SCRIPT = os.path.join(ROOT, "docker", "init-edge-databases.ps1")
+    DEPLOY_SCRIPT = os.path.join(ROOT, "Configuration2.0", "docker", "deploy-edge.ps1")
+    INIT_DB_SCRIPT = os.path.join(ROOT, "Configuration2.0", "docker", "init-edge-databases.ps1")
 
     def test_deploy_script_exists(self):
         """部署脚本应存在"""
@@ -195,7 +195,7 @@ class TestEdgeDeployScript:
 class TestSecurityZonesConfig:
     """安全分区网络配置验证"""
 
-    ZONES_PATH = os.path.join(ROOT, "docker", "docker-compose.security-zones.yml")
+    ZONES_PATH = os.path.join(ROOT, "Configuration2.0", "docker", "docker-compose.security-zones.yml")
 
     def test_security_zones_file_exists(self):
         """安全分区配置文件应存在"""
@@ -340,7 +340,7 @@ class TestGatewayYarpRouting:
 class TestInfrastructureCompliance:
     """基础设施合规检查"""
 
-    INFRA_COMPOSE = os.path.join(ROOT, "docker", "docker-compose.infrastructure.yml")
+    INFRA_COMPOSE = os.path.join(ROOT, "Configuration2.0", "docker", "docker-compose.infrastructure.yml")
 
     def test_infra_compose_exists(self):
         """基础设施 Compose 应存在"""
@@ -370,7 +370,7 @@ class TestInfrastructureCompliance:
     def test_loki_retention_180_days(self):
         """Loki 日志留存应 ≥ 180 天"""
         config_paths = [
-            os.path.join(ROOT, "docker", "observability", "loki", "loki-config.yaml"),
+            os.path.join(ROOT, "Configuration2.0", "docker", "observability", "loki", "loki-config.yaml"),
             os.path.join(ROOT, "deploy", "configs", "loki", "loki-config.yaml"),
         ]
         checked = False

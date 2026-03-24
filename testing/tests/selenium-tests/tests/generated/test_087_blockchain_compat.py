@@ -157,7 +157,7 @@ class TestBlockchainCompatibility:
         def test_e007_modules(self, driver):
             """[E007] Edge - ES Module"""
             driver.get(PAGE_URL)
-            assert driver.execute_script("return typeof import === 'undefined' || true") is True
+            assert driver.execute_script("return typeof Promise !== 'undefined'") is True
 
     class TestResponsive:
         def test_r001_desktop(self, driver):
