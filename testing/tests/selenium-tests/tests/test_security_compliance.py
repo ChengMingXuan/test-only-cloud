@@ -7,10 +7,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import os
-from browser_utils import create_local_driver, get_base_url, get_gateway_url, http_get_with_mock_fallback
+from browser_utils import create_local_driver, get_base_url, get_frontend_url, get_gateway_url, http_get_with_mock_fallback
 
 
 BASE_URL = get_base_url()
+FRONTEND_URL = get_frontend_url(BASE_URL)
 GATEWAY_URL = get_gateway_url(BASE_URL)
 
 
@@ -27,6 +28,18 @@ def _is_gateway_api():
 _gateway_available = _is_gateway_api()
 
 
+def _load_login_page(browser):
+    browser.get(f"{FRONTEND_URL}/user/login")
+    try:
+        WebDriverWait(browser, 15).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "input[type='password'], .login-form, #root, body"))
+        )
+    except Exception as exc:
+        page_source = browser.page_source or ""
+        body_count = len(browser.find_elements(By.TAG_NAME, "body"))
+        assert body_count > 0 or len(page_source) > 100, f"登录页面未启动: {exc}"
+
+
 @pytest.fixture(params=["chrome", "firefox", "edge"])
 def browser(request):
     """多浏览器 fixture"""
@@ -39,8 +52,8 @@ def browser(request):
         driver.implicitly_wait(10)
         driver.set_page_load_timeout(30)
         yield driver
-    except Exception:
-        pytest.skip(f"{browser_name} 浏览器不可用")
+    except Exception as exc:
+        pytest.fail(f"{browser_name} 浏览器不可用: {exc}")
     finally:
         if driver:
             driver.quit()
@@ -74,25 +87,16 @@ class TestLoginPageSecurity:
 
     def test_login_page_loads(self, browser):
         """[SEC-LP01] 登录页在所有浏览器中正常加载"""
-        try:
-            browser.get(f"{GATEWAY_URL}/user/login")
-            WebDriverWait(browser, 15).until(
-                EC.presence_of_element_located((By.TAG_NAME, "body"))
-            )
-        except Exception:
-            pytest.skip("登录页面未启动")
+        _load_login_page(browser)
         assert browser.title, "页面标题不能为空"
 
     def test_password_field_type(self, browser):
         """[SEC-LP02] 密码输入框类型为 password"""
-        try:
-            browser.get(f"{GATEWAY_URL}/user/login")
-            pwd_input = WebDriverWait(browser, 10).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "input[type='password']"))
-            )
-            assert pwd_input.get_attribute("type") == "password"
-        except Exception:
-            pytest.skip("登录页面未启动或无法定位密码输入框")
+        _load_login_page(browser)
+        pwd_input = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "input[type='password']"))
+        )
+        assert pwd_input.get_attribute("type") == "password"
 
 
 class TestAuthEnforcementHTTP:
@@ -122,7 +126,7 @@ class TestCookieSecurity:
 
     def test_cookie_attributes_after_login_attempt(self, browser):
         """[SEC-CK01] 登录流程中 Cookie 应有安全属性"""
-        browser.get(f"{GATEWAY_URL}/user/login")
+        _load_login_page(browser)
         import time
         time.sleep(2)
         cookies = browser.get_cookies()

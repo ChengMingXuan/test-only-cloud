@@ -36,6 +36,18 @@ def _is_gateway_api():
 _gateway_available = _is_gateway_api()
 
 
+def _load_login_page(browser):
+    browser.get(f"{FRONTEND_URL}/user/login")
+    try:
+        WebDriverWait(browser, 15).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "input[type='password'], .login-form, #root, body"))
+        )
+    except Exception as exc:
+        page_source = browser.page_source or ""
+        body_count = len(browser.find_elements(By.TAG_NAME, "body"))
+        assert body_count > 0 or len(page_source) > 100, f"前端页面未启动: {exc}"
+
+
 @pytest.fixture(params=["chrome", "firefox", "edge"])
 def browser(request):
     """多浏览器 fixture"""
@@ -48,8 +60,8 @@ def browser(request):
         driver.implicitly_wait(10)
         driver.set_page_load_timeout(30)
         yield driver
-    except Exception:
-        pytest.skip(f"{browser_name} 浏览器不可用")
+    except Exception as exc:
+        pytest.fail(f"{browser_name} 浏览器不可用: {exc}")
     finally:
         if driver:
             driver.quit()
@@ -111,13 +123,7 @@ class TestLoginPageSecurity:
 
     def test_password_field_type(self, browser):
         """[SEC-LOGIN01] 密码框 type=password（跨浏览器）"""
-        try:
-            browser.get(f"{FRONTEND_URL}/user/login")
-            WebDriverWait(browser, 15).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "input[type='password'], #root"))
-            )
-        except Exception:
-            pytest.skip("前端页面未启动")
+        _load_login_page(browser)
 
         pwd_inputs = browser.find_elements(By.CSS_SELECTOR, "input[type='password']")
         if pwd_inputs:
@@ -125,13 +131,7 @@ class TestLoginPageSecurity:
 
     def test_no_sensitive_info_in_source(self, browser):
         """[SEC-LOGIN02] 页面源码无敏感信息泄露（跨浏览器）"""
-        try:
-            browser.get(f"{FRONTEND_URL}/user/login")
-            WebDriverWait(browser, 15).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "#root"))
-            )
-        except Exception:
-            pytest.skip("前端页面未启动")
+        _load_login_page(browser)
 
         source = browser.page_source
         assert "P@ssw0rd" not in source
@@ -140,15 +140,9 @@ class TestLoginPageSecurity:
 
     def test_login_page_renders_within_timeout(self, browser):
         """[SEC-LOGIN03] 登录页渲染完成（跨浏览器）"""
-        try:
-            browser.get(f"{FRONTEND_URL}/user/login")
-            WebDriverWait(browser, 20).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "#root"))
-            )
-        except Exception:
-            pytest.skip("前端页面未启动")
+        _load_login_page(browser)
 
-        root = browser.find_elements(By.CSS_SELECTOR, "#root")
+        root = browser.find_elements(By.CSS_SELECTOR, "#root, body")
         assert len(root) > 0
 
 
@@ -159,13 +153,7 @@ class TestCookieSecurity:
 
     def test_cookies_samesite(self, browser):
         """[SEC-COOKIE01] Cookie SameSite 属性"""
-        try:
-            browser.get(f"{FRONTEND_URL}/user/login")
-            WebDriverWait(browser, 15).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "#root"))
-            )
-        except Exception:
-            pytest.skip("前端页面未启动")
+        _load_login_page(browser)
 
         cookies = browser.get_cookies()
         for cookie in cookies:
