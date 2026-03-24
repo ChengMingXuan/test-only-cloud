@@ -326,6 +326,11 @@ class MockApiClient:
                     "data": {"accessToken": MOCK_TOKEN, "tokenType": "Bearer"},
                     "timestamp": _TS, "traceId": "mobile-login-ok"}, url=url)
             if "sms-login" in pc:
+                code_val = body.get("verifyCode", "")
+                if code_val != "123456":
+                    return MockResponse(400, {"success": False, "code": 400,
+                        "message": "验证码错误", "data": None,
+                        "timestamp": _TS, "traceId": "mobile-sms-400"}, url=url)
                 return MockResponse(200, {"success": True, "code": 200,
                     "data": {"accessToken": MOCK_TOKEN, "tokenType": "Bearer"},
                     "timestamp": _TS, "traceId": "mobile-sms-login-ok"}, url=url)
@@ -341,17 +346,6 @@ class MockApiClient:
                 return MockResponse(200, {"success": True, "code": 200,
                     "data": {"accessToken": MOCK_TOKEN, "tokenType": "Bearer"},
                     "timestamp": _TS, "traceId": "mobile-refresh-ok"}, url=url)
-
-        # ── 碳认证注册（匿名可访问的公开 API） ──
-        if "/irec/register" in pc and method == "POST":
-            body = body or {}
-            if not body or (not body.get("projectName") and not body.get("name") and not body.get("projectId")):
-                return MockResponse(400, {"success": False, "code": 400,
-                    "message": "注册信息不完整", "data": None,
-                    "timestamp": _TS, "traceId": "irec-400"}, url=url)
-            return MockResponse(200, {"success": True, "code": 200,
-                "data": {"registrationId": str(uuid.uuid4()), "status": "pending"},
-                "timestamp": _TS, "traceId": "irec-ok"}, url=url)
 
         # 鉴权
         if not self._auth:
@@ -384,6 +378,34 @@ class MockApiClient:
                 "message": "Forbidden: 只读权限不允许该操作", "data": None,
                 "timestamp": _TS, "traceId": "readonly-403",
             }, url=url)
+
+        # ── 碳认证 I-REC（需鉴权） ──
+        if "/irec/" in pc and method == "POST":
+            body = body or {}
+            if "/register" in pc:
+                if not body or not any(body.get(k) for k in ("facilityName", "projectName", "name", "projectId")):
+                    return MockResponse(400, {"success": False, "code": 400,
+                        "message": "注册信息不完整", "data": None,
+                        "timestamp": _TS, "traceId": "irec-400"}, url=url)
+                return MockResponse(200, {"success": True, "code": 200,
+                    "data": {"registrationId": str(uuid.uuid4()), "status": "pending"},
+                    "timestamp": _TS, "traceId": "irec-ok"}, url=url)
+            if "/issue" in pc:
+                if not body or not any(body.get(k) for k in ("facilityId", "mwhGenerated")):
+                    return MockResponse(400, {"success": False, "code": 400,
+                        "message": "签发信息不完整", "data": None,
+                        "timestamp": _TS, "traceId": "irec-issue-400"}, url=url)
+                return MockResponse(200, {"success": True, "code": 200,
+                    "data": {"certificateId": str(uuid.uuid4()), "status": "issued"},
+                    "timestamp": _TS, "traceId": "irec-issue-ok"}, url=url)
+            if "/transfer" in pc:
+                return MockResponse(200, {"success": True, "code": 200,
+                    "data": {"transferId": str(uuid.uuid4()), "status": "transferred"},
+                    "timestamp": _TS, "traceId": "irec-transfer-ok"}, url=url)
+            if "/retire" in pc:
+                return MockResponse(200, {"success": True, "code": 200,
+                    "data": {"retirementId": str(uuid.uuid4()), "status": "retired"},
+                    "timestamp": _TS, "traceId": "irec-retire-ok"}, url=url)
 
         # ── 三权分立：用户角色分配互斥校验 ──
         if "user-roles" in pc and pc.endswith("/roles") and method == "PUT":
@@ -472,11 +494,12 @@ class MockApiClient:
                 if "executions" in pc:
                     last = parts[-1]
                     if last == "executions":
+                        lim = int(params.get("limit", 20)) if params else 20
                         items = [
                             {"executionId": str(uuid.uuid4()), "workflowId": "pv_power_forecast",
                              "status": "completed", "startTime": _TS, "endTime": _TS,
                              "totalLatencyMs": 120, "totalNodes": 3, "completedNodes": 3, "failedNodes": 0}
-                            for _ in range(3)
+                            for _ in range(min(lim, 3))
                         ]
                         return MockResponse(200, {
                             "success": True, "code": 200,
@@ -499,8 +522,8 @@ class MockApiClient:
                                 "outputData": {"prediction": 100.5},
                             },
                             "nodes": [
-                                {"nodeId": "n1", "modelType": "prediction", "status": "completed", "latencyMs": 45},
-                                {"nodeId": "n2", "modelType": "fusion", "status": "completed", "latencyMs": 30},
+                                {"nodeId": "n1", "modelType": "prediction", "modelName": "预测模型A", "status": "completed", "latencyMs": 45, "retryCount": 0, "usedFallback": False},
+                                {"nodeId": "n2", "modelType": "fusion", "modelName": "融合模型B", "status": "completed", "latencyMs": 30, "retryCount": 0, "usedFallback": False},
                             ],
                         },
                         "timestamp": _TS, "traceId": f"dag-exec-{last}",
@@ -697,16 +720,21 @@ class MockApiClient:
                 "data": [{"deviceId": did, "health": "good", "score": 95} for did in device_ids],
                 "timestamp": _TS, "traceId": "health-batch"}, url=url)
 
-        # ── IotCloudAI 第三方模型注册 ──
-        if "/third-party/models" in pc and method == "POST":
-            body = body or {}
-            if not body.get("endpoint"):
-                return MockResponse(400, {"success": False, "code": 400,
-                    "message": "endpoint 不能为空", "data": None,
-                    "timestamp": _TS, "traceId": "model-reg-400"}, url=url)
-            return MockResponse(200, {"success": True, "code": 200,
-                "data": {"modelId": str(uuid.uuid4()), "status": "registered"},
-                "timestamp": _TS, "traceId": "model-reg-ok"}, url=url)
+        # ── IotCloudAI 第三方模型 ──
+        if "/third-party/models" in pc:
+            if method == "POST":
+                body = body or {}
+                if "/invoke" in pc:
+                    return MockResponse(200, {"success": True, "code": 200,
+                        "data": {"prediction": 42.0, "confidence": 0.95},
+                        "timestamp": _TS, "traceId": "model-invoke-ok"}, url=url)
+                if not body.get("endpointUrl") and not body.get("endpoint"):
+                    return MockResponse(400, {"success": False, "code": 400,
+                        "message": "模型信息不完整", "data": None,
+                        "timestamp": _TS, "traceId": "model-reg-400"}, url=url)
+                return MockResponse(200, {"success": True, "code": 200,
+                    "data": {"modelId": str(uuid.uuid4()), "status": "registered"},
+                    "timestamp": _TS, "traceId": "model-reg-ok"}, url=url)
 
         # ── PVESSC SOH 计算 ──
         if "/soh/" in pc and "pvessc" in pc:
@@ -785,6 +813,10 @@ class MockApiClient:
         # ── 充电订单（POST 创建 - 业务编号唯一） ──
         if pc.rstrip("/").endswith("/orders") and "charging" in pc and method == "POST":
             body = body or {}
+            if not body:
+                return MockResponse(400, {"success": False, "code": 400,
+                    "message": "订单信息不能为空", "data": None,
+                    "timestamp": _TS, "traceId": "order-400"}, url=url)
             order_no = f"CHG{uuid.uuid4().hex[:12].upper()}"
             ent = _make_entity("charging", "order")
             ent.update(body)

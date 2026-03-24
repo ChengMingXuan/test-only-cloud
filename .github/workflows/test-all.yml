@@ -461,22 +461,22 @@ jobs:
           rm -f TestResults/*-report.json TestResults/*-report.md
 
           if tool_executed pytest; then
-            ./.github/scripts/generate-ci-report.sh pytest --xml TestResults/pytest-results.xml --output TestResults/pytest-output.txt --level "$LEVEL"
+            ./.github/scripts/generate-ci-report.sh pytest --xml TestResults/pytest-results.xml --output TestResults/pytest-output.txt --level "$LEVEL" --report-dir TestResults
           fi
           if tool_executed cypress; then
-            ./.github/scripts/generate-ci-report.sh cypress --json TestResults/cypress-results.json --output TestResults/cypress-output.txt --level "$LEVEL"
+            ./.github/scripts/generate-ci-report.sh cypress --json TestResults/cypress-results.json --output TestResults/cypress-output.txt --level "$LEVEL" --report-dir TestResults
           fi
           if tool_executed playwright; then
-            ./.github/scripts/generate-ci-report.sh playwright --xml TestResults/playwright-results.xml --output TestResults/playwright-output.txt --level "$LEVEL"
+            ./.github/scripts/generate-ci-report.sh playwright --xml TestResults/playwright-results.xml --output TestResults/playwright-output.txt --level "$LEVEL" --report-dir TestResults
           fi
           if tool_executed puppeteer; then
-            ./.github/scripts/generate-ci-report.sh puppeteer --xml TestResults/puppeteer-results.xml --output TestResults/puppeteer-output.txt --level "$LEVEL"
+            ./.github/scripts/generate-ci-report.sh puppeteer --xml TestResults/puppeteer-results.xml --output TestResults/puppeteer-output.txt --level "$LEVEL" --report-dir TestResults
           fi
           if tool_executed selenium; then
-            ./.github/scripts/generate-ci-report.sh selenium --xml TestResults/selenium-results.xml --output TestResults/selenium-output.txt --level "$LEVEL"
+            ./.github/scripts/generate-ci-report.sh selenium --xml TestResults/selenium-results.xml --output TestResults/selenium-output.txt --level "$LEVEL" --report-dir TestResults
           fi
           if tool_executed k6; then
-            ./.github/scripts/generate-ci-report.sh k6 --json TestResults/k6-summary.json --output TestResults/k6-output.txt --level "$LEVEL"
+            ./.github/scripts/generate-ci-report.sh k6 --json TestResults/k6-summary.json --output TestResults/k6-output.txt --level "$LEVEL" --report-dir TestResults
           fi
 
       - name: "📦 整理本次独立报告"

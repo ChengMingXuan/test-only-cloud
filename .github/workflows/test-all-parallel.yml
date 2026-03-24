@@ -768,7 +768,8 @@ jobs:
                 --xml "TestResults/${TOOL}-results.xml" \
                 --json "$JSON_PATH" \
                 --output "TestResults/${TOOL}-output.txt" \
-                --level "${{ github.event.inputs.test_level || 'full' }}" || true
+                --level "${{ github.event.inputs.test_level || 'full' }}" \
+                --report-dir TestResults || true
             fi
           done
       

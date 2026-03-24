@@ -1,15 +1,10 @@
 ﻿{
-    "selectedTools":  [
-                          "cypress",
-                          "puppeteer",
-                          "playwright",
-                          "k6"
-                      ],
+    "selectedTools":  "selenium",
     "integrationLocalOnly":  true,
     "executionTarget":  "cloud",
     "dataMode":  "mock",
     "defaultLocalDataMode":  "real",
     "syncMode":  "Push",
     "runMode":  "full",
-    "generatedAt":  "2026-03-25T04:00:38"
+    "generatedAt":  "2026-03-25T04:14:24"
 }
