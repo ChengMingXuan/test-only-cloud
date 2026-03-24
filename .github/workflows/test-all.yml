@@ -293,42 +293,14 @@ jobs:
           path: TestResults/
           retention-days: 7
 
-  # ─── C# 集成测试（1,999 用例）- 启用并行 ───
-  integration:
-    name: "\U0001F527 集成测试"
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
-      - name: 运行集成测试（并行）
-        working-directory: testing/JGSY.AGI.Test
-        continue-on-error: true
-        run: |
-          mkdir -p ../../TestResults
-          dotnet restore || true
-          dotnet build --no-restore -c Release || true
-          # RunConfiguration.MaxCpuCount=0 启用最大并行（放在 -- 之后传给测试运行器）
-          echo "🚀 并行执行 | dotnet test (MaxCpuCount=0)"
-          dotnet test --no-build -c Release \
-            --logger "trx;LogFileName=../../TestResults/integration-results.trx" \
-            --logger "junit;LogFilePath=../../TestResults/integration-results.xml" \
-            --results-directory ../../TestResults \
-            -- RunConfiguration.MaxCpuCount=0 \
-            2>&1 | tee ../../TestResults/integration-output.txt || true
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: all-integration
-          path: TestResults/
-          retention-days: 7
+  # ─── C# 集成测试在本地执行，云端不跑（依赖业务项目源码编译）───
+  # 详见 testing/JGSY.AGI.Test/ - 本地通过 dotnet test 运行
+  # 报告通过 pull 脚本合并到 TestResults/reports/integration-report.json
 
-  # ─── 汇总报告（等全部 7 类完成后生成）───
+  # ─── 汇总报告（等云端 6 类完成后生成）───
   summary:
     name: "\U0001F4CA 汇总报告"
-    needs: [pytest, cypress, playwright, puppeteer, selenium, k6, integration]
+    needs: [pytest, cypress, playwright, puppeteer, selenium, k6]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -376,10 +348,7 @@ jobs:
             --output TestResults/k6-output.txt \
             --level "$LEVEL"
 
-          ./.github/scripts/generate-ci-report.sh integration \
-            --xml TestResults/integration-results.xml \
-            --output TestResults/integration-output.txt \
-            --level "$LEVEL"
+          # integration 在本地执行，云端不生成报告
 
       - name: "\U0001F4CA 生成汇总报告"
         run: |
@@ -412,13 +381,13 @@ jobs:
           # 检查各工具结果
           declare -A TOOL_CASES=(
             [pytest]=57774 [cypress]=9877 [playwright]=11093
-            [puppeteer]=8137 [selenium]=6540 [k6]=3651 [integration]=1999
+            [puppeteer]=8137 [selenium]=6540 [k6]=3651
           )
 
           TOTAL_PASS=0
           TOTAL_FAIL=0
 
-          for TOOL in pytest cypress playwright puppeteer selenium k6 integration; do
+          for TOOL in pytest cypress playwright puppeteer selenium k6; do
             CASES="${TOOL_CASES[$TOOL]}"
             REPORT_JSON="test-error-reports/latest/reports/${TOOL}-report.json"
             if [ -f "$REPORT_JSON" ]; then
@@ -456,7 +425,7 @@ jobs:
           echo "## 失败详情" >> test-error-reports/latest/summary.md
           echo "" >> test-error-reports/latest/summary.md
 
-          for TOOL in pytest cypress playwright puppeteer selenium k6 integration; do
+          for TOOL in pytest cypress playwright puppeteer selenium k6; do
             OUTPUT="TestResults/${TOOL}-output.txt"
             if [ -f "$OUTPUT" ]; then
               FAIL_LINES=$(grep -E "FAILED|FAIL|✗|✘|Error|assert" "$OUTPUT" 2>/dev/null | head -20 || true)
