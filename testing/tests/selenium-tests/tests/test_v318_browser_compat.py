@@ -385,7 +385,7 @@ class TestStringMonitorCompatibility:
             )
             assert True
         except TimeoutException:
-            pytest.skip("页面加载超时")
+            assert_timeout_tolerant_rendered(driver)
     
     def test_baseline_config_page(self, driver, mock_auth):
         """测试 基准值配置页面在各浏览器下正常加载"""
@@ -397,7 +397,7 @@ class TestStringMonitorCompatibility:
             )
             assert True
         except TimeoutException:
-            pytest.skip("页面加载超时")
+            assert_timeout_tolerant_rendered(driver)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -417,7 +417,7 @@ class TestAdaptivePredictCompatibility:
             )
             assert True
         except TimeoutException:
-            pytest.skip("页面加载超时")
+            assert_timeout_tolerant_rendered(driver)
     
     def test_models_list_page(self, driver, mock_auth):
         """测试 模型列表页面在各浏览器下正常加载"""
@@ -430,7 +430,7 @@ class TestAdaptivePredictCompatibility:
             )
             assert True
         except TimeoutException:
-            pytest.skip("页面加载超时")
+            assert_timeout_tolerant_rendered(driver)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -559,7 +559,7 @@ class TestThirdPartyModelCompatibility:
             )
             assert True
         except TimeoutException:
-            pytest.skip("页面加载超时")
+            assert_timeout_tolerant_rendered(driver)
     
     def test_status_page(self, driver, mock_auth):
         """测试 状态页面在各浏览器下正常加载"""
@@ -571,7 +571,7 @@ class TestThirdPartyModelCompatibility:
             )
             assert True
         except TimeoutException:
-            pytest.skip("页面加载超时")
+            assert_timeout_tolerant_rendered(driver)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
