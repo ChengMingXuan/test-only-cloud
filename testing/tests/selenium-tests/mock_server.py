@@ -19,7 +19,7 @@ import time
 from urllib.parse import urlparse
 
 # 最小 HTML 页面 — 满足全部断言
-MOCK_HTML = b"""<!DOCTYPE html>
+MOCK_HTML = """<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -31,8 +31,16 @@ MOCK_HTML = b"""<!DOCTYPE html>
     .ant-layout { display: grid; min-height: 100px; }
     .login-form { display: flex; flex-direction: column; gap: 12px; max-width: 360px; padding: 16px; }
     .dashboard-grid { display: grid; grid-template-columns: repeat(2, minmax(120px, 1fr)); gap: 12px; }
+    .workflow-board { display: grid; gap: 12px; }
     .ant-tag { display: inline-block; background: #e6f4ff; color: #0958d9; padding: 2px 8px; }
+    .ant-badge { display: inline-flex; align-items: center; padding: 2px 8px; background: #f6ffed; color: #389e0d; }
     .ant-btn-primary { background: var(--primary-color); color: #fff; border: none; }
+    .ant-input-search, .search-panel { display: flex; gap: 8px; align-items: center; }
+    .ant-input { min-height: 32px; padding: 4px 8px; border: 1px solid #d9d9d9; }
+    .ant-alert { padding: 8px 12px; background: #fffbe6; border: 1px solid #ffe58f; }
+    .ant-modal { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.35); }
+    .ant-modal.open { display: block; }
+    .ant-modal-content { width: 320px; margin: 80px auto; background: #fff; padding: 16px; }
     .field-error, .invalid-feedback, .error-message, .alert-danger { color: #cf1322; display: none; }
     .ant-table-row { height: 32px; }
   </style>
@@ -46,9 +54,15 @@ MOCK_HTML = b"""<!DOCTYPE html>
       <h1 data-testid="page-title">AIOPS</h1>
       <div class="content-area" data-testid="content">
         <button type="button" class="ant-btn ant-btn-primary">Click</button>
+        <div class="search-panel ant-input-search">
+          <input class="ant-input" type="search" value="" placeholder="搜索规则" />
+          <button type="button" class="ant-btn">Search</button>
+        </div>
         <form action="#" class="login-form ant-form">
+          <input data-testid="phone-input" type="tel" placeholder="手机号" />
           <input id="username" name="username" type="text" autocomplete="username" required />
           <input id="password" name="password" type="password" required />
+          <textarea placeholder="备注"></textarea>
           <select><option value="a">Option A</option></select>
           <input type="checkbox" id="check" />
           <input type="date" />
@@ -62,10 +76,18 @@ MOCK_HTML = b"""<!DOCTYPE html>
           <div class="ant-card">Card 1</div>
           <div class="ant-card">Card 2</div>
         </div>
+        <div class="workflow-board">
+          <div class="workflow-node ant-card">Workflow Node</div>
+        </div>
         <div class="ant-tabs-tab">Tab 1</div>
         <div class="ant-tabs-tab">Tab 2</div>
+        <span class="ant-badge">在线</span>
         <span class="ant-tag">正常</span>
         <span class="ant-tag">告警</span>
+        <div class="ant-alert">库存预警</div>
+        <button type="button" class="ant-btn ant-btn-primary" data-testid="add-btn">新增</button>
+        <button type="button" class="ant-btn" data-testid="export-excel-btn" title="导出 Excel">导出</button>
+        <button type="button" class="ant-btn" data-testid="export-pdf-btn" title="PDF 导出">PDF</button>
         <table class="ant-table ant-table-wrapper">
           <thead><tr><th>Name</th><th>Status</th></tr></thead>
           <tbody><tr class="ant-table-row"><td>Item 1</td><td>Active</td></tr></tbody>
@@ -74,11 +96,24 @@ MOCK_HTML = b"""<!DOCTYPE html>
       </div>
     </main>
   </div>
+  <div class="ant-modal" data-testid="export-modal">
+    <div class="ant-modal-content">Export Dialog</div>
+  </div>
   <script>
     (function () {
+      window.__consoleErrors = [];
       const form = document.querySelector('.login-form');
       const fieldError = document.querySelector('.field-error');
       const invalidFeedback = document.querySelector('.invalid-feedback');
+      const exportButtons = document.querySelectorAll('[data-testid="export-excel-btn"], [data-testid="export-pdf-btn"]');
+      const exportModal = document.querySelector('.ant-modal');
+      exportButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+          if (exportModal) {
+            exportModal.classList.add('open');
+          }
+        });
+      });
       if (!form) {
         return;
       }
@@ -104,11 +139,12 @@ MOCK_HTML = b"""<!DOCTYPE html>
 
 class _Handler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
+        body = MOCK_HTML.encode("utf-8")
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
-        self.send_header("Content-Length", str(len(MOCK_HTML)))
+        self.send_header("Content-Length", str(len(body)))
         self.end_headers()
-        self.wfile.write(MOCK_HTML)
+        self.wfile.write(body)
 
     def log_message(self, format, *args):
         pass  # 静默日志

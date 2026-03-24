@@ -9,6 +9,7 @@ v3.18 增量功能 - Selenium 浏览器兼容性测试
 """
 import pytest
 import logging
+import shutil
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -16,13 +17,19 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.edge.options import Options as EdgeOptions
+from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.firefox.service import Service as FirefoxService
+from selenium.webdriver.edge.service import Service as EdgeService
 from selenium.common.exceptions import TimeoutException
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.firefox import GeckoDriverManager
+from webdriver_manager.microsoft import EdgeChromiumDriverManager
 from unittest.mock import Mock, patch
 import os
 
 logger = logging.getLogger(__name__)
 
-BASE_URL = os.getenv('BASE_URL', 'http://localhost:3000')
+BASE_URL = os.getenv('TEST_BASE_URL') or os.getenv('BASE_URL') or 'http://localhost:8000'
 TIMEOUT = 10
 
 
@@ -33,28 +40,57 @@ TIMEOUT = 10
 def get_chrome_driver():
     """获取Chrome驱动"""
     options = ChromeOptions()
-    options.add_argument('--headless')
+    options.add_argument('--headless=new')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--window-size=1920,1080')
-    return webdriver.Chrome(options=options)
+    chrome_binary = shutil.which('chromedriver') or shutil.which('chromedriver.exe')
+    if chrome_binary:
+        return webdriver.Chrome(service=ChromeService(chrome_binary), options=options)
+    try:
+        return webdriver.Chrome(options=options)
+    except Exception:
+        return webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
 
 
 def get_firefox_driver():
     """获取Firefox驱动"""
     options = FirefoxOptions()
-    options.add_argument('--headless')
+    options.add_argument('-headless')
     options.add_argument('--width=1920')
     options.add_argument('--height=1080')
-    return webdriver.Firefox(options=options)
+    gecko_binary = shutil.which('geckodriver') or shutil.which('geckodriver.exe')
+    if gecko_binary:
+        return webdriver.Firefox(service=FirefoxService(gecko_binary), options=options)
+    try:
+        return webdriver.Firefox(options=options)
+    except Exception:
+        return webdriver.Firefox(service=FirefoxService(GeckoDriverManager().install()), options=options)
 
 
 def get_edge_driver():
     """获取Edge驱动"""
     options = EdgeOptions()
-    options.add_argument('--headless')
+    options.add_argument('--headless=new')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--window-size=1920,1080')
-    return webdriver.Edge(options=options)
+    edge_binary = shutil.which('msedgedriver') or shutil.which('msedgedriver.exe')
+    if edge_binary:
+        return webdriver.Edge(service=EdgeService(edge_binary), options=options)
+    try:
+        return webdriver.Edge(options=options)
+    except Exception:
+        return webdriver.Edge(service=EdgeService(EdgeChromiumDriverManager().install()), options=options)
+
+
+def apply_mock_auth(target_driver):
+    target_driver.get(BASE_URL)
+    target_driver.execute_script("""
+        localStorage.setItem('token', 'mock_token');
+        localStorage.setItem('user', JSON.stringify({id: 'user-001', name: 'admin'}));
+    """)
+    return target_driver
 
 
 @pytest.fixture(params=['chrome', 'firefox', 'edge'])
@@ -84,12 +120,7 @@ def driver(request):
 @pytest.fixture
 def mock_auth(driver):
     """Mock认证状态"""
-    driver.get(BASE_URL)
-    driver.execute_script("""
-        localStorage.setItem('token', 'mock_token');
-        localStorage.setItem('user', JSON.stringify({id: 'user-001', name: 'admin'}));
-    """)
-    return driver
+    return apply_mock_auth(driver)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -578,13 +609,13 @@ class TestResponsiveLayout:
     def mobile_driver(self, driver):
         """移动端视口"""
         driver.set_window_size(375, 812)  # iPhone X尺寸
-        return driver
+        return apply_mock_auth(driver)
     
     @pytest.fixture
     def tablet_driver(self, driver):
         """平板视口"""
         driver.set_window_size(768, 1024)  # iPad尺寸
-        return driver
+        return apply_mock_auth(driver)
     
     def test_carbon_page_mobile_layout(self, mobile_driver, mock_auth):
         """测试 碳认证页面移动端布局"""

@@ -15,6 +15,7 @@ import pytest
 import os
 import time
 import logging
+import shutil
 
 logger = logging.getLogger(__name__)
 
@@ -56,30 +57,54 @@ def _create_driver(browser_name):
         if browser_name == 'chrome':
             from selenium import webdriver
             from selenium.webdriver.chrome.options import Options
+            from selenium.webdriver.chrome.service import Service as ChromeService
+            from webdriver_manager.chrome import ChromeDriverManager
             opts = Options()
             opts.add_argument('--headless=new')
             opts.add_argument('--no-sandbox')
             opts.add_argument('--disable-dev-shm-usage')
             opts.add_argument('--disable-gpu')
             opts.add_argument('--window-size=1920,1080')
-            return webdriver.Chrome(options=opts)
+            chrome_binary = shutil.which('chromedriver') or shutil.which('chromedriver.exe')
+            if chrome_binary:
+                return webdriver.Chrome(service=ChromeService(chrome_binary), options=opts)
+            try:
+                return webdriver.Chrome(options=opts)
+            except Exception:
+                return webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=opts)
         elif browser_name == 'firefox':
             from selenium import webdriver
             from selenium.webdriver.firefox.options import Options
+            from selenium.webdriver.firefox.service import Service as FirefoxService
+            from webdriver_manager.firefox import GeckoDriverManager
             opts = Options()
-            opts.add_argument('--headless')
+            opts.add_argument('-headless')
             opts.add_argument('--width=1920')
             opts.add_argument('--height=1080')
-            return webdriver.Firefox(options=opts)
+            gecko_binary = shutil.which('geckodriver') or shutil.which('geckodriver.exe')
+            if gecko_binary:
+                return webdriver.Firefox(service=FirefoxService(gecko_binary), options=opts)
+            try:
+                return webdriver.Firefox(options=opts)
+            except Exception:
+                return webdriver.Firefox(service=FirefoxService(GeckoDriverManager().install()), options=opts)
         elif browser_name == 'edge':
             from selenium import webdriver
             from selenium.webdriver.edge.options import Options
+            from selenium.webdriver.edge.service import Service as EdgeService
+            from webdriver_manager.microsoft import EdgeChromiumDriverManager
             opts = Options()
             opts.add_argument('--headless=new')
             opts.add_argument('--no-sandbox')
             opts.add_argument('--disable-dev-shm-usage')
             opts.add_argument('--window-size=1920,1080')
-            return webdriver.Edge(options=opts)
+            edge_binary = shutil.which('msedgedriver') or shutil.which('msedgedriver.exe')
+            if edge_binary:
+                return webdriver.Edge(service=EdgeService(edge_binary), options=opts)
+            try:
+                return webdriver.Edge(options=opts)
+            except Exception:
+                return webdriver.Edge(service=EdgeService(EdgeChromiumDriverManager().install()), options=opts)
     except Exception as e:
         pytest.skip(f"{browser_name} 浏览器不可用: {e}")
         return None

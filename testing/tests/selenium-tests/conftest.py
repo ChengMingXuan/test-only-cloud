@@ -175,15 +175,7 @@ def driver(request):
 @pytest.fixture(scope="function")
 def chrome_driver(request):
     """Chrome浏览器专用fixture"""
-    options = ChromeOptions()
-    if request.config.getoption("--headless") or _default_headless:
-        options.add_argument("--headless")
-    options.add_argument("--disable-blink-features=AutomationControlled")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
-    
-    service = ChromeService(ChromeDriverManager().install())
-    _driver = webdriver.Chrome(service=service, options=options)
+    _driver = _create_local_driver("chrome", request.config.getoption("--headless") or _default_headless)
     
     _driver.implicitly_wait(TEST_CONFIG["implicit_wait"])
     _driver.maximize_window()
@@ -199,12 +191,7 @@ def chrome_driver(request):
 @pytest.fixture(scope="function")
 def firefox_driver(request):
     """Firefox浏览器专用fixture"""
-    options = FirefoxOptions()
-    if request.config.getoption("--headless") or _default_headless:
-        options.add_argument("--headless")
-    
-    service = FirefoxService(GeckoDriverManager().install())
-    _driver = webdriver.Firefox(service=service, options=options)
+    _driver = _create_local_driver("firefox", request.config.getoption("--headless") or _default_headless)
     
     _driver.implicitly_wait(TEST_CONFIG["implicit_wait"])
     _driver.maximize_window()
@@ -220,13 +207,7 @@ def firefox_driver(request):
 @pytest.fixture(scope="function")
 def edge_driver(request):
     """Edge浏览器专用fixture"""
-    options = EdgeOptions()
-    if request.config.getoption("--headless") or _default_headless:
-        options.add_argument("--headless")
-    options.add_argument("--no-sandbox")
-    
-    service = EdgeService(EdgeChromiumDriverManager().install())
-    _driver = webdriver.Edge(service=service, options=options)
+    _driver = _create_local_driver("edge", request.config.getoption("--headless") or _default_headless)
     
     _driver.implicitly_wait(TEST_CONFIG["implicit_wait"])
     _driver.maximize_window()
@@ -249,9 +230,16 @@ def mobile_chrome_driver(request):
     
     options = ChromeOptions()
     options.add_experimental_option("mobileEmulation", mobile_emulation)
-    
-    service = ChromeService(ChromeDriverManager().install())
-    _driver = webdriver.Chrome(service=service, options=options)
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    chrome_binary = shutil.which("chromedriver") or shutil.which("chromedriver.exe")
+    if chrome_binary:
+        _driver = webdriver.Chrome(service=ChromeService(chrome_binary), options=options)
+    else:
+        try:
+            _driver = webdriver.Chrome(options=options)
+        except Exception:
+            _driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
     
     _driver.implicitly_wait(TEST_CONFIG["implicit_wait"])
     
