@@ -42,7 +42,7 @@ on:
         default: 'all'
 
 concurrency:
-  group: all-tests-${{ github.ref }}
+  group: all-tests-${{ github.ref }}-${{ github.sha }}
   cancel-in-progress: true
 
 jobs:
@@ -88,60 +88,61 @@ jobs:
           manifest = {}
 
           if dispatch_value and dispatch_value.lower() != "all":
-              selected = [item.strip() for item in dispatch_value.split(',') if item.strip() in all_tools]
+            selected = [item.strip() for item in dispatch_value.split(',') if item.strip() in all_tools]
           elif os.path.exists('.github/cloud-test-selection.json'):
-              try:
-                  manifest = json.load(open('.github/cloud-test-selection.json', encoding='utf-8'))
-                raw_selected = manifest.get('selectedTools', [])
-                if isinstance(raw_selected, str):
-                  raw_selected = [raw_selected]
-                elif not isinstance(raw_selected, list):
-                  raw_selected = []
-                selected = [item for item in raw_selected if item in all_tools]
-              except Exception:
-                  selected = []
-                  manifest = {}
+            try:
+              manifest = json.load(open('.github/cloud-test-selection.json', encoding='utf-8'))
+              raw_selected = manifest.get('selectedTools', [])
+              if isinstance(raw_selected, str):
+                raw_selected = [raw_selected]
+              elif not isinstance(raw_selected, list):
+                raw_selected = []
+              selected = [item for item in raw_selected if item in all_tools]
+            except Exception:
+              selected = []
+              manifest = {}
 
           if not selected:
-              selected = all_tools
+            selected = all_tools
 
           run_mode = dispatch_run_mode if dispatch_run_mode in {"full", "unpassed"} else str(manifest.get('runMode', 'full')).lower()
           if run_mode not in {"full", "unpassed"}:
-              run_mode = "full"
+            run_mode = "full"
 
           def previous_report_passed(tool: str) -> bool:
-              report_path = Path('test-error-reports/latest/reports') / f'{tool}-report.json'
-              if not report_path.exists():
-                  return False
-              try:
-                  data = json.load(open(report_path, encoding='utf-8'))
-                  summary = data.get('summary', {})
-                  total = int(summary.get('total', 0) or 0)
-                  failed = int(summary.get('failed', 0) or 0)
-                  return total > 0 and failed == 0
-              except Exception:
-                  return False
+            report_path = Path('test-error-reports/latest/reports') / f'{tool}-report.json'
+            if not report_path.exists():
+              return False
+            try:
+              data = json.load(open(report_path, encoding='utf-8'))
+              summary = data.get('summary', {})
+              total = int(summary.get('total', 0) or 0)
+              failed = int(summary.get('failed', 0) or 0)
+              return total > 0 and failed == 0
+            except Exception:
+              return False
 
           execution = {}
           skipped = {}
           any_executed = False
+
           for tool in all_tools:
-              is_selected = tool in selected
-              already_passed = previous_report_passed(tool) if is_selected and run_mode == 'unpassed' else False
-              should_execute = is_selected and not already_passed
-              execution[tool] = should_execute
-              skipped[tool] = is_selected and already_passed
-              any_executed = any_executed or should_execute
+            is_selected = tool in selected
+            already_passed = previous_report_passed(tool) if is_selected and run_mode == 'unpassed' else False
+            should_execute = is_selected and not already_passed
+            execution[tool] = should_execute
+            skipped[tool] = is_selected and already_passed
+            any_executed = any_executed or should_execute
 
           selected_csv = ','.join(selected)
           with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as fh:
-              fh.write(f"selected_tools={selected_csv}\n")
-              fh.write(f"run_mode={run_mode}\n")
-              fh.write(f"any_executed={'true' if any_executed else 'false'}\n")
-              for tool in all_tools:
-                  fh.write(f"run_{tool}={'true' if tool in selected else 'false'}\n")
-                  fh.write(f"execute_{tool}={'true' if execution[tool] else 'false'}\n")
-                  fh.write(f"skipped_{tool}={'true' if skipped[tool] else 'false'}\n")
+            fh.write(f"selected_tools={selected_csv}\n")
+            fh.write(f"run_mode={run_mode}\n")
+            fh.write(f"any_executed={'true' if any_executed else 'false'}\n")
+            for tool in all_tools:
+              fh.write(f"run_{tool}={'true' if tool in selected else 'false'}\n")
+              fh.write(f"execute_{tool}={'true' if execution[tool] else 'false'}\n")
+              fh.write(f"skipped_{tool}={'true' if skipped[tool] else 'false'}\n")
 
           print(f"selected_tools={selected_csv}")
           print(f"run_mode={run_mode}")

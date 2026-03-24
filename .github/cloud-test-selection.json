@@ -1,12 +1,13 @@
 ﻿{
     "selectedTools":  [
-                          "selenium"
+                          "cypress",
+                          "playwright"
                       ],
     "integrationLocalOnly":  true,
     "executionTarget":  "cloud",
     "dataMode":  "mock",
     "defaultLocalDataMode":  "real",
     "syncMode":  "Push",
-    "runMode":  "unpassed",
-    "generatedAt":  "2026-03-25T06:24:19"
+    "runMode":  "full",
+    "generatedAt":  "2026-03-25T06:28:06"
 }
