@@ -34,7 +34,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from browser_utils import seed_mock_auth
+from browser_utils import seed_mock_auth, create_local_driver as create_resilient_local_driver
 
 # ========== 测试配置 ==========
 
@@ -329,70 +329,11 @@ def mobile_chrome_driver(request):
 
 def _create_local_driver(browser: str, headless: bool = False):
     """创建本地WebDriver"""
-    if browser == "chrome":
-        options = ChromeOptions()
-        if headless:
-            options.add_argument("--headless")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        chrome_binary = shutil.which("chromedriver") or shutil.which("chromedriver.exe")
-        if chrome_binary:
-            return webdriver.Chrome(service=ChromeService(chrome_binary), options=options)
-        try:
-            return webdriver.Chrome(options=options)
-        except Exception:
-            service = ChromeService(ChromeDriverManager().install())
-            return webdriver.Chrome(service=service, options=options)
-    
-    elif browser == "firefox":
-        options = FirefoxOptions()
-        if headless:
-            options.add_argument("--headless")
-        gecko_binary = shutil.which("geckodriver") or shutil.which("geckodriver.exe")
-        if gecko_binary:
-            return webdriver.Firefox(service=FirefoxService(gecko_binary), options=options)
-        try:
-            return webdriver.Firefox(options=options)
-        except Exception:
-            service = FirefoxService(GeckoDriverManager().install())
-            return webdriver.Firefox(service=service, options=options)
-    
-    elif browser == "edge":
-        options = EdgeOptions()
-        if headless:
-            options.add_argument("--headless")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        edge_binary = shutil.which("msedgedriver") or shutil.which("msedgedriver.exe")
-        if edge_binary:
-            return webdriver.Edge(service=EdgeService(edge_binary), options=options)
-        try:
-            return webdriver.Edge(options=options)
-        except Exception:
-            try:
-                service = EdgeService(EdgeChromiumDriverManager().install())
-                return webdriver.Edge(service=service, options=options)
-            except Exception:
-                chrome_options = ChromeOptions()
-                if headless:
-                    chrome_options.add_argument("--headless")
-                chrome_options.add_argument("--no-sandbox")
-                chrome_options.add_argument("--disable-dev-shm-usage")
-                chrome_binary = shutil.which("chromedriver") or shutil.which("chromedriver.exe")
-                if chrome_binary:
-                    return webdriver.Chrome(service=ChromeService(chrome_binary), options=chrome_options)
-                try:
-                    return webdriver.Chrome(options=chrome_options)
-                except Exception:
-                    service = ChromeService(ChromeDriverManager().install())
-                    return webdriver.Chrome(service=service, options=chrome_options)
-    
-    elif browser == "safari":
+    if browser == "safari":
         # Safari不需要service（仅macOS）
         return webdriver.Safari()
-    
-    else:
-        raise ValueError(f"不支持的浏览器: {browser}")
+
+    return create_resilient_local_driver(browser, headless=headless)
 
 
 def _create_remote_driver(browser: str, headless: bool = False):

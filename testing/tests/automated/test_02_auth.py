@@ -151,8 +151,7 @@ class TestTokenRefresh:
         })
         data = v.ok(login_resp)
         refresh = data.get("refreshToken")
-        if not refresh:
-            pytest.skip("服务未返回 refreshToken")
+        assert refresh, "服务未返回 refreshToken"
 
         # 用 refreshToken 刷新
         resp = api.post("/api/auth/refresh", json={"refreshToken": refresh})

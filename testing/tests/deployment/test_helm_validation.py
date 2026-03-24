@@ -85,9 +85,9 @@ class TestChartStructure:
         assert os.path.isfile(path), "_helpers.tpl 缺失"
 
     @pytest.mark.p0
-    @pytest.mark.skipif(not HAS_YAML, reason="需要 pyyaml")
     def test_chart_yaml_valid(self):
         """Chart.yaml 应是有效 YAML 且包含必填字段"""
+        assert HAS_YAML, "需要 pyyaml"
         data = _read_yaml(os.path.join(HELM_DIR, "Chart.yaml"))
         assert data is not None, "Chart.yaml 无法解析"
         assert "apiVersion" in data, "缺少 apiVersion"
@@ -96,9 +96,9 @@ class TestChartStructure:
         assert "appVersion" in data, "缺少 appVersion"
 
     @pytest.mark.p0
-    @pytest.mark.skipif(not HAS_YAML, reason="需要 pyyaml")
     def test_chart_api_version_v2(self):
         """Chart.yaml apiVersion 应为 v2"""
+        assert HAS_YAML, "需要 pyyaml"
         data = _read_yaml(os.path.join(HELM_DIR, "Chart.yaml"))
         if data:
             assert data.get("apiVersion") == "v2", (
@@ -128,17 +128,17 @@ class TestValuesConfiguration:
     """HLM-002: 验证 values.yaml 配置完整且安全"""
 
     @pytest.mark.p0
-    @pytest.mark.skipif(not HAS_YAML, reason="需要 pyyaml")
     def test_values_yaml_valid(self):
         """values.yaml 应能正确解析"""
+        assert HAS_YAML, "需要 pyyaml"
         data = _read_yaml(os.path.join(HELM_DIR, "values.yaml"))
         assert data is not None, "values.yaml 无法解析"
         assert isinstance(data, dict), "values.yaml 格式应为 dict"
 
     @pytest.mark.p0
-    @pytest.mark.skipif(not HAS_YAML, reason="需要 pyyaml")
     def test_values_no_hardcoded_passwords(self):
         """values.yaml 不应包含硬编码密码"""
+        assert HAS_YAML, "需要 pyyaml"
         text = _read_text(os.path.join(HELM_DIR, "values.yaml"))
         # 检查常见硬编码密码模式
         import re
@@ -155,9 +155,9 @@ class TestValuesConfiguration:
             )
 
     @pytest.mark.p0
-    @pytest.mark.skipif(not HAS_YAML, reason="需要 pyyaml")
     def test_values_has_image_config(self):
         """values.yaml 应有镜像配置"""
+        assert HAS_YAML, "需要 pyyaml"
         data = _read_yaml(os.path.join(HELM_DIR, "values.yaml"))
         if data:
             # 检查是否有 image 或 global.image 配置
@@ -181,9 +181,9 @@ class TestValuesConfiguration:
             assert data is not None, f"{profile} 无法解析"
 
     @pytest.mark.p1
-    @pytest.mark.skipif(not HAS_YAML, reason="需要 pyyaml")
     def test_values_resource_limits(self):
         """values.yaml 应定义资源限制"""
+        assert HAS_YAML, "需要 pyyaml"
         text = _read_text(os.path.join(HELM_DIR, "values.yaml"))
         assert "resources" in text or "limits" in text or "requests" in text, (
             "values.yaml 缺少资源限制配置"
@@ -308,9 +308,9 @@ class TestChartDependencies:
     """HLM-004: 验证 Chart 依赖项配置"""
 
     @pytest.mark.p0
-    @pytest.mark.skipif(not HAS_YAML, reason="需要 pyyaml")
     def test_dependencies_defined(self):
         """Chart.yaml 应定义依赖项"""
+        assert HAS_YAML, "需要 pyyaml"
         data = _read_yaml(os.path.join(HELM_DIR, "Chart.yaml"))
         if data:
             deps = data.get("dependencies", [])
@@ -319,9 +319,9 @@ class TestChartDependencies:
             )
 
     @pytest.mark.p0
-    @pytest.mark.skipif(not HAS_YAML, reason="需要 pyyaml")
     def test_postgresql_dependency(self):
         """应依赖 PostgreSQL"""
+        assert HAS_YAML, "需要 pyyaml"
         data = _read_yaml(os.path.join(HELM_DIR, "Chart.yaml"))
         if data:
             deps = data.get("dependencies", [])
@@ -329,9 +329,9 @@ class TestChartDependencies:
             assert len(pg_deps) > 0, "缺少 PostgreSQL 依赖"
 
     @pytest.mark.p0
-    @pytest.mark.skipif(not HAS_YAML, reason="需要 pyyaml")
     def test_redis_dependency(self):
         """应依赖 Redis"""
+        assert HAS_YAML, "需要 pyyaml"
         data = _read_yaml(os.path.join(HELM_DIR, "Chart.yaml"))
         if data:
             deps = data.get("dependencies", [])
@@ -339,9 +339,9 @@ class TestChartDependencies:
             assert len(redis_deps) > 0, "缺少 Redis 依赖"
 
     @pytest.mark.p1
-    @pytest.mark.skipif(not HAS_YAML, reason="需要 pyyaml")
     def test_dependencies_have_version(self):
         """所有依赖应指定版本号"""
+        assert HAS_YAML, "需要 pyyaml"
         data = _read_yaml(os.path.join(HELM_DIR, "Chart.yaml"))
         if data:
             for dep in data.get("dependencies", []):
@@ -350,9 +350,9 @@ class TestChartDependencies:
                 )
 
     @pytest.mark.p1
-    @pytest.mark.skipif(not HAS_YAML, reason="需要 pyyaml")
     def test_dependencies_have_repository(self):
         """所有依赖应指定仓库地址"""
+        assert HAS_YAML, "需要 pyyaml"
         data = _read_yaml(os.path.join(HELM_DIR, "Chart.yaml"))
         if data:
             for dep in data.get("dependencies", []):

@@ -67,7 +67,7 @@ class TestCrossTenantAccessBlocked:
             data = resp.json().get("data")
             # 如果返回 200，data 应该为空（不应返回其他租户的设备）
             if data and isinstance(data, dict):
-                pytest.skip("返回了数据 — 需人工确认是否属于当前租户")
+                pytest.fail("返回了数据，疑似跨租户访问未被阻断")
 
     @pytest.mark.tenant
     @pytest.mark.p0
@@ -108,8 +108,7 @@ class TestTenantDbVerification:
     def test_device_table_has_tenant_id(self, service_dbs):
         """device 表存在 tenant_id 列"""
         db = service_dbs["device"]
-        if not db:
-            pytest.skip("设备数据库不可用")
+        assert db, "设备数据库不可用"
         cols = db.query(
             "SELECT column_name FROM information_schema.columns "
             "WHERE table_name LIKE '%%device%%' AND column_name = 'tenant_id' "
@@ -123,8 +122,7 @@ class TestTenantDbVerification:
     def test_device_table_has_delete_at(self, service_dbs):
         """device 表存在 delete_at 列"""
         db = service_dbs["device"]
-        if not db:
-            pytest.skip("设备数据库不可用")
+        assert db, "设备数据库不可用"
         cols = db.query(
             "SELECT column_name FROM information_schema.columns "
             "WHERE table_name LIKE '%%device%%' AND column_name = 'delete_at' "
@@ -137,8 +135,7 @@ class TestTenantDbVerification:
     def test_charging_order_has_tenant_id(self, service_dbs):
         """charging_order 表存在 tenant_id 列"""
         db = service_dbs["charging"]
-        if not db:
-            pytest.skip("充电数据库不可用")
+        assert db, "充电数据库不可用"
         cols = db.query(
             "SELECT column_name FROM information_schema.columns "
             "WHERE table_name LIKE 'charging_order%' AND column_name = 'tenant_id'"
@@ -194,8 +191,7 @@ class TestSoftDeleteEnforcement:
     def test_deleted_records_not_returned(self, api, v, service_dbs):
         """软删除记录不应在列表中返回"""
         db = service_dbs["device"]
-        if not db:
-            pytest.skip("设备数据库不可用")
+        assert db, "设备数据库不可用"
 
         # 明确查 device_info（主设备表），避免 LIMIT 1 匹配到其他表
         tbl = "device.device_info"
@@ -204,8 +200,7 @@ class TestSoftDeleteEnforcement:
             "SELECT 1 FROM information_schema.columns "
             "WHERE table_schema = 'device' AND table_name = 'device_info' AND column_name = 'delete_at' LIMIT 1"
         )
-        if not exists:
-            pytest.skip("未找到 device.device_info 含 delete_at")
+        assert exists, "未找到 device.device_info 含 delete_at"
         deleted_count = db.scalar(
             f"SELECT COUNT(*) FROM {tbl} WHERE delete_at IS NOT NULL"
         )

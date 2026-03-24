@@ -10,8 +10,9 @@ import http from 'k6/http';
 import { check, group, sleep } from 'k6';
 import { Rate, Trend, Counter } from 'k6/metrics';
 import { login, getAuthHeaders } from '../utils/auth.js';
+import config from '../config.js';
 
-const BASE_URL = __ENV.TEST_BASE_URL || 'http://localhost:8000';
+const BASE_URL = config.baseUrl;
 const TENANT_CODE = __ENV.ADMIN_TENANT_CODE || __ENV.TENANT_CODE || 'default';
 const ADMIN_USERNAME = __ENV.ADMIN_USERNAME || 'admin';
 const ADMIN_PASSWORD = __ENV.ADMIN_PASSWORD || 'P@ssw0rd';

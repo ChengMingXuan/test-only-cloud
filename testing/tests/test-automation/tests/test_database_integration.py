@@ -240,8 +240,7 @@ class TestContainerDatabase:
         预期：结果与生产环境 100% 兼容
         """
         import os
-        if os.getenv("JGSY_TEST_MODE", "mock") != "container":
-            pytest.skip("仅在 Container 模式下运行")
+        assert os.getenv("JGSY_TEST_MODE", "mock") == "container", "仅在 Container 模式下运行"
         
         # 测试 PostgreSQL 特有功能
         pg_sql = "SELECT pg_backend_pid() as pid, current_database() as db"
@@ -258,8 +257,7 @@ class TestContainerDatabase:
         预期：可以正确处理 JSON 数据
         """
         import os
-        if os.getenv("JGSY_TEST_MODE", "mock") != "container":
-            pytest.skip("仅在 Container 模式下运行")
+        assert os.getenv("JGSY_TEST_MODE", "mock") == "container", "仅在 Container 模式下运行"
         
         # 使用 ->> 返回文本，-> 返回 JSON（带引号）
         json_sql = """

@@ -365,13 +365,11 @@ class TestInfrastructureCompliance:
     def test_grafana_sla_dashboard(self):
         """Grafana SLA 仪表盘应存在"""
         dashboard_dir = os.path.join(ROOT, "deploy", "configs", "grafana", "dashboards")
-        if os.path.exists(dashboard_dir):
-            files = os.listdir(dashboard_dir)
-            sla_found = any("sla" in f.lower() for f in files)
-            assert sla_found, \
-                "缺少 Grafana SLA 合规仪表盘"
-        else:
-            pytest.skip("Grafana dashboards 目录不存在")
+        assert os.path.exists(dashboard_dir), "Grafana dashboards 目录不存在"
+        files = os.listdir(dashboard_dir)
+        sla_found = any("sla" in f.lower() for f in files)
+        assert sla_found, \
+            "缺少 Grafana SLA 合规仪表盘"
 
     def test_loki_retention_180_days(self):
         """Loki 日志留存应 ≥ 180 天"""

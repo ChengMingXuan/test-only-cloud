@@ -401,8 +401,7 @@ def auth_token():
     if MOCK_MODE:
         return MOCK_TOKEN
     token = _real_login()
-    if not token:
-        pytest.skip("真实模式下无法登录获取 token")
+    assert token, "真实模式下无法登录获取 token"
     return token
 
 @pytest.fixture(scope="session")
@@ -518,13 +517,13 @@ def iotcloudai_api(auth_token):
 def _make_db(name):
     from mock_client import MOCK_MODE
     if MOCK_MODE:
-        pytest.skip(f"Mock 模式下跳过数据库测试 ({name})")
+        pytest.fail(f"Mock 模式下不允许跳过数据库测试 ({name})")
     dbname = DB_CONFIGS.get(name)
     assert dbname, f"未知数据库: {name}"
     try:
         return DbClient(dbname)
     except Exception as exc:
-        pytest.skip(f"数据库 {dbname} 不可达: {exc}")
+        pytest.fail(f"数据库 {dbname} 不可达: {exc}")
 
 @pytest.fixture(scope="session")
 def identity_db():

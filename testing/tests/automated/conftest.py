@@ -228,10 +228,10 @@ def _login(username, password):
             timeout=LOGIN_TIMEOUT,
         )
     except requests.RequestException as exc:
-        pytest.skip(f"测试环境未就绪，网关登录不可达: {GATEWAY_URL} ({exc})")
+        pytest.fail(f"测试环境未就绪，网关登录不可达: {GATEWAY_URL} ({exc})")
 
     if resp.status_code >= 500:
-        pytest.skip(f"测试环境未就绪，网关登录异常: {GATEWAY_URL} -> HTTP {resp.status_code}")
+        pytest.fail(f"测试环境未就绪，网关登录异常: {GATEWAY_URL} -> HTTP {resp.status_code}")
 
     assert resp.status_code == 200, f"登录失败({username}): {resp.status_code} {resp.text[:300]}"
     body = resp.json()

@@ -210,8 +210,7 @@ class TestNoHardcodedSecrets:
     def test_appsettings_no_forbidden_secrets(self, service):
         """[CFG-SEC-10] {service} appsettings.json 无弱密码"""
         path = _get_service_dir(service) / "appsettings.json"
-        if not path.exists():
-            pytest.skip(f"{service} 无 appsettings.json")
+        assert path.exists(), f"{service} 无 appsettings.json"
         findings = []
         self._scan_json_values(_load_json(path), findings)
         assert not findings, f"{service}/appsettings.json 包含禁止的密钥: {findings}"
@@ -288,8 +287,7 @@ class TestPasswordPlaceholders:
     def test_connection_string_uses_env_placeholder(self, service):
         """[CFG-PW-01] {service} 连接字符串密码使用 ${} 占位符"""
         path = _get_service_dir(service) / "appsettings.json"
-        if not path.exists():
-            pytest.skip(f"{service} 无 appsettings.json")
+        assert path.exists(), f"{service} 无 appsettings.json"
         content = path.read_text(encoding="utf-8-sig")
         # 检查 PostgreSQL 连接字符串中是否有明文密码
         pg_pattern = re.compile(r'Password\s*=\s*([^;$"\r\n]+)', re.IGNORECASE)
@@ -336,8 +334,7 @@ class TestCrossServiceConsistency:
                 cfg = _load_json(path)
                 key_sets[svc] = set(cfg.keys())
 
-        if not key_sets:
-            pytest.skip("无 Prod JSON 文件")
+        assert key_sets, "无 Prod JSON 文件"
         reference = list(key_sets.values())[0]
         for svc, keys in key_sets.items():
             assert keys == reference, (

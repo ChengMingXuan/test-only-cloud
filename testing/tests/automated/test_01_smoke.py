@@ -116,8 +116,8 @@ class TestDirectServiceHealth:
             )
             # health 端点可能返回 200, 404（无此端点）, 但不应 5xx
             assert resp.status_code < 500, f"{svc} health → {resp.status_code}"
-        except req.ConnectionError:
-            pytest.skip(f"{svc} ({url}) 不可达")
+        except req.ConnectionError as exc:
+            pytest.fail(f"{svc} ({url}) 不可达: {exc}")
 
 
 # ═══════════════════════════════════════════════════

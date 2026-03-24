@@ -188,12 +188,11 @@ class TestCrudLifecycle:
         # ── Step 1: CREATE ──
         body = self._resolve_body(cfg["create_body"](self.uid), cfg)
         resp = self.client.post(cfg["base"], json=body)
-        if resp.status_code not in (200, 201):
-            pytest.skip(f"[{mod_name}] CREATE 失败 ({resp.status_code})，跳过生命周期")
+        assert resp.status_code in (200, 201), \
+            f"[{mod_name}] CREATE 失败 ({resp.status_code}): {resp.text[:300]}"
         data = resp.json()
         rid = _extract_id(data, cfg.get("id_field", "id"))
-        if not rid:
-            pytest.skip(f"[{mod_name}] CREATE 未返回 ID，跳过生命周期")
+        assert rid, f"[{mod_name}] CREATE 未返回 ID"
         logger.info(f"[{mod_name}] CREATE OK → ID={rid}")
 
         try:
@@ -314,16 +313,13 @@ class TestCrudEdgeCases:
                 else:
                     body.pop("stationId", None)
         resp = self.client.post(cfg["base"], json=body)
-        if resp.status_code not in (200, 201):
-            pytest.skip(f"CREATE 失败 ({resp.status_code})")
+        assert resp.status_code in (200, 201), f"CREATE 失败 ({resp.status_code})"
         rid = _extract_id(resp.json(), cfg.get("id_field", "id"))
-        if not rid:
-            pytest.skip("CREATE 未返回 ID")
+        assert rid, "CREATE 未返回 ID"
 
         delete_url = cfg["detail"].replace("{id}", str(rid))
         resp1 = self.client.delete(delete_url)
-        if resp1.status_code not in (200, 204):
-            pytest.skip(f"首次 DELETE 失败 ({resp1.status_code})")
+        assert resp1.status_code in (200, 204), f"首次 DELETE 失败 ({resp1.status_code})"
 
         resp2 = self.client.delete(delete_url)
         assert resp2.status_code < 500, \

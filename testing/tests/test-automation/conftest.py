@@ -149,7 +149,7 @@ def db_client(test_config):
             container.stop()
             return
         except ImportError as e:
-            pytest.skip(f"Testcontainers 不可用: {e}")
+            pytest.fail(f"Testcontainers 不可用: {e}")
     
     if USE_REAL_DB:
         # 真实数据库模式：仅限冒烟检查
@@ -167,7 +167,7 @@ def db_client(test_config):
         try:
             db.connect()
         except Exception as e:
-            pytest.skip(f"无法连接数据库: {str(e)}")
+            pytest.fail(f"无法连接数据库: {str(e)}")
         
         yield db
         db.close()

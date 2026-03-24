@@ -368,27 +368,24 @@ class TestAllServicesDbVerify:
         # 从 API 获取总数
         base = cfg["base"]
         list_ep = cfg["endpoints"].get("list")
-        if not list_ep:
-            pytest.skip(f"{svc} 无 list 端点")
+        assert list_ep, f"{svc} 无 list 端点"
 
         _, list_path = list_ep
         list_url = base + list_path
         resp = self.client.get(list_url, params={"page": 1, "pageSize": 1})
-        if resp.status_code != 200:
-            pytest.skip(f"{svc} list 返回 {resp.status_code}")
+        assert resp.status_code == 200, f"{svc} list 返回 {resp.status_code}"
 
         body = resp.json()
         data = body.get("data", {})
         api_total = data.get("total", data.get("totalCount", -1))
-        if api_total == -1:
-            pytest.skip(f"{svc} 响应无 total 字段")
+        assert api_total != -1, f"{svc} 响应无 total 字段"
 
         # 从数据库获取计数
         db_fixture_name = f"{svc}_db"
         try:
             db = self._request.getfixturevalue(db_fixture_name)
         except pytest.FixtureLookupError:
-            pytest.skip(f"无 {db_fixture_name} fixture")
+            pytest.fail(f"无 {db_fixture_name} fixture")
 
         table = cfg["db_table"]
         result = db.query(

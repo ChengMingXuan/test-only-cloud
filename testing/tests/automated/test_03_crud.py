@@ -54,7 +54,7 @@ class TestCrudLifecycle:
                 api.delete(f"{cfg['base']}/{resource_id}")
         else:
             # 部分服务可能需要其他前置数据才能创建
-            pytest.skip(f"创建失败 {create_resp.status_code}: {create_resp.text[:200]}")
+            pytest.fail(f"创建失败 {create_resp.status_code}: {create_resp.text[:200]}")
 
     @pytest.mark.crud
     @pytest.mark.p0
@@ -65,13 +65,11 @@ class TestCrudLifecycle:
         create_body = cfg["create_body"](uid)
         create_resp = api.post(cfg["base"], json=create_body)
 
-        if create_resp.status_code not in (200, 201):
-            pytest.skip(f"创建跳过: {create_resp.status_code}")
+        assert create_resp.status_code in (200, 201), f"创建失败: {create_resp.status_code}"
 
         data = create_resp.json().get("data", {})
         rid = data.get(cfg["id_field"]) or data.get("id") if isinstance(data, dict) else data
-        if not rid:
-            pytest.skip("未返回资源 ID")
+        assert rid, "未返回资源 ID"
 
         try:
             # Phase 2: READ
@@ -150,12 +148,10 @@ class TestCrudLifecycle:
         """重复删除不应 500"""
         # 先创建
         create_resp = api.post(cfg["base"], json=cfg["create_body"](uid))
-        if create_resp.status_code not in (200, 201):
-            pytest.skip("创建失败")
+        assert create_resp.status_code in (200, 201), "创建失败"
         data = create_resp.json().get("data", {})
         rid = data.get(cfg["id_field"]) or data.get("id") if isinstance(data, dict) else data
-        if not rid:
-            pytest.skip("无 ID")
+        assert rid, "无 ID"
         # 第一次删除
         api.delete(f"{cfg['base']}/{rid}")
         # 第二次删除

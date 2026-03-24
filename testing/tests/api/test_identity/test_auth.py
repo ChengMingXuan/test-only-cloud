@@ -195,15 +195,13 @@ class TestUserCRUD(BaseApiTest):
 
     def test_get_user_detail(self, api, created_user_id):
         """查询用户账户详情"""
-        if not created_user_id:
-            pytest.skip("用户账户创建失败")
+        assert created_user_id, "用户账户创建失败"
         resp = api.get(f"{self.API_PREFIX}/{created_user_id}")
         assert resp.status_code == 200, f"获取详情失败: {resp.status_code}"
 
     def test_update_user_and_verify_db(self, api, account_db, created_user_id):
         """修改用户账户 → 验证数据库字段变更"""
-        if not created_user_id:
-            pytest.skip("用户账户创建失败")
+        assert created_user_id, "用户账户创建失败"
 
         new_name = "更新后的显示名"
         resp = api.put(f"{self.API_PREFIX}/{created_user_id}", json={

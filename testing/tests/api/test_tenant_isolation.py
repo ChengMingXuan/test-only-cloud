@@ -22,9 +22,6 @@ logger = logging.getLogger(__name__)
 
 IDENTITY_URL = os.getenv("JGSY_IDENTITY_URL", "http://localhost:8002")
 INTERNAL_KEY = os.getenv("JGSY_INTERNAL_KEY")
-if not INTERNAL_KEY:
-    import pytest
-    pytest.skip("缺少 JGSY_INTERNAL_KEY 环境变量", allow_module_level=True)
 
 
 def _login(username, password, tenant_id=None):
@@ -85,8 +82,8 @@ class TestDbLevelIsolation:
         """每条记录都有非空 tenant_id"""
         try:
             db = DbClient(dbname)
-        except Exception:
-            pytest.skip(f"无法连接 {dbname}")
+        except Exception as exc:
+            pytest.fail(f"无法连接 {dbname}: {exc}")
         try:
             result = db.query(
                 f"SELECT COUNT(*) as cnt FROM {table} WHERE {col} IS NULL AND delete_at IS NULL"
@@ -97,7 +94,7 @@ class TestDbLevelIsolation:
             logger.info(f"[{table}] 所有记录 tenant_id 非空 ✓")
         except Exception as e:
             if "does not exist" in str(e) or "UndefinedTable" in str(e):
-                pytest.skip(f"[{table}] 表不存在")
+                pytest.fail(f"[{table}] 表不存在: {e}")
             raise
         finally:
             db.close()
@@ -108,8 +105,8 @@ class TestDbLevelIsolation:
         """API 返回的数据只包含一个 tenant_id"""
         try:
             db = DbClient(dbname)
-        except Exception:
-            pytest.skip(f"无法连接 {dbname}")
+        except Exception as exc:
+            pytest.fail(f"无法连接 {dbname}: {exc}")
         try:
             result = db.query(
                 f"SELECT {col}, COUNT(*) as cnt FROM {table} WHERE delete_at IS NULL GROUP BY {col}"
@@ -120,7 +117,7 @@ class TestDbLevelIsolation:
                 assert row[col] is not None, f"[{table}] 存在 tenant_id=NULL 的分组"
         except Exception as e:
             if "does not exist" in str(e) or "UndefinedTable" in str(e):
-                pytest.skip(f"[{table}] 表不存在")
+                pytest.fail(f"[{table}] 表不存在: {e}")
             raise
         finally:
             db.close()
@@ -161,8 +158,7 @@ class TestApiLevelIsolation:
     def test_endpoint_returns_single_tenant(self, endpoint, desc):
         """每个端点返回的数据只包含一个 tenantId"""
         resp = self.client.get(endpoint, params={"page": 1, "pageSize": 100})
-        if resp.status_code != 200:
-            pytest.skip(f"[{desc}] 返回 {resp.status_code}")
+        assert resp.status_code == 200, f"[{desc}] 返回 {resp.status_code}"
 
         data = resp.json()
         raw = data.get("data", {})
@@ -232,7 +228,7 @@ def two_tenants():
     """创建双测试租户（仅获取 tenant_id 即可，不依赖租户管理员权限）"""
     admin_token = _login("admin", "P@ssw0rd")
     if not admin_token:
-        pytest.skip("无法获取 SUPER_ADMIN token")
+        pytest.fail("无法获取 SUPER_ADMIN token")
 
     uid = str(int(time.time()))[-6:]
     tenants = []
@@ -252,14 +248,14 @@ def two_tenants():
             detail = resp.text[:200] if resp else "无响应"
             for t in tenants:
                 _api("DELETE", f"/api/tenants/{t['id']}", token=admin_token)
-            pytest.skip(f"创建租户{label}失败: {resp.status_code if resp else 'N/A'} {detail}")
+            pytest.fail(f"创建租户{label}失败: {resp.status_code if resp else 'N/A'} {detail}")
 
         tdata = resp.json().get("data", {})
         tid = tdata.get("tenantId") or tdata.get("id")
         if not tid:
             for t in tenants:
                 _api("DELETE", f"/api/tenants/{t['id']}", token=admin_token)
-            pytest.skip(f"租户{label}无ID")
+            pytest.fail(f"租户{label}无ID")
 
         tenants.append({"id": str(tid), "code": code})
 
@@ -281,12 +277,12 @@ def _db_conn(dbname):
 
 @pytest.mark.p0
 @pytest.mark.tenant_isolation
-@pytest.mark.skipif(MOCK_MODE, reason="DB 隔离测试需要真实数据库，Mock 模式下跳过")
 class TestCrossTenantIsolation:
     """Phase 3: 双租户交叉隔离验证 — DB 直插 + SQL 查询验证"""
 
     @pytest.fixture(autouse=True)
     def _setup(self, two_tenants):
+        assert not MOCK_MODE, "DB 隔离测试需要真实数据库，当前仍处于 Mock 模式"
         data, self.admin_token, self.uid = two_tenants
         self.tid_a = data[0]["id"]
         self.tid_b = data[1]["id"]
@@ -300,8 +296,8 @@ class TestCrossTenantIsolation:
         """DB 级: 按 tenant_id 查询只返回本租户数据"""
         try:
             conn = _db_conn(dbname)
-        except Exception:
-            pytest.skip(f"无法连接 {dbname}")
+        except Exception as exc:
+            pytest.fail(f"无法连接 {dbname}: {exc}")
         id_a = insert_cfg["args_a"](self.uid)[0]
         id_b = insert_cfg["args_b"](self.uid)[0]
         try:
@@ -335,7 +331,7 @@ class TestCrossTenantIsolation:
         except Exception as e:
             if "does not exist" in str(e) or "UndefinedTable" in str(e) or "UndefinedColumn" in str(e):
                 conn.rollback()
-                pytest.skip(f"[{mod_name}] 表/列不存在: {e}")
+                pytest.fail(f"[{mod_name}] 表/列不存在: {e}")
             raise
         finally:
             # Cleanup
@@ -358,8 +354,8 @@ class TestCrossTenantIsolation:
         """DB 级: B 的 UPDATE 不影响 A 的数据"""
         try:
             conn = _db_conn(dbname)
-        except Exception:
-            pytest.skip(f"无法连接 {dbname}")
+        except Exception as exc:
+            pytest.fail(f"无法连接 {dbname}: {exc}")
         try:
             cur = conn.cursor()
             args_a = insert_cfg["args_a"](self.uid) + (self.tid_a,)
@@ -386,7 +382,7 @@ class TestCrossTenantIsolation:
         except Exception as e:
             if "does not exist" in str(e) or "UndefinedTable" in str(e) or "UndefinedColumn" in str(e):
                 conn.rollback()
-                pytest.skip(f"[{mod_name}] 表/列不存在: {e}")
+                pytest.fail(f"[{mod_name}] 表/列不存在: {e}")
             raise
         finally:
             try:
@@ -407,8 +403,8 @@ class TestCrossTenantIsolation:
         """DB 级: B 的软删除不影响 A 的数据"""
         try:
             conn = _db_conn(dbname)
-        except Exception:
-            pytest.skip(f"无法连接 {dbname}")
+        except Exception as exc:
+            pytest.fail(f"无法连接 {dbname}: {exc}")
         try:
             cur = conn.cursor()
             args_a = insert_cfg["args_a"](self.uid) + (self.tid_a,)
@@ -434,7 +430,7 @@ class TestCrossTenantIsolation:
         except Exception as e:
             if "does not exist" in str(e) or "UndefinedTable" in str(e) or "UndefinedColumn" in str(e):
                 conn.rollback()
-                pytest.skip(f"[{mod_name}] 表/列不存在: {e}")
+                pytest.fail(f"[{mod_name}] 表/列不存在: {e}")
             raise
         finally:
             try:
@@ -455,8 +451,8 @@ class TestCrossTenantIsolation:
         """API 级: 直插 B 数据后，super_admin (tenant=平台) 列表中不含 B 数据标记"""
         try:
             conn = _db_conn(dbname)
-        except Exception:
-            pytest.skip(f"无法连接 {dbname}")
+        except Exception as exc:
+            pytest.fail(f"无法连接 {dbname}: {exc}")
         try:
             cur = conn.cursor()
             args_b = insert_cfg["args_b"](self.uid) + (self.tid_b,)
@@ -480,7 +476,7 @@ class TestCrossTenantIsolation:
         except Exception as e:
             if "does not exist" in str(e) or "UndefinedTable" in str(e) or "UndefinedColumn" in str(e):
                 conn.rollback()
-                pytest.skip(f"[{mod_name}] 表/列不存在: {e}")
+                pytest.fail(f"[{mod_name}] 表/列不存在: {e}")
             raise
         finally:
             try:

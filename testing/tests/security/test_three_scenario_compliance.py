@@ -31,8 +31,7 @@ TEST_PASS = os.environ.get("TEST_PASSWORD", "")
 
 def get_auth_token():
     """获取测试认证 Token"""
-    if not TEST_PASS:
-        pytest.skip("未设置 TEST_PASSWORD 环境变量")
+    assert TEST_PASS, "未设置 TEST_PASSWORD 环境变量"
     try:
         resp = requests.post(f"{GATEWAY_URL}/identity/auth/login", json={
             "username": TEST_USER,
@@ -41,8 +40,8 @@ def get_auth_token():
         if resp.status_code == 200:
             data = resp.json()
             return data.get("data", {}).get("accessToken")
-    except requests.ConnectionError:
-        pytest.skip("API 网关不可达")
+    except requests.ConnectionError as exc:
+        pytest.fail(f"API 网关不可达: {exc}")
     return None
 
 
@@ -286,8 +285,7 @@ class TestScenario1_HA:
     def test_ha005_sla_dashboard(self):
         """HA-005: SLA 监控仪表盘"""
         dashboard_file = os.path.join(WORKSPACE, "deploy", "configs", "grafana", "dashboards", "sla-compliance.json")
-        if not os.path.exists(dashboard_file):
-            pytest.skip("SLA 仪表盘配置尚未落库")
+        assert os.path.exists(dashboard_file), "SLA 仪表盘配置尚未落库"
         dashboard = json.loads(Path(dashboard_file).read_text(encoding="utf-8"))
         panels = dashboard.get("panels", [])
         assert len(panels) >= 5, f"仪表盘面板不足: {len(panels)}"

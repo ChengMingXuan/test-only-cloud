@@ -369,6 +369,10 @@ case "$TOOL" in
 import json
 try:
   data = json.load(open('$JSON_FILE', encoding='utf-8'))
+  executed = data.get('executedFiles')
+  if isinstance(executed, list) and executed:
+    print(len(set([item for item in executed if isinstance(item, str) and item])))
+    raise SystemExit(0)
   seen = set()
   def walk(node):
     if isinstance(node, dict):

@@ -58,6 +58,10 @@ def seed_mock_auth(driver, base_url=None, token="mock_token"):
         driver.get(target_url)
         current_url = getattr(driver, "current_url", "") or target_url
         if not current_url.startswith(("http://", "https://")):
+            fallback_url = f"{target_url.rstrip('/')}/login"
+            driver.get(fallback_url)
+            current_url = getattr(driver, "current_url", "") or fallback_url
+        if not current_url.startswith(("http://", "https://")):
             logger.warning("mock 认证跳过：当前页面无可用 origin: %s", current_url)
             return driver
         driver.execute_script(
@@ -65,6 +69,7 @@ def seed_mock_auth(driver, base_url=None, token="mock_token"):
             localStorage.setItem('token', arguments[0]);
             localStorage.setItem('access_token', arguments[0]);
             localStorage.setItem('jgsy_access_token', arguments[0]);
+            localStorage.setItem('jgsy_tenant_code', 'TEST_TENANT');
             localStorage.setItem('user', JSON.stringify({id: 'user-001', name: 'admin'}));
             """,
             token,

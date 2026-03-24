@@ -48,8 +48,7 @@ class TestDeployCredentialSecurity:
     def test_env_example_no_weak_passwords(self):
         """SEC-DEPLOY-001: .env.example 不包含硬编码弱密码"""
         env_file = os.path.join(REPO_ROOT, "Configuration2.0", "docker", ".env.example")
-        if not os.path.exists(env_file):
-            pytest.skip(".env.example 不存在")
+        assert os.path.exists(env_file), ".env.example 不存在"
 
         content = open(env_file, "r", encoding="utf-8").read()
         found_weak = []
@@ -61,8 +60,7 @@ class TestDeployCredentialSecurity:
     def test_env_example_uses_placeholders(self):
         """SEC-DEPLOY-002: .env.example 必须使用 <CHANGE_ME_*> 占位符"""
         env_file = os.path.join(REPO_ROOT, "Configuration2.0", "docker", ".env.example")
-        if not os.path.exists(env_file):
-            pytest.skip(".env.example 不存在")
+        assert os.path.exists(env_file), ".env.example 不存在"
 
         content = open(env_file, "r", encoding="utf-8").read()
         # 每个敏感字段的值应该包含 CHANGE_ME
@@ -84,8 +82,7 @@ class TestDeployCredentialSecurity:
     def test_compose_no_weak_fallback(self, compose_file, weak_default):
         """SEC-DEPLOY-003: Compose 文件不包含弱密码 fallback 默认值"""
         filepath = os.path.join(REPO_ROOT, compose_file)
-        if not os.path.exists(filepath):
-            pytest.skip(f"{compose_file} 不存在")
+        assert os.path.exists(filepath), f"{compose_file} 不存在"
 
         content = open(filepath, "r", encoding="utf-8").read()
         assert weak_default not in content, \
@@ -94,8 +91,7 @@ class TestDeployCredentialSecurity:
     def test_compose_uses_required_syntax(self):
         """SEC-DEPLOY-004: 基础设施 Compose 使用 :? 必需变量语法"""
         filepath = os.path.join(REPO_ROOT, "Configuration2.0", "docker", "docker-compose.infrastructure.yml")
-        if not os.path.exists(filepath):
-            pytest.skip("infrastructure compose 不存在")
+        assert os.path.exists(filepath), "infrastructure compose 不存在"
 
         content = open(filepath, "r", encoding="utf-8").read()
         # POSTGRES_PASSWORD 应该使用 :? 而非 :- 语法
@@ -105,8 +101,7 @@ class TestDeployCredentialSecurity:
     def test_edge_env_has_placeholders(self):
         """SEC-DEPLOY-005: 边缘配置模板使用占位符"""
         env_file = os.path.join(REPO_ROOT, "Configuration2.0", "docker", ".env.edge.example")
-        if not os.path.exists(env_file):
-            pytest.skip(".env.edge.example 不存在")
+        assert os.path.exists(env_file), ".env.edge.example 不存在"
 
         content = open(env_file, "r", encoding="utf-8").read()
         assert "<CHANGE_ME" in content, "边缘配置模板缺少 <CHANGE_ME> 占位符"
@@ -114,8 +109,7 @@ class TestDeployCredentialSecurity:
     def test_prod_env_has_placeholders(self):
         """SEC-DEPLOY-006: 生产环境配置模板使用占位符"""
         env_file = os.path.join(REPO_ROOT, "Configuration2.0", "docker", ".env.prod")
-        if not os.path.exists(env_file):
-            pytest.skip("Configuration2.0/docker/.env.prod 不存在")
+        assert os.path.exists(env_file), "Configuration2.0/docker/.env.prod 不存在"
 
         content = open(env_file, "r", encoding="utf-8").read()
         assert "<CHANGE_ME" in content, "生产环境配置缺少 <CHANGE_ME> 占位符"
@@ -123,8 +117,7 @@ class TestDeployCredentialSecurity:
     def test_deploy_script_validates_credentials(self):
         """SEC-DEPLOY-007: deploy.ps1 必须验证凭据而非跳过"""
         deploy_script = os.path.join(REPO_ROOT, "Configuration2.0", "docker", "deploy.ps1")
-        if not os.path.exists(deploy_script):
-            pytest.skip("deploy.ps1 不存在")
+        assert os.path.exists(deploy_script), "deploy.ps1 不存在"
 
         content = open(deploy_script, "r", encoding="utf-8").read()
         assert (

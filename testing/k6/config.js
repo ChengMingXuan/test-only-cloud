@@ -8,7 +8,7 @@
 
 export const config = {
   // Base URL
-  baseUrl: __ENV.BASE_URL || 'http://localhost:8000',
+  baseUrl: __ENV.TEST_BASE_URL || __ENV.BASE_URL || 'http://localhost:8000',
   
   // Test scenarios — executor + stages only (thresholds 放在 scenarioThresholds 中)
   scenarios: {
