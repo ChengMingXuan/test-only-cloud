@@ -1,6 +1,6 @@
 ﻿{
     "selectedTools":  [
-                          "cypress"
+                          "k6"
                       ],
     "integrationLocalOnly":  true,
     "executionTarget":  "cloud",
@@ -8,5 +8,5 @@
     "defaultLocalDataMode":  "real",
     "syncMode":  "Push",
     "runMode":  "full",
-    "generatedAt":  "2026-03-25T07:04:43"
+    "generatedAt":  "2026-03-25T07:05:13"
 }
