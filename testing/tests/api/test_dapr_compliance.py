@@ -9,39 +9,32 @@ import sys
 import os
 import json
 import glob
+from pathlib import Path
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from mock_client import MockApiClient, MOCK_TOKEN
 
-WORKSPACE_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+WORKSPACE_ROOT = Path(__file__).resolve().parents[3]
+
+
+def _load_service_projects():
+    services_path = WORKSPACE_ROOT / "Configuration2.0" / "docker" / "services.json"
+    with open(services_path, "r", encoding="utf-8-sig") as f:
+        services = json.load(f).get("services", {})
+    return [svc["project"] for svc in services.values()]
 
 # CI 环境（test-only-cloud 仓库）无源码 → 跳过需要源码文件的测试
-_HAS_SOURCE = os.path.exists(os.path.join(WORKSPACE_ROOT, "AIOPS.sln"))
+_HAS_SOURCE = (WORKSPACE_ROOT / "AIOPS.sln").exists()
 _SKIP_NO_SOURCE = pytest.mark.skipif(not _HAS_SOURCE, reason="CI 测试仓库无源码文件")
 
-# 全部 31 个微服务的项目目录名
-ALL_SERVICES = [
-    "JGSY.AGI.Account", "JGSY.AGI.Analytics", "JGSY.AGI.Blockchain",
-    "JGSY.AGI.Charging", "JGSY.AGI.ContentPlatform", "JGSY.AGI.Device",
-    "JGSY.AGI.DigitalTwin", "JGSY.AGI.EnergyCore.MicroGrid",
-    "JGSY.AGI.EnergyCore.Orchestrator", "JGSY.AGI.EnergyCore.PVESSC",
-    "JGSY.AGI.EnergyCore.VPP", "JGSY.AGI.EnergyServices.CarbonTrade",
-    "JGSY.AGI.EnergyServices.DemandResp", "JGSY.AGI.EnergyServices.DeviceOps",
-    "JGSY.AGI.EnergyServices.ElecTrade", "JGSY.AGI.EnergyServices.EnergyEff",
-    "JGSY.AGI.EnergyServices.MultiEnergy", "JGSY.AGI.EnergyServices.SafeControl",
-    "JGSY.AGI.Gateway", "JGSY.AGI.Identity",
-    "JGSY.AGI.Ingestion", "JGSY.AGI.IotCloudAI", "JGSY.AGI.Observability",
-    "JGSY.AGI.Permission", "JGSY.AGI.RuleEngine", "JGSY.AGI.Settlement",
-    "JGSY.AGI.Simulator", "JGSY.AGI.Station", "JGSY.AGI.Storage",
-    "JGSY.AGI.Tenant", "JGSY.AGI.WorkOrder",
-]
+# 当前 26 个微服务项目目录名统一从 services.json 读取，避免测试列表漂移
+ALL_SERVICES = _load_service_projects()
 
 
 def _load_appsettings(service_dir):
     """加载服务的 appsettings.json"""
-    path = os.path.join(WORKSPACE_ROOT, service_dir, "appsettings.json")
-    if not os.path.exists(path):
-        return None
+    path = WORKSPACE_ROOT / service_dir / "appsettings.json"
+    assert path.exists(), f"{service_dir} 缺失 appsettings.json"
     with open(path, "r", encoding="utf-8-sig") as f:
         return json.load(f)
 
@@ -52,14 +45,12 @@ def _load_appsettings(service_dir):
 @pytest.mark.api
 @pytest.mark.servicemesh
 class TestDaprConfigCompliance:
-    """全量 31 服务 Dapr-only 配置合规性"""
+    """全量服务 Dapr-only 配置合规性"""
 
     @pytest.mark.parametrize("service", ALL_SERVICES)
     def test_service_mesh_section_exists(self, service):
         """验证：appsettings 含 ServiceMesh 配置节且无 direct 模式设置"""
         settings = _load_appsettings(service)
-        if settings is None:
-            pytest.skip(f"{service} 无 appsettings.json")
         mesh = settings.get("ServiceMesh", {})
         # 代码层面已强制 DaprServiceTransport（等保三级），配置节存在即合规
         # 确保不存在 Mode:"direct" 的遗留配置
@@ -70,8 +61,6 @@ class TestDaprConfigCompliance:
     def test_no_direct_mode_in_config(self, service):
         """等保：配置中不含 direct 模式"""
         settings = _load_appsettings(service)
-        if settings is None:
-            pytest.skip(f"{service} 无 appsettings.json")
         mesh = settings.get("ServiceMesh", {})
         # 检查所有可能的 mode 字段：Mode / UseDapr / type
         mode = mesh.get("Mode", "").lower()
@@ -84,8 +73,6 @@ class TestDaprConfigCompliance:
     def test_appsettings_has_service_mesh_section(self, service):
         """结构：appsettings.json 含 ServiceMesh 节"""
         settings = _load_appsettings(service)
-        if settings is None:
-            pytest.skip(f"{service} 无 appsettings.json")
         assert "ServiceMesh" in settings, f"{service} 缺少 ServiceMesh 配置节"
 
 
@@ -100,14 +87,12 @@ class TestServiceTransportRegistration:
 
     def test_extensions_file_exists(self):
         """文件存在性：ServiceTransportExtensions.cs"""
-        path = os.path.join(WORKSPACE_ROOT,
-                            "JGSY.AGI.Common.Hosting/Extensions/ServiceTransportExtensions.cs")
-        assert os.path.exists(path), "ServiceTransportExtensions.cs 不存在"
+        path = WORKSPACE_ROOT / "JGSY.AGI.Common.Hosting" / "Extensions" / "ServiceTransportExtensions.cs"
+        assert path.exists(), "ServiceTransportExtensions.cs 不存在"
 
     def test_extensions_registers_dapr(self):
         """代码扫描：注册 DaprServiceTransport"""
-        path = os.path.join(WORKSPACE_ROOT,
-                            "JGSY.AGI.Common.Hosting/Extensions/ServiceTransportExtensions.cs")
+        path = WORKSPACE_ROOT / "JGSY.AGI.Common.Hosting" / "Extensions" / "ServiceTransportExtensions.cs"
         with open(path, "r", encoding="utf-8-sig") as f:
             content = f.read()
         assert "DaprServiceTransport" in content, \
@@ -115,8 +100,7 @@ class TestServiceTransportRegistration:
 
     def test_extensions_has_dapr_client(self):
         """代码扫描：调用 AddDaprClient"""
-        path = os.path.join(WORKSPACE_ROOT,
-                            "JGSY.AGI.Common.Hosting/Extensions/ServiceTransportExtensions.cs")
+        path = WORKSPACE_ROOT / "JGSY.AGI.Common.Hosting" / "Extensions" / "ServiceTransportExtensions.cs"
         with open(path, "r", encoding="utf-8-sig") as f:
             content = f.read()
         assert "AddDaprClient" in content, \
@@ -124,8 +108,7 @@ class TestServiceTransportRegistration:
 
     def test_no_dual_mode_switch(self):
         """等保：无 direct/dapr 切换分支"""
-        path = os.path.join(WORKSPACE_ROOT,
-                            "JGSY.AGI.Common.Hosting/Extensions/ServiceTransportExtensions.cs")
+        path = WORKSPACE_ROOT / "JGSY.AGI.Common.Hosting" / "Extensions" / "ServiceTransportExtensions.cs"
         with open(path, "r", encoding="utf-8-sig") as f:
             content = f.read()
         # 不应有基于 mode 的 if/else 选择 HttpServiceTransport
@@ -137,8 +120,7 @@ class TestServiceTransportRegistration:
 
     def test_resilience_pipeline_registered(self):
         """代码扫描：弹性策略管道注册"""
-        path = os.path.join(WORKSPACE_ROOT,
-                            "JGSY.AGI.Common.Hosting/Extensions/ServiceTransportExtensions.cs")
+        path = WORKSPACE_ROOT / "JGSY.AGI.Common.Hosting" / "Extensions" / "ServiceTransportExtensions.cs"
         with open(path, "r", encoding="utf-8-sig") as f:
             content = f.read()
         assert "ResiliencePipelineProvider" in content or "Resilience" in content
@@ -155,17 +137,17 @@ class TestDockerComposeDapr:
 
     def test_compose_store_has_dapr(self):
         """验证 docker-compose.store.yml 存在"""
-        path = os.path.join(WORKSPACE_ROOT, "docker/docker-compose.store.yml")
-        assert os.path.exists(path), "docker-compose.store.yml 不存在"
+        path = WORKSPACE_ROOT / "docker" / "docker-compose.store.yml"
+        assert path.exists(), "docker-compose.store.yml 不存在"
 
     def test_compose_addon_exists(self):
         """验证 docker-compose.addon.yml 存在"""
-        path = os.path.join(WORKSPACE_ROOT, "docker/docker-compose.addon.yml")
-        assert os.path.exists(path), "docker-compose.addon.yml 不存在"
+        path = WORKSPACE_ROOT / "docker" / "docker-compose.addon.yml"
+        assert path.exists(), "docker-compose.addon.yml 不存在"
 
     def test_no_development_appsettings(self):
         """等保：无 appsettings.Development.json"""
-        pattern = os.path.join(WORKSPACE_ROOT, "JGSY.AGI.*/appsettings.Development.json")
+        pattern = str(WORKSPACE_ROOT / "JGSY.AGI.*" / "appsettings.Development.json")
         dev_files = glob.glob(pattern)
         # 部分服务可能有 Dapr 开发配置，但不应有 Development.json
         for f in dev_files:
@@ -186,12 +168,12 @@ class TestNewMicroserviceScript:
 
     def test_script_exists(self):
         """脚本存在性"""
-        path = os.path.join(WORKSPACE_ROOT, "scripts/new-microservice.ps1")
-        assert os.path.exists(path)
+        path = WORKSPACE_ROOT / "scripts" / "new-microservice.ps1"
+        assert path.exists()
 
     def test_script_uses_dapr_mode(self):
         """脚本生成的配置包含 Dapr 相关设置"""
-        path = os.path.join(WORKSPACE_ROOT, "scripts/new-microservice.ps1")
+        path = WORKSPACE_ROOT / "scripts" / "new-microservice.ps1"
         with open(path, "r", encoding="utf-8-sig") as f:
             content = f.read()
         # 模板应包含 Dapr 相关配置（Mode:"dapr" 或 UseDapr / AddDaprClient 等）

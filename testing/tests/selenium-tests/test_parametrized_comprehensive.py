@@ -8,16 +8,11 @@ Selenium 浏览器兼容性参数化测试框架
 """
 
 import pytest
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.firefox import GeckoDriverManager
-from webdriver_manager.microsoft import EdgeChromiumDriverManager
-from selenium.webdriver.chrome.service import Service as ChromeService
-from selenium.webdriver.firefox.service import Service as FirefoxService
-from selenium.webdriver.edge.service import Service as EdgeService
+
+from browser_utils import create_local_driver, get_base_url, seed_mock_auth
 
 # ═══════════════════════════════════════════════════════════
 # 参数化数据集
@@ -74,6 +69,8 @@ BROWSERS_MATRIX = {
     }
 }
 
+BASE_URL = get_base_url()
+
 # ═══════════════════════════════════════════════════════════
 # Fixture：浏览器实例工厂
 # ═══════════════════════════════════════════════════════════
@@ -82,27 +79,9 @@ BROWSERS_MATRIX = {
 def driver(request):
     """参数化浏览器驱动"""
     browser_name = request.param
-    
-    if browser_name == 'chrome':
-        options = webdriver.ChromeOptions()
-        options.add_argument('--start-maximized')
-        options.add_argument('--disable-blink-features=AutomationControlled')
-        service = ChromeService(ChromeDriverManager().install())
-        driver = webdriver.Chrome(service=service, options=options)
-    
-    elif browser_name == 'firefox':
-        options = webdriver.FirefoxOptions()
-        options.add_argument('--width=1920')
-        options.add_argument('--height=1080')
-        service = FirefoxService(GeckoDriverManager().install())
-        driver = webdriver.Firefox(service=service, options=options)
-    
-    elif browser_name == 'edge':
-        options = webdriver.EdgeOptions()
-        options.add_argument('--start-maximized')
-        service = EdgeService(EdgeChromiumDriverManager().install())
-        driver = webdriver.Edge(service=service, options=options)
-    
+    driver = create_local_driver(browser_name, headless=True)
+    seed_mock_auth(driver, BASE_URL)
+
     yield driver
     driver.quit()
 
@@ -113,7 +92,7 @@ def driver(request):
 class TestPageCompatibility:
     """页面兼容性测试 - 参数化（15 × 3 = 45）"""
     
-    BASE_URL = 'http://localhost:3100'
+    BASE_URL = BASE_URL
     
     def login(self, driver):
         """登录辅助"""
@@ -185,7 +164,7 @@ class TestPageCompatibility:
 class TestInteractionCompatibility:
     """交互兼容性测试 - 参数化"""
     
-    BASE_URL = 'http://localhost:3100'
+    BASE_URL = BASE_URL
     
     def login(self, driver):
         """登录辅助"""
@@ -230,7 +209,7 @@ class TestInteractionCompatibility:
 class TestFormFieldCompatibility:
     """表单字段兼容性 - 参数化"""
     
-    BASE_URL = 'http://localhost:3100'
+    BASE_URL = BASE_URL
     
     FORM_FIELDS = [
         ('text', 'input[type="text"]'),
@@ -291,7 +270,7 @@ class TestFormFieldCompatibility:
 class TestCSSCompatibility:
     """CSS 兼容性 - 参数化"""
     
-    BASE_URL = 'http://localhost:3100'
+    BASE_URL = BASE_URL
     
     CSS_PROPERTIES = [
         ('display', 'flex'),
@@ -331,7 +310,7 @@ class TestCSSCompatibility:
 class TestPerformanceCompatibility:
     """性能兼容性 - 参数化（简化版）"""
     
-    BASE_URL = 'http://localhost:3100'
+    BASE_URL = BASE_URL
     
     @pytest.mark.parametrize('page', ['device/list', 'station/list', 'charging/list'])
     def test_page_load_time(self, driver, page):

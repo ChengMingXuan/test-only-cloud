@@ -1,28 +1,34 @@
 """
-test_compat 目录专用 conftest —— Selenium Grid 可用性检查
-Grid 不可达时自动跳过本目录全部用例，避免 CI 中 ConnectionRefusedError。
+test_compat 目录专用 conftest。
+
+这批历史生成用例默认写死 Selenium Grid Remote。当前策略改为：
+- Grid 可用时也不依赖 Grid
+- 统一把 webdriver.Remote 降到本地浏览器驱动
+- 避免整目录因为 Grid 不可达被整套 skip
 """
-import socket
-import pytest
+
+from selenium import webdriver
+
+from browser_utils import create_local_driver, get_base_url, seed_mock_auth
 
 
-def _is_grid_available(host: str = "localhost", port: int = 4444, timeout: float = 2) -> bool:
-    try:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.settimeout(timeout)
-            s.connect((host, port))
-            return True
-    except (ConnectionRefusedError, OSError, socket.timeout):
-        return False
+BASE_URL = get_base_url()
 
 
-_grid_ok = _is_grid_available()
+def _browser_name_from_options(options) -> str:
+    option_type = type(options).__name__.lower() if options is not None else ""
+    if "firefox" in option_type:
+        return "firefox"
+    if "edge" in option_type:
+        return "edge"
+    return "chrome"
 
 
-def pytest_collection_modifyitems(config, items):
-    """Grid 不可达时，给本目录下所有用例打 skip 标记。"""
-    if _grid_ok:
-        return
-    skip_marker = pytest.mark.skip(reason="Selenium Grid (localhost:4444) 不可达，跳过兼容性测试")
-    for item in items:
-        item.add_marker(skip_marker)
+def _local_remote_driver(command_executor=None, options=None, *args, **kwargs):
+    browser_name = _browser_name_from_options(options)
+    driver = create_local_driver(browser_name)
+    seed_mock_auth(driver, BASE_URL)
+    return driver
+
+
+webdriver.Remote = _local_remote_driver
