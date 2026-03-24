@@ -192,7 +192,7 @@ jobs:
   k6:
     name: "\u26A1 k6"
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - name: 安装 k6
@@ -236,7 +236,9 @@ jobs:
               echo "" >> "$COMBINED_OUTPUT"
               echo "──── 场景: $SCENARIO_NAME ────" >> "$COMBINED_OUTPUT"
 
+              # CI 中限制每个场景最多 30s，避免 51 场景串行总超时
               k6 run --env BASE_URL=http://localhost:8000 \
+                --duration 30s \
                 --summary-export="TestResults/k6-${SCENARIO_NAME}-summary.json" \
                 "$SCENARIO" 2>&1 | tee "TestResults/k6-${SCENARIO_NAME}-output.txt"
               # 同时追加到汇总输出
