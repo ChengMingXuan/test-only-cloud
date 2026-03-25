@@ -4,7 +4,9 @@
 # 每个工具分别生成独立报告 → 提交到仓库 → 主仓库按工具覆盖拉取
 # 优化：各工具内部启用并行执行（pytest-xdist, Jest workers 等）
 # ═══════════════════════════════════════════════════════════════════
-name: "🚀 云端测试"
+name: "Cloud Test All"
+
+run-name: "Cloud Test All | ${{ github.sha }}"
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
