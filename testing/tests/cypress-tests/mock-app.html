@@ -1,0 +1,2264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JGSY AGI - Mock</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/antd@5.12.0/dist/reset.min.css">
+<style>
+/* === Ant Design Layout 结构 === */
+.ant-layout { display: flex; flex-direction: row; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+.ant-layout-has-sider { flex-direction: row; }
+.ant-layout-sider, .ant-pro-sider { width: 208px; min-width: 208px; background: #001529; color: #fff; flex: 0 0 208px; transition: all 0.2s; }
+.ant-layout-sider.collapsed { width: 48px; min-width: 48px; flex: 0 0 48px; }
+.ant-layout-sider.collapsed .menu-text { display: none; }
+.ant-layout-sider-trigger, .ant-pro-sider-collapsed-button { display: flex; align-items: center; justify-content: center; height: 48px; cursor: pointer; background: rgba(255,255,255,0.1); color: #fff; text-align: center; }
+.ant-layout-right { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+.ant-layout-header, .ant-pro-layout-header { height: 48px; background: #fff; display: flex; align-items: center; padding: 0 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.ant-layout-header img { width: 28px; height: 28px; border-radius: 50%; margin-right: 8px; }
+.ant-layout-header .header-user { display: flex; align-items: center; margin-left: auto; }
+.ant-layout-content { flex: 1; padding: 24px; background: #f0f2f5; overflow-y: auto; }
+
+/* === 菜单 === */
+.ant-menu { list-style: none; padding: 0; margin: 0; }
+.ant-menu-item { padding: 8px 16px; cursor: pointer; color: rgba(255,255,255,0.65); transition: all 0.2s; display: flex; align-items: center; }
+.ant-menu-item:hover { color: #fff; background: rgba(255,255,255,0.08); }
+.ant-menu-item a { color: inherit; text-decoration: none; display: flex; align-items: center; width: 100%; }
+.ant-menu-item .anticon { margin-right: 8px; font-size: 16px; }
+
+/* === 面包屑 === */
+.ant-breadcrumb { margin-bottom: 16px; font-size: 14px; color: rgba(0,0,0,0.45); }
+.ant-breadcrumb a { color: rgba(0,0,0,0.45); text-decoration: none; }
+.ant-breadcrumb a:hover { color: #1677ff; }
+.ant-breadcrumb-separator { margin: 0 8px; }
+
+/* === 表格 === */
+.ant-table-wrapper { background: #fff; border-radius: 8px; padding: 16px; }
+.ant-table { width: 100%; border-collapse: collapse; }
+.ant-table-thead th, [role="columnheader"] { padding: 12px 16px; background: #fafafa; border-bottom: 1px solid #f0f0f0; text-align: left; font-weight: 500; }
+.ant-table-tbody tr.ant-table-row td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; }
+.ant-table-tbody tr.ant-table-row:hover td { background: #fafafa; }
+.ant-table-tbody tr.ant-table-row[role="row"] {}
+
+/* === 卡片 === */
+.ant-card, .ant-pro-card { background: #fff; border-radius: 8px; padding: 24px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); margin-bottom: 16px; }
+.ant-statistic { }
+.ant-statistic-title { font-size: 14px; color: rgba(0,0,0,0.45); margin-bottom: 8px; }
+.ant-statistic-content { font-size: 24px; font-weight: 500; color: rgba(0,0,0,0.85); }
+
+/* === 标签 === */
+.ant-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-right: 4px; }
+.ant-tag-green { background: #f6ffed; border: 1px solid #b7eb8f; color: #52c41a; }
+.ant-tag-red { background: #fff2f0; border: 1px solid #ffccc7; color: #ff4d4f; }
+.ant-tag-orange { background: #fff7e6; border: 1px solid #ffd591; color: #fa8c16; }
+.ant-tag-blue { background: #e6f4ff; border: 1px solid #91caff; color: #1677ff; }
+.ant-tag-default { background: #fafafa; border: 1px solid #d9d9d9; color: rgba(0,0,0,0.88); }
+.ant-badge { position: relative; display: inline-block; }
+
+/* === 按钮 === */
+.ant-btn { padding: 4px 15px; border-radius: 6px; border: 1px solid #d9d9d9; background: #fff; cursor: pointer; font-size: 14px; height: 32px; display: inline-flex; align-items: center; gap: 4px; }
+.ant-btn-primary { background: #1677ff; border-color: #1677ff; color: #fff; }
+.ant-btn-primary:hover { background: #4096ff; }
+.ant-btn:hover { border-color: #4096ff; color: #4096ff; }
+
+/* === 分页 === */
+.ant-pagination { display: flex; align-items: center; gap: 8px; margin-top: 16px; justify-content: flex-end; }
+.ant-pagination li { list-style: none; padding: 4px 10px; border: 1px solid #d9d9d9; border-radius: 4px; cursor: pointer; }
+.ant-pagination li.active { border-color: #1677ff; color: #1677ff; }
+.ant-pagination-options { display: inline-flex; align-items: center; margin-left: 8px; }
+.ant-pagination-options .ant-select { min-width: 80px; }
+.ant-input-number { display: inline-flex; border: 1px solid #d9d9d9; border-radius: 6px; overflow: hidden; }
+.ant-input-number-input { padding: 4px 11px; border: none; outline: none; width: 100%; font-size: 14px; height: 30px; }
+.ant-switch { display: inline-block; width: 44px; height: 22px; border-radius: 11px; background: #00000040; cursor: pointer; position: relative; transition: background 0.2s; }
+.ant-switch-checked { background: #1677ff; }
+.ant-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: left 0.2s; }
+.ant-switch-checked::after { left: 22px; }
+
+/* === 模态框/抽屉 === */
+.ant-modal-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.45); z-index: 1000; }
+.ant-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 8px; padding: 24px; z-index: 1001; min-width: 520px; max-width: 90vw; }
+.ant-modal .ant-modal-header { margin-bottom: 16px; font-size: 16px; font-weight: 500; }
+.ant-modal .ant-modal-body { margin-bottom: 16px; }
+.ant-modal .ant-modal-footer { text-align: right; }
+.ant-drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 600px; background: #fff; z-index: 1001; padding: 24px; box-shadow: -6px 0 16px rgba(0,0,0,0.08); }
+.ant-drawer .ant-drawer-header { margin-bottom: 16px; font-size: 16px; font-weight: 500; display: flex; justify-content: space-between; align-items: center; }
+.modal-hidden, .drawer-hidden { display: none !important; }
+
+/* === 输入框/表单 === */
+.ant-input, .ant-login-input { padding: 4px 11px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 14px; height: 32px; width: 100%; box-sizing: border-box; }
+.ant-input:focus, .ant-login-input:focus { border-color: #1677ff; outline: none; box-shadow: 0 0 0 2px rgba(22,119,255,0.1); }
+.ant-form-item { margin-bottom: 24px; }
+.ant-form-item-label { margin-bottom: 8px; font-weight: 500; }
+.ant-form-item-explain-error { color: #ff4d4f; font-size: 12px; margin-top: 4px; }
+.ant-form-item-with-help .ant-form-item-explain { color: #ff4d4f; }
+
+/* === 搜索工具栏 === */
+.toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.toolbar .ant-input { width: 240px; }
+
+/* === Tab === */
+.ant-tabs { margin-bottom: 16px; }
+.ant-tabs-nav { display: flex; border-bottom: 1px solid #f0f0f0; }
+.ant-tabs-tab { padding: 8px 16px; cursor: pointer; color: rgba(0,0,0,0.65); border-bottom: 2px solid transparent; }
+.ant-tabs-tab:hover { color: #1677ff; }
+.ant-tabs-tab.active { color: #1677ff; border-bottom-color: #1677ff; }
+
+/* === 树 === */
+.ant-tree { list-style: none; padding: 0; }
+.ant-tree-treenode { padding: 4px 0; display: flex; align-items: center; }
+.ant-tree-switcher { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.ant-tree-title { margin-left: 4px; }
+
+/* === 选择器/日期 === */
+.ant-select { display: inline-block; min-width: 120px; padding: 4px 11px; border: 1px solid #d9d9d9; border-radius: 6px; cursor: pointer; background: #fff; }
+.ant-picker { display: inline-flex; padding: 4px 11px; border: 1px solid #d9d9d9; border-radius: 6px; cursor: pointer; }
+.ant-segmented { display: inline-flex; background: #f0f0f0; border-radius: 6px; padding: 2px; }
+.ant-segmented-item { padding: 4px 12px; cursor: pointer; border-radius: 4px; }
+.ant-segmented-item.active { background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+.ant-radio-group { display: inline-flex; gap: 8px; }
+
+/* === 告警/消息 === */
+.ant-alert-error { background: #fff2f0; border: 1px solid #ffccc7; padding: 8px 12px; border-radius: 6px; color: #ff4d4f; display: none; }
+.ant-alert-error.visible { display: block; }
+.ant-message { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 2000; }
+.ant-notification { position: fixed; top: 24px; right: 24px; z-index: 2000; }
+
+/* === Pro 布局 === */
+.ant-pro-form-login { max-width: 400px; margin: 60px auto; padding: 32px; }
+.ant-pro-layout, .ant-pro-layout-container { display: flex; min-height: 100vh; }
+
+/* === 图表占位 === */
+.chart-container canvas { width: 100%; height: 300px; background: #fafafa; border-radius: 4px; display: block; }
+
+/* === 网格布局 === */
+.card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px; }
+@media (max-width: 1200px) { .card-grid { grid-template-columns: repeat(2, 1fr); } }
+
+/* === 搜索框 placeholder fix === */
+input::placeholder { color: rgba(0,0,0,0.25); }
+
+/* === 隐藏类 === */
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div id="root">
+  <!-- 登录页 -->
+  <div id="page-login" class="hidden">
+    <div class="ant-pro-form-login ant-form">
+      <h2 style="text-align:center;margin-bottom:32px;">JGSY AGI 管理系统</h2>
+      <div class="login-error ant-alert-error" id="login-error">用户名或密码错误</div>
+      <div class="ant-form-item">
+        <label class="ant-form-item-label">用户名</label>
+        <input type="text" name="username" id="username" class="ant-login-input" placeholder="请输入用户名" autocomplete="off">
+        <div class="ant-form-item-explain-error hidden" id="username-error">请输入用户名</div>
+      </div>
+      <div class="ant-form-item">
+        <label class="ant-form-item-label">密码</label>
+        <input type="password" name="password" id="password" class="ant-login-input" placeholder="请输入密码">
+        <div class="ant-form-item-explain-error hidden" id="password-error">请输入密码</div>
+      </div>
+      <div class="ant-form-item" style="margin-top:8px">
+        <button type="submit" class="ant-btn ant-btn-primary" style="width:100%;height:40px;" id="login-btn">登录</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 主布局 -->
+  <div id="page-main" class="hidden">
+    <div class="ant-pro-layout ant-layout ant-layout-has-sider">
+      <!-- 侧边栏 -->
+      <div class="ant-layout-sider ant-pro-sider" id="sider">
+        <div style="padding:16px;text-align:center;color:#fff;font-weight:bold;">JGSY AGI</div>
+        <ul class="ant-menu" id="sider-menu">
+          <li class="ant-menu-item"><a href="/dashboard"><span class="anticon">📊</span><span class="menu-text">仪表盘</span></a></li>
+          <li class="ant-menu-item"><a href="/charging/orders"><span class="anticon">⚡</span><span class="menu-text">充电运营</span></a></li>
+          <li class="ant-menu-item"><a href="/charging/monitor"><span class="anticon">📡</span><span class="menu-text">充电监控</span></a></li>
+          <li class="ant-menu-item"><a href="/station"><span class="anticon">🏢</span><span class="menu-text">场站管理</span></a></li>
+          <li class="ant-menu-item"><a href="/device"><span class="anticon">🔧</span><span class="menu-text">设备管理</span></a></li>
+          <li class="ant-menu-item"><a href="/workorder"><span class="anticon">📋</span><span class="menu-text">工单管理</span></a></li>
+          <li class="ant-menu-item"><a href="/permission"><span class="anticon">🔒</span><span class="menu-text">权限管理</span></a></li>
+          <li class="ant-menu-item"><a href="/user"><span class="anticon">👥</span><span class="menu-text">用户管理</span></a></li>
+          <li class="ant-menu-item"><a href="/energy"><span class="anticon">🔋</span><span class="menu-text">能源服务</span></a></li>
+          <li class="ant-menu-item"><a href="/analytics"><span class="anticon">📈</span><span class="menu-text">分析中心</span></a></li>
+          <li class="ant-menu-item"><a href="/ai"><span class="anticon">🤖</span><span class="menu-text">AI智能</span></a></li>
+          <li class="ant-menu-item"><a href="/blockchain"><span class="anticon">⛓</span><span class="menu-text">区块链</span></a></li>
+          <li class="ant-menu-item"><a href="/ruleengine"><span class="anticon">⚙</span><span class="menu-text">规则引擎</span></a></li>
+          <li class="ant-menu-item"><a href="/settlement"><span class="anticon">💰</span><span class="menu-text">结算管理</span></a></li>
+          <li class="ant-menu-item"><a href="/simulator"><span class="anticon">🎮</span><span class="menu-text">模拟器</span></a></li>
+          <li class="ant-menu-item"><a href="/digital-twin"><span class="anticon">🌐</span><span class="menu-text">数字孪生</span></a></li>
+          <li class="ant-menu-item"><a href="/tenant"><span class="anticon">🏢</span><span class="menu-text">租户管理</span></a></li>
+          <li class="ant-menu-item"><a href="/system"><span class="anticon">⚙</span><span class="menu-text">系统配置</span></a></li>
+          <li class="ant-menu-item"><a href="/monitor"><span class="anticon">📡</span><span class="menu-text">系统监控</span></a></li>
+          <li class="ant-menu-item"><a href="/account"><span class="anticon">👤</span><span class="menu-text">账户设置</span></a></li>
+          <li class="ant-menu-item"><a href="/message"><span class="anticon">💬</span><span class="menu-text">消息中心</span></a></li>
+          <li class="ant-menu-item"><a href="/workflow"><span class="anticon">🔄</span><span class="menu-text">工作流</span></a></li>
+          <li class="ant-menu-item"><a href="/log"><span class="anticon">📝</span><span class="menu-text">操作日志</span></a></li>
+          <li class="ant-menu-item"><a href="/security"><span class="anticon">🔐</span><span class="menu-text">安全管理</span></a></li>
+          <li class="ant-menu-item"><a href="/report"><span class="anticon">📄</span><span class="menu-text">报表中心</span></a></li>
+          <li class="ant-menu-item"><a href="/ingestion"><span class="anticon">📥</span><span class="menu-text">数据接入</span></a></li>
+          <li class="ant-menu-item"><a href="/charging/piles"><span class="anticon">🔌</span><span class="menu-text">充电桩管理</span></a></li>
+          <li class="ant-menu-item"><a href="/charging/pricing"><span class="anticon">💲</span><span class="menu-text">充电定价</span></a></li>
+          <li class="ant-menu-item"><a href="/device/alerts"><span class="anticon">🔔</span><span class="menu-text">设备告警</span></a></li>
+          <li class="ant-menu-item"><a href="/energy/vpp"><span class="anticon">⚡</span><span class="menu-text">虚拟电厂</span></a></li>
+          <li class="ant-menu-item"><a href="/finance"><span class="anticon">📊</span><span class="menu-text">财务统计</span></a></li>
+          <li class="ant-menu-item"><a href="/ops"><span class="anticon">🔧</span><span class="menu-text">运维管理</span></a></li>
+        </ul>
+        <div class="ant-layout-sider-trigger ant-pro-sider-collapsed-button" id="sider-trigger">☰</div>
+      </div>
+
+      <!-- 右侧区域 -->
+      <div class="ant-layout ant-layout-right" style="flex-direction:column;">
+        <!-- 头部 -->
+        <div class="ant-layout-header ant-pro-layout-header">
+          <div class="ant-breadcrumb">
+            <a href="/">首页</a><span class="ant-breadcrumb-separator">/</span><span id="breadcrumb-current">仪表盘</span>
+          </div>
+          <div class="header-user">
+            <img alt="avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Crect fill='%231677ff' width='28' height='28' rx='14'/%3E%3C/svg%3E">
+            <span>系统管理员</span>
+          </div>
+        </div>
+
+        <!-- 内容区 -->
+        <main class="ant-layout-content" role="main">
+          <!-- 仪表盘内容 -->
+          <div id="content-dashboard" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card ant-pro-card"><div class="ant-statistic"><div class="ant-statistic-title">场站总数</div><div class="ant-statistic-content">128</div></div></div>
+              <div class="ant-card ant-pro-card"><div class="ant-statistic"><div class="ant-statistic-title">设备总数</div><div class="ant-statistic-content">856</div></div></div>
+              <div class="ant-card ant-pro-card"><div class="ant-statistic"><div class="ant-statistic-title">在线设备</div><div class="ant-statistic-content">798</div></div></div>
+              <div class="ant-card ant-pro-card"><div class="ant-statistic"><div class="ant-statistic-title">今日告警</div><div class="ant-statistic-content">5</div></div></div>
+            </div>
+            <div class="ant-card"><div class="chart-container"><canvas id="dashboard-chart"></canvas></div></div>
+          </div>
+
+          <!-- 场站管理 -->
+          <div id="content-station" class="page-content hidden">
+            <div class="toolbar">
+              <input class="ant-input" placeholder="搜索场站名称/编码" style="width:240px">
+              <button class="ant-btn ant-btn-primary" id="btn-add-station">+ 新增</button>
+            </div>
+            <div class="ant-table-wrapper">
+              <table class="ant-table">
+                <thead class="ant-table-thead"><tr>
+                  <th role="columnheader">场站名称</th><th role="columnheader">编码</th><th role="columnheader">类型</th><th role="columnheader">状态</th><th role="columnheader">地址</th><th role="columnheader">操作</th>
+                </tr></thead>
+                <tbody class="ant-table-tbody">
+                  <tr class="ant-table-row" role="row"><td>北京朝阳充电站</td><td>BJ001</td><td>充电站</td><td><span class="ant-tag ant-tag-green">运行中</span></td><td>北京市朝阳区</td><td><button class="ant-btn">编辑</button> <a href="#">详情</a></td></tr>
+                  <tr class="ant-table-row" role="row"><td>北京海淀储能站</td><td>BJ002</td><td>储能站</td><td><span class="ant-tag ant-tag-green">运行中</span></td><td>北京市海淀区</td><td><button class="ant-btn">编辑</button> <a href="#">详情</a></td></tr>
+                  <tr class="ant-table-row" role="row"><td>上海浦东光伏站</td><td>SH001</td><td>光伏站</td><td><span class="ant-tag ant-tag-orange">维护中</span></td><td>上海市浦东新区</td><td><button class="ant-btn">编辑</button> <a href="#">详情</a></td></tr>
+                  <tr class="ant-table-row" role="row"><td>深圳南山充电站</td><td>SZ001</td><td>充电站</td><td><span class="ant-tag ant-tag-green">运行中</span></td><td>深圳市南山区</td><td><button class="ant-btn">编辑</button> <a href="#">详情</a></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <ul class="ant-pagination"><li>上一页</li><li class="active">1</li><li>2</li><li>下一页</li><li class="ant-pagination-options"><div class="ant-select ant-select-selector"><span>10 条/页</span></div></li></ul>
+          </div>
+
+          <!-- 设备管理 -->
+          <div id="content-device" class="page-content hidden">
+            <div class="toolbar">
+              <input class="ant-input" placeholder="搜索设备名称/编码" style="width:240px">
+              <button class="ant-btn ant-btn-primary" id="btn-add-device">+ 新增</button>
+            </div>
+            <div class="ant-table-wrapper">
+              <table class="ant-table">
+                <thead class="ant-table-thead"><tr>
+                  <th role="columnheader">设备名称</th><th role="columnheader">编码</th><th role="columnheader">类型</th><th role="columnheader">状态</th><th role="columnheader">所属场站</th><th role="columnheader">操作</th>
+                </tr></thead>
+                <tbody class="ant-table-tbody">
+                  <tr class="ant-table-row" role="row"><td>PILE-001充电桩</td><td>PILE-001</td><td>充电桩</td><td><span class="ant-tag ant-tag-green">在线</span><span class="ant-badge"></span></td><td>北京朝阳站</td><td><button class="ant-btn">编辑</button> <a href="#">详情</a></td></tr>
+                  <tr class="ant-table-row" role="row"><td>PILE-002充电桩</td><td>PILE-002</td><td>充电桩</td><td><span class="ant-tag ant-tag-green">在线</span></td><td>北京海淀站</td><td><button class="ant-btn">编辑</button> <a href="#">详情</a></td></tr>
+                  <tr class="ant-table-row" role="row"><td>ESS-001储能柜</td><td>ESS-001</td><td>储能设备</td><td><span class="ant-tag ant-tag-red">离线</span></td><td>上海浦东站</td><td><button class="ant-btn">编辑</button> <a href="#">详情</a></td></tr>
+                  <tr class="ant-table-row" role="row"><td>PV-001光伏板</td><td>PV-001</td><td>光伏设备</td><td><span class="ant-tag ant-tag-green">在线</span></td><td>深圳南山站</td><td><button class="ant-btn">编辑</button> <a href="#">详情</a></td></tr>
+                  <tr class="ant-table-row" role="row"><td>PILE-003充电桩</td><td>PILE-003</td><td>充电桩</td><td><span class="ant-tag ant-tag-red">故障</span></td><td>广州天河站</td><td><button class="ant-btn">编辑</button> <a href="#">详情</a></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <ul class="ant-pagination"><li>上一页</li><li class="active">1</li><li>2</li><li>下一页</li><li class="ant-pagination-options"><div class="ant-select ant-select-selector"><span>10 条/页</span></div></li></ul>
+          </div>
+
+          <!-- 权限管理 -->
+          <div id="content-permission" class="page-content hidden">
+            <div class="ant-tabs">
+              <div class="ant-tabs-nav">
+                <div class="ant-tabs-tab active" data-tab="roles">角色管理</div>
+                <div class="ant-tabs-tab" data-tab="perms">权限配置</div>
+              </div>
+            </div>
+            <div id="tab-roles">
+              <div class="toolbar"><button class="ant-btn ant-btn-primary" id="btn-add-role">+ 新增</button></div>
+              <div class="ant-table-wrapper">
+                <table class="ant-table">
+                  <thead class="ant-table-thead"><tr>
+                    <th role="columnheader">角色编码</th><th role="columnheader">角色名称</th><th role="columnheader">描述</th><th role="columnheader">状态</th><th role="columnheader">操作</th>
+                  </tr></thead>
+                  <tbody class="ant-table-tbody">
+                    <tr class="ant-table-row" role="row"><td>SUPER_ADMIN</td><td>超级管理员</td><td>系统最高权限</td><td><span class="ant-tag ant-tag-green">启用</span></td><td><button class="ant-btn">编辑</button></td></tr>
+                    <tr class="ant-table-row" role="row"><td>ADMIN</td><td>管理员</td><td>管理权限</td><td><span class="ant-tag ant-tag-green">启用</span></td><td><button class="ant-btn">编辑</button></td></tr>
+                    <tr class="ant-table-row" role="row"><td>OPERATOR</td><td>运维人员</td><td>运维操作权限</td><td><span class="ant-tag ant-tag-green">启用</span></td><td><button class="ant-btn">编辑</button></td></tr>
+                    <tr class="ant-table-row" role="row"><td>VIEWER</td><td>访客</td><td>只读权限</td><td><span class="ant-tag ant-tag-green">启用</span></td><td><button class="ant-btn">编辑</button></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div id="tab-perms" class="hidden">
+              <ul class="ant-tree">
+                <li class="ant-tree-treenode"><span class="ant-tree-switcher">▶</span><span class="ant-tree-title">场站管理</span></li>
+                <li class="ant-tree-treenode" style="padding-left:24px"><span class="ant-tree-switcher"></span><span class="ant-tree-title">查看场站</span></li>
+                <li class="ant-tree-treenode"><span class="ant-tree-switcher">▶</span><span class="ant-tree-title">设备管理</span></li>
+              </ul>
+            </div>
+            <ul class="ant-pagination"><li>上一页</li><li class="active">1</li><li>下一页</li><li class="ant-pagination-options"><div class="ant-select ant-select-selector"><span>10 条/页</span></div></li></ul>
+          </div>
+
+          <!-- 工单管理 -->
+          <div id="content-workorder" class="page-content hidden">
+            <div class="toolbar">
+              <input class="ant-input" placeholder="搜索工单编号/标题" style="width:240px">
+              <div class="ant-select" style="min-width:100px;">全部状态</div>
+              <button class="ant-btn ant-btn-primary" id="btn-add-workorder">+ 创建工单</button>
+            </div>
+            <div class="ant-table-wrapper">
+              <table class="ant-table">
+                <thead class="ant-table-thead"><tr>
+                  <th role="columnheader">工单编号</th><th role="columnheader">标题</th><th role="columnheader">优先级</th><th role="columnheader">状态</th><th role="columnheader">创建时间</th><th role="columnheader">操作</th>
+                </tr></thead>
+                <tbody class="ant-table-tbody">
+                  <tr class="ant-table-row" role="row"><td>WO20260306001</td><td>充电桩故障维修</td><td><span class="ant-tag ant-tag-red">高</span></td><td><span class="ant-tag ant-tag-orange">待处理</span></td><td>2026-03-06 10:00</td><td><button class="ant-btn">查看</button> <a href="#">详情</a></td></tr>
+                  <tr class="ant-table-row" role="row"><td>WO20260306002</td><td>储能设备巡检</td><td><span class="ant-tag ant-tag-blue">中</span></td><td><span class="ant-tag ant-tag-blue">处理中</span></td><td>2026-03-06 09:00</td><td><button class="ant-btn">查看</button> <a href="#">详情</a></td></tr>
+                  <tr class="ant-table-row" role="row"><td>WO20260306003</td><td>光伏设备清洁</td><td><span class="ant-tag ant-tag-default">低</span></td><td><span class="ant-tag ant-tag-green">已完成</span></td><td>2026-03-05 14:00</td><td><button class="ant-btn">查看</button> <a href="#">详情</a></td></tr>
+                  <tr class="ant-table-row" role="row"><td>WO20260306004</td><td>逆变器更换</td><td><span class="ant-tag ant-tag-red">高</span></td><td><span class="ant-tag ant-tag-blue">处理中</span></td><td>2026-03-06 08:30</td><td><button class="ant-btn">查看</button> <a href="#">详情</a></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <ul class="ant-pagination"><li>上一页</li><li class="active">1</li><li>2</li><li>下一页</li><li class="ant-pagination-options"><div class="ant-select ant-select-selector"><span>10 条/页</span></div></li></ul>
+          </div>
+
+          <!-- 用户管理 -->
+          <div id="content-user" class="page-content hidden">
+            <div class="toolbar">
+              <input class="ant-input" placeholder="搜索用户名/邮箱" style="width:240px">
+              <button class="ant-btn ant-btn-primary" id="btn-add-user">+ 新增</button>
+            </div>
+            <div class="ant-table-wrapper">
+              <table class="ant-table">
+                <thead class="ant-table-thead"><tr>
+                  <th role="columnheader">用户名</th><th role="columnheader">姓名</th><th role="columnheader">邮箱</th><th role="columnheader">角色</th><th role="columnheader">状态</th><th role="columnheader">操作</th>
+                </tr></thead>
+                <tbody class="ant-table-tbody">
+                  <tr class="ant-table-row" role="row"><td>admin</td><td>系统管理员</td><td>admin@jgsy.com</td><td><span class="ant-tag ant-tag-blue">SUPER_ADMIN</span></td><td><span class="ant-tag ant-tag-green">启用</span></td><td><button class="ant-btn">编辑</button> <button class="ant-btn">删除</button> <a href="#" role="button">详情</a></td></tr>
+                  <tr class="ant-table-row" role="row"><td>operator</td><td>运维人员</td><td>operator@jgsy.com</td><td><span class="ant-tag ant-tag-blue">OPERATOR</span></td><td><span class="ant-tag ant-tag-green">启用</span></td><td><button class="ant-btn">编辑</button> <button class="ant-btn">删除</button> <a href="#" role="button">详情</a></td></tr>
+                  <tr class="ant-table-row" role="row"><td>viewer</td><td>访客</td><td>viewer@jgsy.com</td><td><span class="ant-tag ant-tag-default">VIEWER</span></td><td><span class="ant-tag ant-tag-red">禁用</span></td><td><button class="ant-btn">编辑</button> <button class="ant-btn">删除</button> <a href="#" role="button">详情</a></td></tr>
+                  <tr class="ant-table-row" role="row"><td>manager</td><td>站长</td><td>manager@jgsy.com</td><td><span class="ant-tag ant-tag-blue">MANAGER</span></td><td><span class="ant-tag ant-tag-green">启用</span></td><td><button class="ant-btn">编辑</button> <button class="ant-btn">删除</button> <a href="#" role="button">详情</a></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <ul class="ant-pagination"><li>上一页</li><li class="active">1</li><li>下一页</li><li class="ant-pagination-options"><div class="ant-select ant-select-selector"><span>10 条/页</span></div></li></ul>
+          </div>
+
+          <!-- 能源服务 -->
+          <div id="content-energy" class="page-content hidden">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+              <div class="ant-segmented"><div class="ant-segmented-item active">今日</div><div class="ant-segmented-item">本周</div><div class="ant-segmented-item">本月</div></div>
+              <div class="ant-picker">2026-03-06</div>
+              <button class="ant-btn" id="btn-refresh-energy">刷新</button>
+            </div>
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">总功率</div><div class="ant-statistic-content">1250.5 kW</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">总电量</div><div class="ant-statistic-content">8960.3 kWh</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">充电功率</div><div class="ant-statistic-content">450.2 kW</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">放电功率</div><div class="ant-statistic-content">320.8 kW</div></div></div>
+            </div>
+            <div class="ant-card"><div class="chart-container"><canvas id="energy-chart"></canvas></div></div>
+          </div>
+
+          <!-- 充电监控 -->
+          <div id="content-charging-monitor" class="page-content hidden">
+            <div class="ant-tabs">
+              <div class="ant-tabs-nav">
+                <div class="ant-tabs-tab active" data-tab="monitor-overview">总览</div>
+                <div class="ant-tabs-tab" data-tab="monitor-detail">明细</div>
+              </div>
+            </div>
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">在线设备</div><div class="ant-statistic-content">85</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">充电中</div><div class="ant-statistic-content">42</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">空闲中</div><div class="ant-statistic-content">43</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">故障</div><div class="ant-statistic-content">3</div></div></div>
+            </div>
+            <div class="ant-card"><div class="chart-container"><canvas id="charging-chart"></canvas></div></div>
+            <button class="ant-btn" style="margin-top:8px;">导出</button>
+          </div>
+
+          <!-- 充电订单 -->
+          <div id="content-charging-orders" class="page-content hidden">
+            <div class="toolbar">
+              <input class="ant-input" placeholder="搜索订单号/设备编码" style="width:240px">
+              <button class="ant-btn" id="btn-export-orders">导出</button>
+              <button class="ant-btn" id="btn-refresh-orders">刷新</button>
+            </div>
+            <div class="ant-table-wrapper">
+              <table class="ant-table">
+                <thead class="ant-table-thead"><tr>
+                  <th role="columnheader">订单号</th><th role="columnheader">设备编码</th><th role="columnheader">用户</th><th role="columnheader">充电量</th><th role="columnheader">金额</th><th role="columnheader">状态</th><th role="columnheader">操作</th>
+                </tr></thead>
+                <tbody class="ant-table-tbody">
+                  <tr class="ant-table-row" role="row"><td>CD20260306001</td><td>PILE-001</td><td>张三</td><td>45.5 kWh</td><td>¥68.25</td><td><span class="ant-tag ant-tag-green">已完成</span></td><td><button class="ant-btn btn-order-detail">查看</button> <a href="#" role="button">详情</a></td></tr>
+                  <tr class="ant-table-row" role="row"><td>CD20260306002</td><td>PILE-002</td><td>李四</td><td>32.8 kWh</td><td>¥49.20</td><td><span class="ant-tag ant-tag-blue">充电中</span></td><td><button class="ant-btn btn-order-detail">查看</button> <a href="#" role="button">详情</a></td></tr>
+                  <tr class="ant-table-row" role="row"><td>CD20260306003</td><td>PILE-003</td><td>王五</td><td>58.2 kWh</td><td>¥87.30</td><td><span class="ant-tag ant-tag-green">已完成</span></td><td><button class="ant-btn btn-order-detail">查看</button> <a href="#" role="button">详情</a></td></tr>
+                  <tr class="ant-table-row" role="row"><td>CD20260305001</td><td>PILE-001</td><td>赵六</td><td>38.9 kWh</td><td>¥58.35</td><td><span class="ant-tag ant-tag-green">已完成</span></td><td><button class="ant-btn btn-order-detail">查看</button> <a href="#" role="button">详情</a></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <ul class="ant-pagination"><li>上一页</li><li class="active">1</li><li>2</li><li>下一页</li><li class="ant-pagination-options"><div class="ant-select ant-select-selector"><span>10 条/页</span></div></li></ul>
+          </div>
+
+          <!-- 分析中心 -->
+          <div id="content-analytics" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">异常检测数</div><div class="ant-statistic-content">23</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">事件追踪</div><div class="ant-statistic-content">157</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">漏斗转化率</div><div class="ant-statistic-content">68.5%</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">活跃用户</div><div class="ant-statistic-content">3241</div></div></div>
+            </div>
+            <div class="toolbar">
+              <input class="ant-input" placeholder="自然语言查询..." style="width:360px">
+              <button class="ant-btn ant-btn-primary" id="btn-analytics-query">查询</button>
+              <button class="ant-btn" id="btn-analytics-export">导出</button>
+            </div>
+            <div class="ant-table-wrapper">
+              <table class="ant-table">
+                <thead class="ant-table-thead"><tr><th role="columnheader">分析类型</th><th role="columnheader">指标</th><th role="columnheader">趋势</th><th role="columnheader">更新时间</th><th role="columnheader">操作</th></tr></thead>
+                <tbody class="ant-table-tbody">
+                  <tr class="ant-table-row" role="row"><td>异常检测</td><td>PILE-001 功率异常</td><td><span class="ant-tag ant-tag-red">↑ 上升</span></td><td>2026-03-06 10:00</td><td><button class="ant-btn">查看</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>事件追踪</td><td>用户行为路径</td><td><span class="ant-tag ant-tag-green">稳定</span></td><td>2026-03-06 09:30</td><td><button class="ant-btn">查看</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>漏斗分析</td><td>充电流程转化</td><td><span class="ant-tag ant-tag-blue">↓ 下降</span></td><td>2026-03-06 09:00</td><td><button class="ant-btn">查看</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>收益分析</td><td>月度收益趋势</td><td><span class="ant-tag ant-tag-green">↑ 上升</span></td><td>2026-03-05 18:00</td><td><button class="ant-btn">查看</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="ant-card" style="margin-top:16px;"><div class="chart-container"><canvas id="analytics-chart"></canvas></div></div>
+          </div>
+
+          <!-- AI 智能 -->
+          <div id="content-ai" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">AI模型数</div><div class="ant-statistic-content">12</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">运行中任务</div><div class="ant-statistic-content">5</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">预测准确率</div><div class="ant-statistic-content">94.2%</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">今日推断次数</div><div class="ant-statistic-content">18456</div></div></div>
+            </div>
+            <div class="toolbar">
+              <input class="ant-input" placeholder="搜索模型名称" style="width:240px">
+              <button class="ant-btn ant-btn-primary" id="btn-add-ai-model">+ 新增模型</button>
+            </div>
+            <div class="ant-table-wrapper">
+              <table class="ant-table">
+                <thead class="ant-table-thead"><tr><th role="columnheader">模型名称</th><th role="columnheader">类型</th><th role="columnheader">版本</th><th role="columnheader">状态</th><th role="columnheader">准确率</th><th role="columnheader">操作</th></tr></thead>
+                <tbody class="ant-table-tbody">
+                  <tr class="ant-table-row" role="row"><td>故障预测模型</td><td>预测</td><td>v2.1</td><td><span class="ant-tag ant-tag-green">运行中</span></td><td>94.2%</td><td><button class="ant-btn">配置</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>负荷预测模型</td><td>预测</td><td>v1.8</td><td><span class="ant-tag ant-tag-green">运行中</span></td><td>92.1%</td><td><button class="ant-btn">配置</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>电价预测模型</td><td>预测</td><td>v1.5</td><td><span class="ant-tag ant-tag-orange">训练中</span></td><td>88.7%</td><td><button class="ant-btn">配置</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>碳排放计算</td><td>计算</td><td>v3.0</td><td><span class="ant-tag ant-tag-green">运行中</span></td><td>99.0%</td><td><button class="ant-btn">配置</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 区块链 -->
+          <div id="content-blockchain" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">智能合约数</div><div class="ant-statistic-content">8</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">今日交易量</div><div class="ant-statistic-content">1284</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">碳积分总量</div><div class="ant-statistic-content">45678</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">钱包余额</div><div class="ant-statistic-content">128456</div></div></div>
+            </div>
+            <div class="toolbar">
+              <input class="ant-input" placeholder="搜索交易哈希/地址" style="width:280px">
+              <button class="ant-btn" id="btn-blockchain-export">导出</button>
+            </div>
+            <div class="ant-table-wrapper">
+              <table class="ant-table">
+                <thead class="ant-table-thead"><tr><th role="columnheader">交易哈希</th><th role="columnheader">类型</th><th role="columnheader">金额</th><th role="columnheader">状态</th><th role="columnheader">时间</th><th role="columnheader">操作</th></tr></thead>
+                <tbody class="ant-table-tbody">
+                  <tr class="ant-table-row" role="row"><td>0xA1B2C3F8E9</td><td>碳积分转移</td><td>100 tCO2</td><td><span class="ant-tag ant-tag-green">已确认</span></td><td>2026-03-06 10:00</td><td><button class="ant-btn">详情</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>0xD4E5F6A1B2</td><td>合约执行</td><td>5200</td><td><span class="ant-tag ant-tag-green">已确认</span></td><td>2026-03-06 09:45</td><td><button class="ant-btn">详情</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>0xG7H8I9C3D4</td><td>证书签发</td><td>-</td><td><span class="ant-tag ant-tag-orange">待确认</span></td><td>2026-03-06 09:20</td><td><button class="ant-btn">详情</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>0xJ1K2L3E5F6</td><td>碳交易</td><td>250 tCO2</td><td><span class="ant-tag ant-tag-green">已确认</span></td><td>2026-03-06 09:00</td><td><button class="ant-btn">详情</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <ul class="ant-pagination"><li>上一页</li><li class="active">1</li><li>2</li><li>下一页</li><li class="ant-pagination-options"><div class="ant-select ant-select-selector"><span>10 条/页</span></div></li></ul>
+          </div>
+
+          <!-- 规则引擎 -->
+          <div id="content-ruleengine" class="page-content hidden">
+            <div class="toolbar">
+              <input class="ant-input" placeholder="搜索规则链名称" style="width:240px">
+              <button class="ant-btn ant-btn-primary" id="btn-add-rule">+ 新增规则链</button>
+            </div>
+            <div class="ant-table-wrapper">
+              <table class="ant-table">
+                <thead class="ant-table-thead"><tr><th role="columnheader">规则链名称</th><th role="columnheader">类型</th><th role="columnheader">节点数</th><th role="columnheader">状态</th><th role="columnheader">触发次数</th><th role="columnheader">操作</th></tr></thead>
+                <tbody class="ant-table-tbody">
+                  <tr class="ant-table-row" role="row"><td>设备告警处理链</td><td>告警</td><td>5</td><td><span class="ant-tag ant-tag-green">启用</span></td><td>1256</td><td><button class="ant-btn">编辑</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>充电订单处理链</td><td>业务</td><td>8</td><td><span class="ant-tag ant-tag-green">启用</span></td><td>8934</td><td><button class="ant-btn">编辑</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>能源调度决策链</td><td>调度</td><td>12</td><td><span class="ant-tag ant-tag-orange">停用</span></td><td>456</td><td><button class="ant-btn">编辑</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>碳交易触发链</td><td>交易</td><td>6</td><td><span class="ant-tag ant-tag-green">启用</span></td><td>234</td><td><button class="ant-btn">编辑</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <ul class="ant-pagination"><li>上一页</li><li class="active">1</li><li>下一页</li><li class="ant-pagination-options"><div class="ant-select ant-select-selector"><span>10 条/页</span></div></li></ul>
+          </div>
+
+          <!-- 结算管理 -->
+          <div id="content-settlement" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">本月结算单数</div><div class="ant-statistic-content">286</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">本月结算金额</div><div class="ant-statistic-content">184520</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">待结算</div><div class="ant-statistic-content">12</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">已结算</div><div class="ant-statistic-content">274</div></div></div>
+            </div>
+            <div class="toolbar">
+              <input class="ant-input" placeholder="搜索结算单号/场站" style="width:240px">
+              <button class="ant-btn" id="btn-settlement-export">导出</button>
+            </div>
+            <div class="ant-table-wrapper">
+              <table class="ant-table">
+                <thead class="ant-table-thead"><tr><th role="columnheader">结算单号</th><th role="columnheader">场站</th><th role="columnheader">结算周期</th><th role="columnheader">金额</th><th role="columnheader">状态</th><th role="columnheader">操作</th></tr></thead>
+                <tbody class="ant-table-tbody">
+                  <tr class="ant-table-row" role="row"><td>ST20260306001</td><td>北京朝阳站</td><td>2026-03</td><td>12456</td><td><span class="ant-tag ant-tag-green">已结算</span></td><td><button class="ant-btn btn-settlement-detail">详情</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>ST20260306002</td><td>上海浦东站</td><td>2026-03</td><td>8920</td><td><span class="ant-tag ant-tag-orange">待结算</span></td><td><button class="ant-btn btn-settlement-detail">详情</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>ST20260306003</td><td>深圳南山站</td><td>2026-03</td><td>15680</td><td><span class="ant-tag ant-tag-green">已结算</span></td><td><button class="ant-btn btn-settlement-detail">详情</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>ST20260306004</td><td>广州天河站</td><td>2026-03</td><td>9240</td><td><span class="ant-tag ant-tag-red">异常</span></td><td><button class="ant-btn btn-settlement-detail">详情</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <ul class="ant-pagination"><li>上一页</li><li class="active">1</li><li>2</li><li>下一页</li><li class="ant-pagination-options"><div class="ant-select ant-select-selector"><span>10 条/页</span></div></li></ul>
+          </div>
+
+          <!-- 模拟器 -->
+          <div id="content-simulator" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">模拟实例数</div><div class="ant-statistic-content">24</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">运行中</div><div class="ant-statistic-content">18</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">已停止</div><div class="ant-statistic-content">6</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">数据上报/s</div><div class="ant-statistic-content">1240</div></div></div>
+            </div>
+            <div class="toolbar">
+              <input class="ant-input" placeholder="搜索模拟器名称" style="width:240px">
+              <button class="ant-btn ant-btn-primary" id="btn-add-simulator">+ 新增模拟器</button>
+            </div>
+            <div class="ant-table-wrapper">
+              <table class="ant-table">
+                <thead class="ant-table-thead"><tr><th role="columnheader">模拟器名称</th><th role="columnheader">设备类型</th><th role="columnheader">实例数</th><th role="columnheader">状态</th><th role="columnheader">数据频率</th><th role="columnheader">操作</th></tr></thead>
+                <tbody class="ant-table-tbody">
+                  <tr class="ant-table-row" role="row"><td>充电桩模拟器</td><td>充电桩</td><td>10</td><td><span class="ant-tag ant-tag-green">运行中</span></td><td>1s</td><td><button class="ant-btn">配置</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>储能BMS模拟器</td><td>储能</td><td>5</td><td><span class="ant-tag ant-tag-green">运行中</span></td><td>5s</td><td><button class="ant-btn">配置</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>光伏逆变器模拟器</td><td>光伏</td><td>8</td><td><span class="ant-tag ant-tag-orange">已停止</span></td><td>10s</td><td><button class="ant-btn ant-btn-primary">启动</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>智能电表模拟器</td><td>电表</td><td>1</td><td><span class="ant-tag ant-tag-orange">已停止</span></td><td>30s</td><td><button class="ant-btn ant-btn-primary">启动</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 数字孪生 -->
+          <div id="content-digital-twin" class="page-content hidden">
+            <div class="toolbar">
+              <input class="ant-input" placeholder="搜索孪生体名称" style="width:240px">
+              <div class="ant-select">全部类型</div>
+              <button class="ant-btn ant-btn-primary" id="btn-add-digital-twin">+ 新建孪生体</button>
+            </div>
+            <div class="ant-table-wrapper">
+              <table class="ant-table">
+                <thead class="ant-table-thead"><tr><th role="columnheader">孪生体名称</th><th role="columnheader">类型</th><th role="columnheader">数据点数</th><th role="columnheader">状态</th><th role="columnheader">最近同步</th><th role="columnheader">操作</th></tr></thead>
+                <tbody class="ant-table-tbody">
+                  <tr class="ant-table-row" role="row"><td>北京朝阳站孪生体</td><td>场站</td><td>256</td><td><span class="ant-tag ant-tag-green">同步中</span></td><td>2026-03-06 10:00</td><td><button class="ant-btn">查看</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>PILE-001孪生体</td><td>设备</td><td>48</td><td><span class="ant-tag ant-tag-green">同步中</span></td><td>2026-03-06 10:00</td><td><button class="ant-btn">查看</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>储能系统孪生体</td><td>系统</td><td>128</td><td><span class="ant-tag ant-tag-orange">离线</span></td><td>2026-03-05 18:00</td><td><button class="ant-btn">查看</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>微电网孪生体</td><td>系统</td><td>320</td><td><span class="ant-tag ant-tag-green">同步中</span></td><td>2026-03-06 09:55</td><td><button class="ant-btn">查看</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <ul class="ant-pagination"><li>上一页</li><li class="active">1</li><li>下一页</li><li class="ant-pagination-options"><div class="ant-select ant-select-selector"><span>10 条/页</span></div></li></ul>
+          </div>
+
+          <!-- 租户管理 -->
+          <div id="content-tenant" class="page-content hidden">
+            <div class="toolbar">
+              <input class="ant-input" placeholder="搜索租户名称/编码" style="width:240px">
+              <button class="ant-btn ant-btn-primary" id="btn-add-tenant">+ 新增租户</button>
+            </div>
+            <div class="ant-table-wrapper">
+              <table class="ant-table">
+                <thead class="ant-table-thead"><tr><th role="columnheader">租户名称</th><th role="columnheader">编码</th><th role="columnheader">套餐</th><th role="columnheader">状态</th><th role="columnheader">到期时间</th><th role="columnheader">操作</th></tr></thead>
+                <tbody class="ant-table-tbody">
+                  <tr class="ant-table-row" role="row"><td>北京能源集团</td><td>BJNY</td><td>企业版</td><td><span class="ant-tag ant-tag-green">正常</span></td><td>2027-12-31</td><td><button class="ant-btn">编辑</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>上海电力公司</td><td>SHDL</td><td>专业版</td><td><span class="ant-tag ant-tag-green">正常</span></td><td>2026-12-31</td><td><button class="ant-btn">编辑</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>广东充电运营</td><td>GDCD</td><td>基础版</td><td><span class="ant-tag ant-tag-orange">即将到期</span></td><td>2026-04-30</td><td><button class="ant-btn">编辑</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>测试租户</td><td>TEST</td><td>试用</td><td><span class="ant-tag ant-tag-red">已暂停</span></td><td>2026-03-31</td><td><button class="ant-btn">编辑</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <ul class="ant-pagination"><li>上一页</li><li class="active">1</li><li>下一页</li><li class="ant-pagination-options"><div class="ant-select ant-select-selector"><span>10 条/页</span></div></li></ul>
+          </div>
+
+          <!-- 系统配置 -->
+          <div id="content-system" class="page-content hidden">
+            <div class="ant-tabs">
+              <div class="ant-tabs-nav">
+                <div class="ant-tabs-tab active" data-tab="sys-basic">基本设置</div>
+                <div class="ant-tabs-tab" data-tab="sys-security">安全设置</div>
+                <div class="ant-tabs-tab" data-tab="sys-email">邮件设置</div>
+                <div class="ant-tabs-tab" data-tab="sys-storage">存储设置</div>
+              </div>
+            </div>
+            <div class="ant-card">
+              <div class="ant-form-item"><label class="ant-form-item-label">系统名称</label><input class="ant-input" id="sys-name" value="JGSY AGI 管理系统"></div>
+              <div class="ant-form-item"><label class="ant-form-item-label">系统版本</label><input class="ant-input" id="sys-version" value="v2.6.0" readonly></div>
+              <div class="ant-form-item"><label class="ant-form-item-label">联系邮箱</label><input class="ant-input" id="sys-email-input" value="admin@jgsy.com"></div>
+              <div class="ant-form-item"><label class="ant-form-item-label">维护模式</label><div class="ant-select" style="min-width:80px">关闭</div></div>
+              <button class="ant-btn ant-btn-primary" id="btn-save-system">保存配置</button>
+            </div>
+          </div>
+
+          <!-- 系统监控 -->
+          <div id="content-monitor" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">服务总数</div><div class="ant-statistic-content">31</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">健康服务</div><div class="ant-statistic-content">29</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">告警服务</div><div class="ant-statistic-content">2</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">平均响应时间</div><div class="ant-statistic-content">45ms</div></div></div>
+            </div>
+            <div class="toolbar">
+              <button class="ant-btn" id="btn-refresh-monitor">刷新</button>
+              <button class="ant-btn" id="btn-monitor-export">导出报告</button>
+            </div>
+            <div class="ant-table-wrapper">
+              <table class="ant-table">
+                <thead class="ant-table-thead"><tr><th role="columnheader">服务名称</th><th role="columnheader">状态</th><th role="columnheader">响应时间</th><th role="columnheader">CPU</th><th role="columnheader">内存</th><th role="columnheader">最近检查</th></tr></thead>
+                <tbody class="ant-table-tbody">
+                  <tr class="ant-table-row" role="row"><td>account-service</td><td><span class="ant-tag ant-tag-green">健康</span></td><td>23ms</td><td>12%</td><td>256MB</td><td>2026-03-06 10:00</td></tr>
+                  <tr class="ant-table-row" role="row"><td>charging-service</td><td><span class="ant-tag ant-tag-green">健康</span></td><td>35ms</td><td>28%</td><td>512MB</td><td>2026-03-06 10:00</td></tr>
+                  <tr class="ant-table-row" role="row"><td>ruleengine-service</td><td><span class="ant-tag ant-tag-orange">告警</span></td><td>156ms</td><td>78%</td><td>1024MB</td><td>2026-03-06 10:00</td></tr>
+                  <tr class="ant-table-row" role="row"><td>device-service</td><td><span class="ant-tag ant-tag-green">健康</span></td><td>18ms</td><td>8%</td><td>192MB</td><td>2026-03-06 10:00</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 账户设置 -->
+          <div id="content-account" class="page-content hidden">
+            <div class="ant-tabs">
+              <div class="ant-tabs-nav">
+                <div class="ant-tabs-tab active" data-tab="acc-profile">个人信息</div>
+                <div class="ant-tabs-tab" data-tab="acc-security">安全设置</div>
+                <div class="ant-tabs-tab" data-tab="acc-notify">通知设置</div>
+              </div>
+            </div>
+            <div class="ant-card">
+              <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;">
+                <img alt="avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect fill='%231677ff' width='80' height='80' rx='40'/%3E%3C/svg%3E" id="acc-avatar" style="width:80px;height:80px;border-radius:50%;">
+                <button class="ant-btn" id="btn-change-avatar">更换头像</button>
+              </div>
+              <div class="ant-form-item"><label class="ant-form-item-label">用户名</label><input class="ant-input" value="admin" readonly></div>
+              <div class="ant-form-item"><label class="ant-form-item-label">姓名</label><input class="ant-input" id="acc-name" value="系统管理员"></div>
+              <div class="ant-form-item"><label class="ant-form-item-label">邮箱</label><input class="ant-input" id="acc-email" value="admin@jgsy.com"></div>
+              <div class="ant-form-item"><label class="ant-form-item-label">手机号</label><input class="ant-input" id="acc-phone" value="138****8888"></div>
+              <button class="ant-btn ant-btn-primary" id="btn-save-account">保存</button>
+            </div>
+          </div>
+
+          <!-- 消息中心 -->
+          <div id="content-message" class="page-content hidden">
+            <div class="toolbar">
+              <div class="ant-select">全部类型</div>
+              <button class="ant-btn" id="btn-mark-read">全部已读</button>
+            </div>
+            <div class="ant-table-wrapper">
+              <table class="ant-table">
+                <thead class="ant-table-thead"><tr><th role="columnheader">消息内容</th><th role="columnheader">类型</th><th role="columnheader">状态</th><th role="columnheader">时间</th><th role="columnheader">操作</th></tr></thead>
+                <tbody class="ant-table-tbody">
+                  <tr class="ant-table-row" role="row"><td>设备PILE-003发生故障告警</td><td><span class="ant-tag ant-tag-red">告警</span></td><td><span class="ant-tag ant-tag-blue">未读</span></td><td>2026-03-06 10:00</td><td><button class="ant-btn">查看</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>工单WO20260306001已处理</td><td><span class="ant-tag ant-tag-green">通知</span></td><td><span class="ant-tag ant-tag-default">已读</span></td><td>2026-03-06 09:30</td><td><button class="ant-btn">查看</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>结算单ST20260306002待审核</td><td><span class="ant-tag ant-tag-blue">审批</span></td><td><span class="ant-tag ant-tag-blue">未读</span></td><td>2026-03-06 09:00</td><td><button class="ant-btn">查看</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>系统维护通知：今晚22:00</td><td><span class="ant-tag ant-tag-orange">公告</span></td><td><span class="ant-tag ant-tag-default">已读</span></td><td>2026-03-05 16:00</td><td><button class="ant-btn">查看</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <ul class="ant-pagination"><li>上一页</li><li class="active">1</li><li>下一页</li><li class="ant-pagination-options"><div class="ant-select ant-select-selector"><span>10 条/页</span></div></li></ul>
+          </div>
+
+          <!-- 工作流 -->
+          <div id="content-workflow" class="page-content hidden">
+            <div class="toolbar">
+              <input class="ant-input" placeholder="搜索流程名称" style="width:240px">
+              <button class="ant-btn ant-btn-primary" id="btn-add-workflow">+ 新建流程</button>
+            </div>
+            <div class="ant-table-wrapper">
+              <table class="ant-table">
+                <thead class="ant-table-thead"><tr><th role="columnheader">流程名称</th><th role="columnheader">类型</th><th role="columnheader">状态</th><th role="columnheader">执行次数</th><th role="columnheader">最近执行</th><th role="columnheader">操作</th></tr></thead>
+                <tbody class="ant-table-tbody">
+                  <tr class="ant-table-row" role="row"><td>工单审批流程</td><td>审批</td><td><span class="ant-tag ant-tag-green">已发布</span></td><td>1245</td><td>2026-03-06 09:50</td><td><button class="ant-btn">编辑</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>充电退款流程</td><td>业务</td><td><span class="ant-tag ant-tag-green">已发布</span></td><td>356</td><td>2026-03-06 08:30</td><td><button class="ant-btn">编辑</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>设备维护流程</td><td>运维</td><td><span class="ant-tag ant-tag-orange">草稿</span></td><td>0</td><td>-</td><td><button class="ant-btn">编辑</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>结算审核流程</td><td>财务</td><td><span class="ant-tag ant-tag-green">已发布</span></td><td>86</td><td>2026-03-05 17:00</td><td><button class="ant-btn">编辑</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <ul class="ant-pagination"><li>上一页</li><li class="active">1</li><li>下一页</li><li class="ant-pagination-options"><div class="ant-select ant-select-selector"><span>10 条/页</span></div></li></ul>
+          </div>
+
+          <!-- 操作日志 -->
+          <div id="content-log" class="page-content hidden">
+            <div class="toolbar">
+              <input class="ant-input" placeholder="搜索操作人/内容" style="width:240px">
+              <div class="ant-select">全部操作</div>
+              <div class="ant-picker">2026-03-01 ~ 2026-03-06</div>
+              <button class="ant-btn" id="btn-log-export">导出</button>
+            </div>
+            <div class="ant-table-wrapper">
+              <table class="ant-table">
+                <thead class="ant-table-thead"><tr><th role="columnheader">操作人</th><th role="columnheader">操作类型</th><th role="columnheader">操作内容</th><th role="columnheader">IP地址</th><th role="columnheader">操作时间</th></tr></thead>
+                <tbody class="ant-table-tbody">
+                  <tr class="ant-table-row" role="row"><td>admin</td><td><span class="ant-tag ant-tag-blue">新增</span></td><td>新增场站 BJ003</td><td>192.168.1.1</td><td>2026-03-06 10:00</td></tr>
+                  <tr class="ant-table-row" role="row"><td>operator</td><td><span class="ant-tag ant-tag-orange">修改</span></td><td>修改设备 PILE-003 状态</td><td>192.168.1.2</td><td>2026-03-06 09:45</td></tr>
+                  <tr class="ant-table-row" role="row"><td>admin</td><td><span class="ant-tag ant-tag-red">删除</span></td><td>删除测试工单</td><td>192.168.1.1</td><td>2026-03-06 09:20</td></tr>
+                  <tr class="ant-table-row" role="row"><td>manager</td><td><span class="ant-tag ant-tag-blue">查看</span></td><td>查看结算报表</td><td>192.168.1.5</td><td>2026-03-06 09:00</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <ul class="ant-pagination"><li>上一页</li><li class="active">1</li><li>2</li><li>下一页</li><li class="ant-pagination-options"><div class="ant-select ant-select-selector"><span>10 条/页</span></div></li></ul>
+          </div>
+
+          <!-- 安全管理 -->
+          <div id="content-security" class="page-content hidden">
+            <div class="ant-tabs">
+              <div class="ant-tabs-nav">
+                <div class="ant-tabs-tab active" data-tab="sec-policy">密码策略</div>
+                <div class="ant-tabs-tab" data-tab="sec-mfa">多因素认证</div>
+                <div class="ant-tabs-tab" data-tab="sec-whitelist">IP白名单</div>
+              </div>
+            </div>
+            <div class="ant-card">
+              <div class="ant-form-item"><label class="ant-form-item-label">最短密码长度</label><input class="ant-input" id="sec-min-len" value="8"></div>
+              <div class="ant-form-item"><label class="ant-form-item-label">密码过期天数</label><input class="ant-input" id="sec-expire-days" value="90"></div>
+              <div class="ant-form-item"><label class="ant-form-item-label">登录失败上限</label><input class="ant-input" id="sec-max-fail" value="5"></div>
+              <div class="toolbar" style="margin-top:16px;">
+                <button class="ant-btn ant-btn-primary" id="btn-add-whitelist">+ 新增IP</button>
+              </div>
+              <div class="ant-table-wrapper">
+                <table class="ant-table">
+                  <thead class="ant-table-thead"><tr><th role="columnheader">IP地址</th><th role="columnheader">备注</th><th role="columnheader">状态</th><th role="columnheader">操作</th></tr></thead>
+                  <tbody class="ant-table-tbody">
+                    <tr class="ant-table-row" role="row"><td>192.168.1.0/24</td><td>内网段</td><td><span class="ant-tag ant-tag-green">启用</span></td><td><button class="ant-btn">删除</button></td></tr>
+                    <tr class="ant-table-row" role="row"><td>10.0.0.1</td><td>运维服务器</td><td><span class="ant-tag ant-tag-green">启用</span></td><td><button class="ant-btn">删除</button></td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <button class="ant-btn ant-btn-primary" id="btn-save-security" style="margin-top:16px;">保存策略</button>
+            </div>
+          </div>
+
+          <!-- 报表中心 -->
+          <div id="content-report" class="page-content hidden">
+            <div class="toolbar">
+              <input class="ant-input" placeholder="搜索报表名称" style="width:240px">
+              <div class="ant-select">全部类型</div>
+              <button class="ant-btn ant-btn-primary" id="btn-generate-report">生成报表</button>
+            </div>
+            <div class="ant-table-wrapper">
+              <table class="ant-table">
+                <thead class="ant-table-thead"><tr><th role="columnheader">报表名称</th><th role="columnheader">类型</th><th role="columnheader">生成时间</th><th role="columnheader">状态</th><th role="columnheader">操作</th></tr></thead>
+                <tbody class="ant-table-tbody">
+                  <tr class="ant-table-row" role="row"><td>2026年3月充电运营报表</td><td><span class="ant-tag ant-tag-blue">运营</span></td><td>2026-03-06 08:00</td><td><span class="ant-tag ant-tag-green">已生成</span></td><td><button class="ant-btn">下载</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>设备健康状态周报</td><td><span class="ant-tag ant-tag-orange">运维</span></td><td>2026-03-03 08:00</td><td><span class="ant-tag ant-tag-green">已生成</span></td><td><button class="ant-btn">下载</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>月度能源消耗分析</td><td><span class="ant-tag ant-tag-green">能源</span></td><td>2026-03-01 00:30</td><td><span class="ant-tag ant-tag-green">已生成</span></td><td><button class="ant-btn">下载</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>碳排放核查报告</td><td><span class="ant-tag ant-tag-default">碳排</span></td><td>-</td><td><span class="ant-tag ant-tag-orange">生成中</span></td><td><button class="ant-btn" disabled>等待</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <ul class="ant-pagination"><li>上一页</li><li class="active">1</li><li>下一页</li><li class="ant-pagination-options"><div class="ant-select ant-select-selector"><span>10 条/页</span></div></li></ul>
+          </div>
+
+          <!-- 数据接入 -->
+          <div id="content-ingestion" class="page-content hidden">
+            <div class="toolbar">
+              <input class="ant-input" placeholder="搜索任务名称" style="width:240px">
+              <button class="ant-btn ant-btn-primary" id="btn-add-ingestion">+ 新增任务</button>
+            </div>
+            <div class="ant-table-wrapper">
+              <table class="ant-table">
+                <thead class="ant-table-thead"><tr><th role="columnheader">任务名称</th><th role="columnheader">数据源</th><th role="columnheader">协议</th><th role="columnheader">状态</th><th role="columnheader">最近执行</th><th role="columnheader">操作</th></tr></thead>
+                <tbody class="ant-table-tbody">
+                  <tr class="ant-table-row" role="row"><td>充电桩OCPP接入</td><td>PILE-001</td><td>OCPP 1.6</td><td><span class="ant-tag ant-tag-green">运行中</span></td><td>2026-03-06 10:00</td><td><button class="ant-btn">配置</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>储能BMS接入</td><td>ESS-001</td><td>Modbus TCP</td><td><span class="ant-tag ant-tag-red">断开</span></td><td>2026-03-06 08:15</td><td><button class="ant-btn">配置</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>光伏逆变器接入</td><td>PV-001</td><td>IEC 61850</td><td><span class="ant-tag ant-tag-green">运行中</span></td><td>2026-03-06 10:00</td><td><button class="ant-btn">配置</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>电表数据接入</td><td>METER-001</td><td>DLT 645</td><td><span class="ant-tag ant-tag-orange">待连接</span></td><td>-</td><td><button class="ant-btn">配置</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <ul class="ant-pagination"><li>上一页</li><li class="active">1</li><li>下一页</li><li class="ant-pagination-options"><div class="ant-select ant-select-selector"><span>10 条/页</span></div></li></ul>
+          </div>
+
+          <!-- 充电桩管理 -->
+          <div id="content-charging-piles" class="page-content hidden">
+            <div class="toolbar">
+              <input class="ant-input" placeholder="搜索充电桩编号" style="width:240px">
+              <div class="ant-select">全部状态</div>
+              <button class="ant-btn ant-btn-primary" id="btn-add-pile">+ 新增充电桩</button>
+            </div>
+            <div class="ant-table-wrapper">
+              <table class="ant-table">
+                <thead class="ant-table-thead"><tr><th role="columnheader">桩编号</th><th role="columnheader">名称</th><th role="columnheader">型号</th><th role="columnheader">功率</th><th role="columnheader">状态</th><th role="columnheader">所属场站</th><th role="columnheader">操作</th></tr></thead>
+                <tbody class="ant-table-tbody">
+                  <tr class="ant-table-row" role="row"><td>PILE-001</td><td>朝阳1号桩</td><td>DC-150KW</td><td>150kW</td><td><span class="ant-tag ant-tag-blue">充电中</span></td><td>北京朝阳站</td><td><button class="ant-btn">详情</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>PILE-002</td><td>朝阳2号桩</td><td>DC-150KW</td><td>150kW</td><td><span class="ant-tag ant-tag-green">空闲</span></td><td>北京朝阳站</td><td><button class="ant-btn">详情</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>PILE-003</td><td>天河1号桩</td><td>AC-20KW</td><td>20kW</td><td><span class="ant-tag ant-tag-red">故障</span></td><td>广州天河站</td><td><button class="ant-btn">详情</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>PILE-004</td><td>南山1号桩</td><td>DC-120KW</td><td>120kW</td><td><span class="ant-tag ant-tag-green">空闲</span></td><td>深圳南山站</td><td><button class="ant-btn">详情</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <ul class="ant-pagination"><li>上一页</li><li class="active">1</li><li>2</li><li>下一页</li><li class="ant-pagination-options"><div class="ant-select ant-select-selector"><span>10 条/页</span></div></li></ul>
+          </div>
+
+          <!-- 充电定价 -->
+          <div id="content-charging-pricing" class="page-content hidden">
+            <div class="toolbar">
+              <input class="ant-input" placeholder="搜索策略名称" style="width:240px">
+              <button class="ant-btn ant-btn-primary" id="btn-add-pricing">+ 新增策略</button>
+            </div>
+            <div class="ant-table-wrapper">
+              <table class="ant-table">
+                <thead class="ant-table-thead"><tr><th role="columnheader">策略名称</th><th role="columnheader">定价类型</th><th role="columnheader">峰时电价</th><th role="columnheader">谷时电价</th><th role="columnheader">状态</th><th role="columnheader">操作</th></tr></thead>
+                <tbody class="ant-table-tbody">
+                  <tr class="ant-table-row" role="row"><td>北京标准价格</td><td>峰谷</td><td>1.80/kWh</td><td>0.65/kWh</td><td><span class="ant-tag ant-tag-green">启用</span></td><td><button class="ant-btn">编辑</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>上海标准价格</td><td>峰谷</td><td>1.95/kWh</td><td>0.72/kWh</td><td><span class="ant-tag ant-tag-green">启用</span></td><td><button class="ant-btn">编辑</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>全国均一价格</td><td>均一</td><td>1.50/kWh</td><td>1.50/kWh</td><td><span class="ant-tag ant-tag-orange">停用</span></td><td><button class="ant-btn">编辑</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 设备告警 -->
+          <div id="content-device-alerts" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">今日告警</div><div class="ant-statistic-content">15</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">严重告警</div><div class="ant-statistic-content">3</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">已处理</div><div class="ant-statistic-content">10</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">未处理</div><div class="ant-statistic-content">5</div></div></div>
+            </div>
+            <div class="toolbar">
+              <input class="ant-input" placeholder="搜索设备/告警内容" style="width:240px">
+              <div class="ant-select">全部级别</div>
+              <button class="ant-btn" id="btn-alerts-export">导出</button>
+            </div>
+            <div class="ant-table-wrapper">
+              <table class="ant-table">
+                <thead class="ant-table-thead"><tr><th role="columnheader">告警编号</th><th role="columnheader">设备</th><th role="columnheader">告警类型</th><th role="columnheader">级别</th><th role="columnheader">状态</th><th role="columnheader">时间</th><th role="columnheader">操作</th></tr></thead>
+                <tbody class="ant-table-tbody">
+                  <tr class="ant-table-row" role="row"><td>ALT20260306001</td><td>PILE-003</td><td>通信中断</td><td><span class="ant-tag ant-tag-red">严重</span></td><td><span class="ant-tag ant-tag-orange">未处理</span></td><td>2026-03-06 10:00</td><td><button class="ant-btn">处理</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>ALT20260306002</td><td>ESS-001</td><td>温度过高</td><td><span class="ant-tag ant-tag-orange">警告</span></td><td><span class="ant-tag ant-tag-orange">处理中</span></td><td>2026-03-06 09:30</td><td><button class="ant-btn">处理</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>ALT20260305001</td><td>PV-001</td><td>功率异常</td><td><span class="ant-tag ant-tag-blue">一般</span></td><td><span class="ant-tag ant-tag-green">已处理</span></td><td>2026-03-05 14:00</td><td><button class="ant-btn">查看</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>ALT20260305002</td><td>PILE-001</td><td>充电超时</td><td><span class="ant-tag ant-tag-blue">一般</span></td><td><span class="ant-tag ant-tag-green">已处理</span></td><td>2026-03-05 12:00</td><td><button class="ant-btn">查看</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <ul class="ant-pagination"><li>上一页</li><li class="active">1</li><li>2</li><li>下一页</li><li class="ant-pagination-options"><div class="ant-select ant-select-selector"><span>10 条/页</span></div></li></ul>
+          </div>
+
+          <!-- 虚拟电厂 (VPP) -->
+          <div id="content-energy-vpp" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">VPP总数</div><div class="ant-statistic-content">4</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">可调容量</div><div class="ant-statistic-content">2400 MWh</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">今日调度次数</div><div class="ant-statistic-content">12</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">今日收益</div><div class="ant-statistic-content">48500</div></div></div>
+            </div>
+            <div class="toolbar">
+              <input class="ant-input" placeholder="搜索虚拟电厂名称" style="width:240px">
+              <button class="ant-btn ant-btn-primary" id="btn-add-vpp">+ 新建VPP</button>
+            </div>
+            <div class="ant-table-wrapper">
+              <table class="ant-table">
+                <thead class="ant-table-thead"><tr><th role="columnheader">VPP名称</th><th role="columnheader">资源数</th><th role="columnheader">总容量</th><th role="columnheader">状态</th><th role="columnheader">调度次数</th><th role="columnheader">操作</th></tr></thead>
+                <tbody class="ant-table-tbody">
+                  <tr class="ant-table-row" role="row"><td>北京VPP集群</td><td>45</td><td>800 MWh</td><td><span class="ant-tag ant-tag-green">运行中</span></td><td>5</td><td><button class="ant-btn">调度</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>上海VPP集群</td><td>32</td><td>600 MWh</td><td><span class="ant-tag ant-tag-green">运行中</span></td><td>4</td><td><button class="ant-btn">调度</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>华南VPP集群</td><td>28</td><td>1000 MWh</td><td><span class="ant-tag ant-tag-orange">待机</span></td><td>3</td><td><button class="ant-btn">调度</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 财务统计 -->
+          <div id="content-finance" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">本月收入</div><div class="ant-statistic-content">284560</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">本月支出</div><div class="ant-statistic-content">45230</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">净利润</div><div class="ant-statistic-content">239330</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">待结算金额</div><div class="ant-statistic-content">32460</div></div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+              <div class="ant-segmented"><div class="ant-segmented-item active">本月</div><div class="ant-segmented-item">上月</div><div class="ant-segmented-item">本年</div></div>
+              <button class="ant-btn" id="btn-finance-export">导出财务报告</button>
+            </div>
+            <div class="ant-card"><div class="chart-container"><canvas id="finance-chart"></canvas></div></div>
+          </div>
+
+          <!-- 运维管理 -->
+          <div id="content-ops" class="page-content hidden">
+            <div class="toolbar">
+              <input class="ant-input" placeholder="搜索服务名称" style="width:240px">
+              <button class="ant-btn" id="btn-ops-refresh">刷新状态</button>
+            </div>
+            <div class="ant-table-wrapper">
+              <table class="ant-table">
+                <thead class="ant-table-thead"><tr><th role="columnheader">服务名称</th><th role="columnheader">状态</th><th role="columnheader">实例数</th><th role="columnheader">版本</th><th role="columnheader">操作</th></tr></thead>
+                <tbody class="ant-table-tbody">
+                  <tr class="ant-table-row" role="row"><td>account-service</td><td><span class="ant-tag ant-tag-green">运行中</span></td><td>2</td><td>v2.6.0</td><td><button class="ant-btn">重启</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>charging-service</td><td><span class="ant-tag ant-tag-green">运行中</span></td><td>3</td><td>v2.6.0</td><td><button class="ant-btn">重启</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>device-service</td><td><span class="ant-tag ant-tag-green">运行中</span></td><td>2</td><td>v2.6.0</td><td><button class="ant-btn">重启</button></td></tr>
+                  <tr class="ant-table-row" role="row"><td>ruleengine-service</td><td><span class="ant-tag ant-tag-orange">告警</span></td><td>1</td><td>v2.6.0</td><td><button class="ant-btn">重启</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Account Profile -->
+          <div id="content-account-profile" class="page-content hidden">
+            <div class="ant-card">
+              <div class="ant-form-item"><label>姓名</label><input class="ant-input" id="acc-profile-name" value="系统管理员"></div>
+              <div class="ant-form-item"><label>邮箱</label><input class="ant-input" id="acc-profile-email" value="admin@jgsy.com"></div>
+              <div class="ant-form-item"><label>手机号</label><input class="ant-input" id="acc-profile-phone" value="138****8888"></div>
+              <div class="ant-form-item"><label>部门</label><input class="ant-input" id="acc-profile-dept" value="信息技术部" readonly></div>
+              <button class="ant-btn ant-btn-primary" id="btn-save-profile">保存信息</button>
+            </div>
+          </div>
+
+          <!-- Account Invoice -->
+          <div id="content-account-invoice" class="page-content hidden">
+            <div class="toolbar"><input class="ant-input" placeholder="搜索发票" style="width:240px"><button class="ant-btn ant-btn-primary" id="btn-apply-invoice">申请发票</button></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>发票编号</th><th>金额</th><th>类型</th><th>状态</th><th>开票时间</th><th>操作</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>INV20260301001</td><td>¥2860.00</td><td>增值税专票</td><td><span class="ant-tag ant-tag-green">已开票</span></td><td>2026-03-01</td><td><button class="ant-btn">下载</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>INV20260201001</td><td>¥3120.00</td><td>增值税普票</td><td><span class="ant-tag ant-tag-green">已开票</span></td><td>2026-02-01</td><td><button class="ant-btn">下载</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>INV20260101001</td><td>¥1980.00</td><td>增值税专票</td><td><span class="ant-tag ant-tag-orange">处理中</span></td><td>2026-01-10</td><td><button class="ant-btn">查看</button></td></tr>
+              </tbody>
+            </table></div>
+            <ul class="ant-pagination"><li>上一页</li><li class="active">1</li><li>下一页</li><li class="ant-pagination-options"><div class="ant-select ant-select-selector"><span>10 条/页</span></div></li></ul>
+          </div>
+
+          <!-- Account Membership -->
+          <div id="content-account-membership" class="page-content hidden">
+            <div class="ant-card">
+              <div style="display:flex;gap:24px;align-items:center;margin-bottom:24px;">
+                <div class="ant-statistic"><div class="ant-statistic-title">当前套餐</div><div class="ant-statistic-content">企业版</div></div>
+                <div class="ant-statistic"><div class="ant-statistic-title">到期时间</div><div class="ant-statistic-content">2027-12-31</div></div>
+                <div class="ant-statistic"><div class="ant-statistic-title">剩余天数</div><div class="ant-statistic-content">666</div></div>
+              </div>
+              <button class="ant-btn ant-btn-primary" id="btn-upgrade-membership">升级套餐</button>
+              <button class="ant-btn" id="btn-renew-membership" style="margin-left:8px;">续费</button>
+            </div>
+          </div>
+
+          <!-- Account Points -->
+          <div id="content-account-points" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">当前积分</div><div class="ant-statistic-content">2850</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">本月获得</div><div class="ant-statistic-content">320</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">本月消耗</div><div class="ant-statistic-content">150</div></div></div>
+            </div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>记录类型</th><th>积分变化</th><th>说明</th><th>时间</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td><span class="ant-tag ant-tag-green">获得</span></td><td>+100</td><td>充电消费奖励</td><td>2026-03-06</td></tr>
+                <tr class="ant-table-row" role="row"><td><span class="ant-tag ant-tag-red">消耗</span></td><td>-50</td><td>兑换优惠券</td><td>2026-03-05</td></tr>
+                <tr class="ant-table-row" role="row"><td><span class="ant-tag ant-tag-green">获得</span></td><td>+220</td><td>签到奖励</td><td>2026-03-04</td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- Account Recharge -->
+          <div id="content-account-recharge" class="page-content hidden">
+            <div class="ant-card">
+              <div class="ant-form-item"><label>充值金额</label>
+                <div class="ant-radio-group" id="recharge-amount-group">
+                  <label class="ant-radio-button-wrapper active">¥100</label>
+                  <label class="ant-radio-button-wrapper">¥200</label>
+                  <label class="ant-radio-button-wrapper">¥500</label>
+                  <label class="ant-radio-button-wrapper">¥1000</label>
+                </div>
+              </div>
+              <div class="ant-form-item"><label>支付方式</label><div class="ant-select" id="recharge-pay-method">微信支付</div></div>
+              <button class="ant-btn ant-btn-primary" id="btn-recharge-submit">立即充值</button>
+            </div>
+          </div>
+
+          <!-- Agent Manage -->
+          <div id="content-agent-manage" class="page-content hidden">
+            <div class="toolbar"><input class="ant-input" placeholder="搜索代理商名称" style="width:240px"><button class="ant-btn ant-btn-primary" id="btn-add-agent">+ 新增代理商</button></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>代理商名称</th><th>联系人</th><th>电话</th><th>下级设备数</th><th>状态</th><th>操作</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>北京运营代理</td><td>张经理</td><td>138****0001</td><td>45</td><td><span class="ant-tag ant-tag-green">合作中</span></td><td><button class="ant-btn">编辑</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>上海区域代理</td><td>李经理</td><td>139****0002</td><td>32</td><td><span class="ant-tag ant-tag-green">合作中</span></td><td><button class="ant-btn">编辑</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>广东授权代理</td><td>王经理</td><td>137****0003</td><td>28</td><td><span class="ant-tag ant-tag-orange">审核中</span></td><td><button class="ant-btn">编辑</button></td></tr>
+              </tbody>
+            </table></div>
+            <ul class="ant-pagination"><li>上一页</li><li class="active">1</li><li>下一页</li><li class="ant-pagination-options"><div class="ant-select ant-select-selector"><span>10 条/页</span></div></li></ul>
+          </div>
+
+          <!-- Agent Commission -->
+          <div id="content-agent-commission" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">本月佣金</div><div class="ant-statistic-content">¥12460</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">累计佣金</div><div class="ant-statistic-content">¥186420</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">待结算</div><div class="ant-statistic-content">¥3200</div></div></div>
+            </div>
+            <div class="toolbar"><button class="ant-btn" id="btn-commission-export">导出记录</button></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>订单号</th><th>佣金金额</th><th>比例</th><th>状态</th><th>时间</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>CD20260306001</td><td>¥6.80</td><td>10%</td><td><span class="ant-tag ant-tag-green">已结算</span></td><td>2026-03-06</td></tr>
+                <tr class="ant-table-row" role="row"><td>CD20260306002</td><td>¥4.20</td><td>10%</td><td><span class="ant-tag ant-tag-orange">待结算</span></td><td>2026-03-06</td></tr>
+                <tr class="ant-table-row" role="row"><td>CD20260305001</td><td>¥8.50</td><td>10%</td><td><span class="ant-tag ant-tag-green">已结算</span></td><td>2026-03-05</td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- AI Dashboard -->
+          <div id="content-ai-dashboard" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">运行模型数</div><div class="ant-statistic-content">12</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">今日预测次数</div><div class="ant-statistic-content">4820</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">平均准确率</div><div class="ant-statistic-content">94.6%</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">AI告警</div><div class="ant-statistic-content">3</div></div></div>
+            </div>
+            <div class="ant-card"><div class="chart-container"><canvas id="ai-dashboard-chart"></canvas></div></div>
+          </div>
+
+          <!-- AI Models -->
+          <div id="content-ai-models" class="page-content hidden">
+            <div class="toolbar"><input class="ant-input" placeholder="搜索模型名称" style="width:240px"><button class="ant-btn ant-btn-primary" id="btn-deploy-model">+ 部署模型</button></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>模型名称</th><th>类型</th><th>版本</th><th>准确率</th><th>状态</th><th>操作</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>负荷预测模型-v3</td><td>时序预测</td><td>3.2.1</td><td>95.2%</td><td><span class="ant-tag ant-tag-green">运行中</span></td><td><button class="ant-btn">详情</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>故障诊断模型-v2</td><td>分类识别</td><td>2.1.0</td><td>92.8%</td><td><span class="ant-tag ant-tag-green">运行中</span></td><td><button class="ant-btn">详情</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>电价预测模型-v1</td><td>回归预测</td><td>1.5.3</td><td>88.4%</td><td><span class="ant-tag ant-tag-orange">训练中</span></td><td><button class="ant-btn">详情</button></td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- AI Training -->
+          <div id="content-ai-training" class="page-content hidden">
+            <div class="toolbar"><button class="ant-btn ant-btn-primary" id="btn-new-training">+ 新建训练任务</button></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>任务名称</th><th>模型</th><th>数据集</th><th>进度</th><th>状态</th><th>操作</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>Q1负荷数据训练</td><td>负荷预测</td><td>2026Q1数据集</td><td><div class="ant-progress-bar" style="width:100%"><div style="width:85%;background:#1677ff;height:6px;"></div></div></td><td><span class="ant-tag ant-tag-blue">训练中</span></td><td><button class="ant-btn">停止</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>故障诊断微调</td><td>故障诊断</td><td>历史告警数据</td><td><div class="ant-progress-bar"><div style="width:100%;background:#1677ff;height:6px;"></div></div></td><td><span class="ant-tag ant-tag-green">已完成</span></td><td><button class="ant-btn">部署</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>碳排预测训练</td><td>碳排模型</td><td>碳排历史数据</td><td><div class="ant-progress-bar"><div style="width:30%;background:#1677ff;height:6px;"></div></div></td><td><span class="ant-tag ant-tag-blue">排队中</span></td><td><button class="ant-btn">取消</button></td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- AI Prediction Load -->
+          <div id="content-ai-pred-load" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">今日预测负荷峰值</div><div class="ant-statistic-content">1280 MW</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">预测准确率</div><div class="ant-statistic-content">95.2%</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">预测时段</div><div class="ant-statistic-content">24小时</div></div></div>
+            </div>
+            <div class="ant-card"><div class="chart-container"><canvas id="load-prediction-chart"></canvas></div></div>
+          </div>
+
+          <!-- AI Prediction Power -->
+          <div id="content-ai-pred-power" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">明日光伏预测</div><div class="ant-statistic-content">4820 kWh</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">预测准确率</div><div class="ant-statistic-content">91.5%</div></div></div>
+            </div>
+            <div class="ant-card"><div class="chart-container"><canvas id="power-prediction-chart"></canvas></div></div>
+          </div>
+
+          <!-- AI Prediction Price -->
+          <div id="content-ai-pred-price" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">明日电价预测均值</div><div class="ant-statistic-content">¥0.68/kWh</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">峰时预测</div><div class="ant-statistic-content">¥1.12/kWh</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">谷时预测</div><div class="ant-statistic-content">¥0.32/kWh</div></div></div>
+            </div>
+            <div class="ant-card"><div class="chart-container"><canvas id="price-prediction-chart"></canvas></div></div>
+          </div>
+
+          <!-- AI PeakValley -->
+          <div id="content-ai-peakvalley" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">今日套利收益</div><div class="ant-statistic-content">¥8460</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">削峰电量</div><div class="ant-statistic-content">1250 kWh</div></div></div>
+            </div>
+            <div class="toolbar"><button class="ant-btn ant-btn-primary" id="btn-pv-strategy">优化策略</button></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>时段</th><th>操作</th><th>功率</th><th>预期收益</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>08:00-12:00</td><td>充电</td><td>200kW</td><td>¥2400</td></tr>
+                <tr class="ant-table-row" role="row"><td>12:00-18:00</td><td>放电</td><td>300kW</td><td>¥5400</td></tr>
+                <tr class="ant-table-row" role="row"><td>18:00-22:00</td><td>放电</td><td>150kW</td><td>¥660</td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- AI Health Monitor -->
+          <div id="content-ai-health" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">监控设备数</div><div class="ant-statistic-content">128</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">健康评分</div><div class="ant-statistic-content">87.5</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">风险设备</div><div class="ant-statistic-content">5</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">预测故障</div><div class="ant-statistic-content">2</div></div></div>
+            </div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>设备</th><th>健康评分</th><th>风险等级</th><th>预测故障时间</th><th>操作</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>ESS-001</td><td>72</td><td><span class="ant-tag ant-tag-orange">中风险</span></td><td>30天内</td><td><button class="ant-btn">详情</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>PILE-003</td><td>45</td><td><span class="ant-tag ant-tag-red">高风险</span></td><td>7天内</td><td><button class="ant-btn">详情</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>PV-001</td><td>91</td><td><span class="ant-tag ant-tag-green">低风险</span></td><td>-</td><td><button class="ant-btn">详情</button></td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- AI Fault Warning -->
+          <div id="content-ai-fault" class="page-content hidden">
+            <div class="toolbar"><input class="ant-input" placeholder="搜索设备/告警" style="width:240px"><div class="ant-select">全部级别</div></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>告警类型</th><th>设备</th><th>置信度</th><th>预警等级</th><th>建议措施</th><th>时间</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>绝缘老化</td><td>PILE-003</td><td>92%</td><td><span class="ant-tag ant-tag-red">严重</span></td><td>立即检修</td><td>2026-03-06 09:00</td></tr>
+                <tr class="ant-table-row" role="row"><td>温升异常</td><td>ESS-001</td><td>86%</td><td><span class="ant-tag ant-tag-orange">中等</span></td><td>加强监控</td><td>2026-03-06 08:30</td></tr>
+                <tr class="ant-table-row" role="row"><td>振动异常</td><td>MOTOR-002</td><td>75%</td><td><span class="ant-tag ant-tag-blue">轻微</span></td><td>计划检修</td><td>2026-03-05 14:00</td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- AI Carbon Trading -->
+          <div id="content-ai-carbon" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">碳配额余量</div><div class="ant-statistic-content">12580 tCO₂</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">今日碳价</div><div class="ant-statistic-content">¥68.50/t</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">AI建议操作</div><div class="ant-statistic-content">买入</div></div></div>
+            </div>
+            <div class="ant-card"><div class="chart-container"><canvas id="carbon-trading-chart"></canvas></div></div>
+          </div>
+
+          <!-- AI Market Trading -->
+          <div id="content-ai-market" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">今日交易量</div><div class="ant-statistic-content">2460 MWh</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">成交均价</div><div class="ant-statistic-content">¥0.52/kWh</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">AI策略收益</div><div class="ant-statistic-content">¥28400</div></div></div>
+            </div>
+            <div class="toolbar"><button class="ant-btn ant-btn-primary" id="btn-market-trade">执行AI策略</button></div>
+          </div>
+
+          <!-- Analytics Charging Stats -->
+          <div id="content-analytics-charging" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">充电总量(月)</div><div class="ant-statistic-content">186420 kWh</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">充电收入(月)</div><div class="ant-statistic-content">¥284560</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">充电次数(月)</div><div class="ant-statistic-content">12486</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">均单金额</div><div class="ant-statistic-content">¥22.79</div></div></div>
+            </div>
+            <div class="toolbar"><input class="ant-input" placeholder="搜索场站" style="width:240px"><button class="ant-btn" id="btn-charging-stats-export">导出</button></div>
+            <div class="ant-card"><div class="chart-container"><canvas id="charging-stats-chart"></canvas></div></div>
+          </div>
+
+          <!-- Analytics Device Stats -->
+          <div id="content-analytics-device" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">总设备数</div><div class="ant-statistic-content">356</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">在线率</div><div class="ant-statistic-content">94.4%</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">故障率</div><div class="ant-statistic-content">2.8%</div></div></div>
+            </div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>设备类型</th><th>总数</th><th>在线</th><th>故障</th><th>在线率</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>充电桩</td><td>180</td><td>172</td><td>5</td><td>95.6%</td></tr>
+                <tr class="ant-table-row" role="row"><td>储能系统</td><td>45</td><td>42</td><td>2</td><td>93.3%</td></tr>
+                <tr class="ant-table-row" role="row"><td>光伏逆变器</td><td>131</td><td>122</td><td>3</td><td>93.1%</td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- Analytics Revenue -->
+          <div id="content-analytics-revenue" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">本月营收</div><div class="ant-statistic-content">¥284560</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">环比增长</div><div class="ant-statistic-content">+12.4%</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">年累计营收</div><div class="ant-statistic-content">¥542680</div></div></div>
+            </div>
+            <div class="toolbar"><div class="ant-segmented"><div class="ant-segmented-item active">按月</div><div class="ant-segmented-item">按季度</div><div class="ant-segmented-item">按年</div></div><button class="ant-btn" id="btn-revenue-export">导出</button></div>
+            <div class="ant-card"><div class="chart-container"><canvas id="revenue-chart"></canvas></div></div>
+          </div>
+
+          <!-- Analytics Anomaly Detection -->
+          <div id="content-analytics-anomaly" class="page-content hidden">
+            <div class="toolbar"><input class="ant-input" placeholder="搜索异常事件" style="width:240px"><div class="ant-select">全部类型</div></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>时间</th><th>数据源</th><th>异常类型</th><th>置信度</th><th>状态</th><th>操作</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>2026-03-06 09:15</td><td>ESS-001</td><td>电压突变</td><td>94%</td><td><span class="ant-tag ant-tag-orange">待确认</span></td><td><button class="ant-btn">确认</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>2026-03-06 08:30</td><td>PILE-003</td><td>功率异常</td><td>87%</td><td><span class="ant-tag ant-tag-green">已确认</span></td><td><button class="ant-btn">查看</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>2026-03-05 22:00</td><td>METER-001</td><td>数据缺失</td><td>99%</td><td><span class="ant-tag ant-tag-green">已处理</span></td><td><button class="ant-btn">查看</button></td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- Analytics Event Tracking -->
+          <div id="content-analytics-events" class="page-content hidden">
+            <div class="toolbar"><input class="ant-input" placeholder="搜索事件名称" style="width:240px"><button class="ant-btn ant-btn-primary" id="btn-add-event">+ 添加事件</button></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>事件名称</th><th>触发次数</th><th>唯一用户</th><th>转化率</th><th>状态</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>充电开始</td><td>12486</td><td>6842</td><td>100%</td><td><span class="ant-tag ant-tag-green">采集中</span></td></tr>
+                <tr class="ant-table-row" role="row"><td>充电完成</td><td>12240</td><td>6820</td><td>98.0%</td><td><span class="ant-tag ant-tag-green">采集中</span></td></tr>
+                <tr class="ant-table-row" role="row"><td>支付成功</td><td>12100</td><td>6800</td><td>98.9%</td><td><span class="ant-tag ant-tag-green">采集中</span></td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- Analytics Funnel -->
+          <div id="content-analytics-funnel" class="page-content hidden">
+            <div class="toolbar"><input class="ant-input" placeholder="搜索漏斗名称" style="width:240px"><button class="ant-btn ant-btn-primary" id="btn-add-funnel">+ 新建漏斗</button></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>漏斗名称</th><th>步骤数</th><th>整体转化率</th><th>最近更新</th><th>操作</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>充电流程漏斗</td><td>5</td><td>78.4%</td><td>2026-03-06 08:00</td><td><button class="ant-btn">查看</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>用户注册漏斗</td><td>4</td><td>62.1%</td><td>2026-03-05 18:00</td><td><button class="ant-btn">查看</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>工单处理漏斗</td><td>6</td><td>91.5%</td><td>2026-03-04 12:00</td><td><button class="ant-btn">查看</button></td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- Analytics NL Query -->
+          <div id="content-analytics-nlquery" class="page-content hidden">
+            <div class="ant-card">
+              <div class="ant-form-item"><label>自然语言查询</label><input class="ant-input" id="nlquery-input" placeholder="例如：本月各场站充电收入排名" style="width:100%"></div>
+              <button class="ant-btn ant-btn-primary" id="btn-nlquery-run">执行查询</button>
+            </div>
+            <div class="ant-table-wrapper" id="nlquery-result"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>场站名称</th><th>充电收入</th><th>充电次数</th><th>环比</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>北京朝阳站</td><td>¥86420</td><td>3820</td><td>+8.2%</td></tr>
+                <tr class="ant-table-row" role="row"><td>上海浦东站</td><td>¥72560</td><td>3240</td><td>+12.5%</td></tr>
+                <tr class="ant-table-row" role="row"><td>广州天河站</td><td>¥58640</td><td>2680</td><td>-2.1%</td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- Analytics Realtime -->
+          <div id="content-analytics-realtime" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">实时在线用户</div><div class="ant-statistic-content">1284</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">每分钟事件数</div><div class="ant-statistic-content">4820</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">活跃场站</div><div class="ant-statistic-content">28</div></div></div>
+            </div>
+            <div class="toolbar"><button class="ant-btn" id="btn-realtime-pause">暂停</button><button class="ant-btn ant-btn-primary" id="btn-realtime-resume">恢复</button></div>
+            <div class="ant-card"><div class="chart-container"><canvas id="realtime-stream-chart"></canvas></div></div>
+          </div>
+
+          <!-- Analytics DrillDown -->
+          <div id="content-analytics-drilldown" class="page-content hidden">
+            <div class="ant-breadcrumb" id="drilldown-path"><span>全国</span> &gt; <span>华北</span> &gt; <span class="active">北京</span></div>
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">充电量</div><div class="ant-statistic-content">56420 kWh</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">收入</div><div class="ant-statistic-content">¥86420</div></div></div>
+            </div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>场站</th><th>充电量</th><th>收入</th><th>环比</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>朝阳站</td><td>28640 kWh</td><td>¥48260</td><td>+8.2%</td></tr>
+                <tr class="ant-table-row" role="row"><td>海淀站</td><td>18620 kWh</td><td>¥28460</td><td>+5.4%</td></tr>
+                <tr class="ant-table-row" role="row"><td>丰台站</td><td>9160 kWh</td><td>¥9700</td><td>-1.2%</td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- Analytics Path -->
+          <div id="content-analytics-path" class="page-content hidden">
+            <div class="ant-card">
+              <div class="ant-form-item"><label>起始页面</label><div class="ant-select" id="path-start-select">充电监控</div></div>
+              <div class="ant-form-item"><label>终止页面</label><div class="ant-select" id="path-end-select">订单详情</div></div>
+              <button class="ant-btn ant-btn-primary" id="btn-path-analyze">分析路径</button>
+            </div>
+          </div>
+
+          <!-- Analytics User Profile -->
+          <div id="content-analytics-userprofile" class="page-content hidden">
+            <div class="toolbar"><input class="ant-input" placeholder="搜索用户标签" style="width:240px"><button class="ant-btn ant-btn-primary" id="btn-add-tag">+ 创建标签</button></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>标签名称</th><th>用户数</th><th>描述</th><th>创建时间</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>高频用户</td><td>2840</td><td>月充电≥10次</td><td>2026-01-01</td></tr>
+                <tr class="ant-table-row" role="row"><td>高价值用户</td><td>1260</td><td>月消费≥500元</td><td>2026-01-01</td></tr>
+                <tr class="ant-table-row" role="row"><td>流失风险</td><td>486</td><td>30天未充电</td><td>2026-02-01</td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- Blockchain Dashboard -->
+          <div id="content-blockchain-dashboard" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">区块高度</div><div class="ant-statistic-content">128456</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">今日交易数</div><div class="ant-statistic-content">4820</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">节点数</div><div class="ant-statistic-content">7</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">TPS</div><div class="ant-statistic-content">125</div></div></div>
+            </div>
+            <div class="ant-card"><div class="chart-container"><canvas id="blockchain-txn-chart"></canvas></div></div>
+          </div>
+
+          <!-- Blockchain Transactions -->
+          <div id="content-blockchain-txns" class="page-content hidden">
+            <div class="toolbar"><input class="ant-input" placeholder="搜索交易哈希/地址" style="width:300px"><button class="ant-btn" id="btn-txn-export">导出</button></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>交易哈希</th><th>类型</th><th>发起方</th><th>金额</th><th>状态</th><th>时间</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>0xf3a2...8b4c</td><td>充电支付</td><td>0x1234...5678</td><td>¥68.25</td><td><span class="ant-tag ant-tag-green">已确认</span></td><td>2026-03-06 10:00</td></tr>
+                <tr class="ant-table-row" role="row"><td>0xa8c1...2d9e</td><td>碳积分转移</td><td>0xabcd...ef01</td><td>500 积分</td><td><span class="ant-tag ant-tag-green">已确认</span></td><td>2026-03-06 09:45</td></tr>
+                <tr class="ant-table-row" role="row"><td>0x7e4f...b3a1</td><td>合约执行</td><td>系统</td><td>-</td><td><span class="ant-tag ant-tag-blue">确认中</span></td><td>2026-03-06 09:30</td></tr>
+              </tbody>
+            </table></div>
+            <ul class="ant-pagination"><li>上一页</li><li class="active">1</li><li>2</li><li>下一页</li><li class="ant-pagination-options"><div class="ant-select ant-select-selector"><span>10 条/页</span></div></li></ul>
+          </div>
+
+          <!-- Blockchain Wallet -->
+          <div id="content-blockchain-wallet" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">钱包地址</div><div class="ant-statistic-content" id="wallet-address" style="font-size:12px">0x1234...5678</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">余额</div><div class="ant-statistic-content">¥2840.50</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">碳积分</div><div class="ant-statistic-content">18650</div></div></div>
+            </div>
+            <div class="toolbar"><button class="ant-btn ant-btn-primary" id="btn-wallet-transfer">转账</button><button class="ant-btn" id="btn-wallet-receive">收款</button></div>
+          </div>
+
+          <!-- Blockchain Carbon Credit -->
+          <div id="content-blockchain-carbon" class="page-content hidden">
+            <div class="toolbar"><button class="ant-btn ant-btn-primary" id="btn-carbon-issuance">申请发行</button></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>证书编号</th><th>类型</th><th>碳减排量</th><th>颁发机构</th><th>状态</th><th>有效期</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>CC-2026-00001</td><td>光伏发电</td><td>1250 tCO₂</td><td>CCER</td><td><span class="ant-tag ant-tag-green">有效</span></td><td>2027-12-31</td></tr>
+                <tr class="ant-table-row" role="row"><td>CC-2026-00002</td><td>储能调峰</td><td>680 tCO₂</td><td>CCER</td><td><span class="ant-tag ant-tag-green">有效</span></td><td>2027-12-31</td></tr>
+                <tr class="ant-table-row" role="row"><td>CC-2025-00156</td><td>充电替代</td><td>420 tCO₂</td><td>Gold Standard</td><td><span class="ant-tag ant-tag-orange">审核中</span></td><td>-</td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- Charging Refund -->
+          <div id="content-charging-refund" class="page-content hidden">
+            <div class="toolbar"><input class="ant-input" placeholder="搜索退款单号" style="width:240px"><div class="ant-select">全部状态</div></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>退款单号</th><th>原订单</th><th>退款金额</th><th>原因</th><th>状态</th><th>时间</th><th>操作</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>RF20260306001</td><td>CD20260305012</td><td>¥35.60</td><td>充电中断</td><td><span class="ant-tag ant-tag-green">已退款</span></td><td>2026-03-06</td><td><button class="ant-btn">详情</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>RF20260305001</td><td>CD20260304008</td><td>¥12.80</td><td>设备故障</td><td><span class="ant-tag ant-tag-orange">处理中</span></td><td>2026-03-05</td><td><button class="ant-btn">审核</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>RF20260304001</td><td>CD20260303015</td><td>¥8.40</td><td>误操作</td><td><span class="ant-tag ant-tag-red">拒绝</span></td><td>2026-03-04</td><td><button class="ant-btn">详情</button></td></tr>
+              </tbody>
+            </table></div>
+            <ul class="ant-pagination"><li>上一页</li><li class="active">1</li><li>下一页</li><li class="ant-pagination-options"><div class="ant-select ant-select-selector"><span>10 条/页</span></div></li></ul>
+          </div>
+
+          <!-- Charging Reservation -->
+          <div id="content-charging-reservation" class="page-content hidden">
+            <div class="toolbar"><input class="ant-input" placeholder="搜索预约单" style="width:240px"><div class="ant-select">全部状态</div></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>预约单号</th><th>用户</th><th>充电桩</th><th>预约时间</th><th>状态</th><th>操作</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>RES20260306001</td><td>张三</td><td>PILE-002</td><td>2026-03-06 14:00</td><td><span class="ant-tag ant-tag-blue">待充电</span></td><td><button class="ant-btn">取消</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>RES20260306002</td><td>李四</td><td>PILE-004</td><td>2026-03-06 16:30</td><td><span class="ant-tag ant-tag-green">已完成</span></td><td><button class="ant-btn">详情</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>RES20260305001</td><td>王五</td><td>PILE-001</td><td>2026-03-05 11:00</td><td><span class="ant-tag ant-tag-red">已取消</span></td><td><button class="ant-btn">详情</button></td></tr>
+              </tbody>
+            </table></div>
+            <ul class="ant-pagination"><li>上一页</li><li class="active">1</li><li>下一页</li><li class="ant-pagination-options"><div class="ant-select ant-select-selector"><span>10 条/页</span></div></li></ul>
+          </div>
+
+          <!-- Content Manage -->
+          <div id="content-content-manage" class="page-content hidden">
+            <div class="toolbar"><input class="ant-input" placeholder="搜索内容标题" style="width:240px"><div class="ant-select">全部分类</div><button class="ant-btn ant-btn-primary" id="btn-add-content">+ 新建内容</button></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>标题</th><th>分类</th><th>作者</th><th>状态</th><th>发布时间</th><th>操作</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>JGSY平台使用指南</td><td>文档</td><td>admin</td><td><span class="ant-tag ant-tag-green">已发布</span></td><td>2026-03-01</td><td><button class="ant-btn">编辑</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>充电安全规范V3</td><td>规范</td><td>operator</td><td><span class="ant-tag ant-tag-green">已发布</span></td><td>2026-02-15</td><td><button class="ant-btn">编辑</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>2026年能源政策解读</td><td>资讯</td><td>editor</td><td><span class="ant-tag ant-tag-orange">草稿</span></td><td>-</td><td><button class="ant-btn">编辑</button></td></tr>
+              </tbody>
+            </table></div>
+            <ul class="ant-pagination"><li>上一页</li><li class="active">1</li><li>下一页</li><li class="ant-pagination-options"><div class="ant-select ant-select-selector"><span>10 条/页</span></div></li></ul>
+          </div>
+
+          <!-- Media Manage -->
+          <div id="content-media-manage" class="page-content hidden">
+            <div class="toolbar"><input class="ant-input" placeholder="搜索文件名" style="width:240px"><div class="ant-select">全部类型</div><button class="ant-btn ant-btn-primary" id="btn-upload-media">上传文件</button></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>文件名</th><th>类型</th><th>大小</th><th>上传者</th><th>上传时间</th><th>操作</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>station-overview.jpg</td><td>图片</td><td>1.2 MB</td><td>admin</td><td>2026-03-06</td><td><button class="ant-btn">删除</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>charging-guide.pdf</td><td>文档</td><td>3.5 MB</td><td>editor</td><td>2026-03-05</td><td><button class="ant-btn">删除</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>energy-report-2026.xlsx</td><td>表格</td><td>0.8 MB</td><td>manager</td><td>2026-03-04</td><td><button class="ant-btn">删除</button></td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- Developer API -->
+          <div id="content-developer-api" class="page-content hidden">
+            <div class="toolbar"><input class="ant-input" placeholder="搜索API名称/路径" style="width:240px"><div class="ant-select">全部服务</div></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>API名称</th><th>路径</th><th>方法</th><th>服务</th><th>描述</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>充电订单查询</td><td>/api/charging/orders</td><td><span class="ant-tag ant-tag-green">GET</span></td><td>Charging</td><td>分页查询充电订单</td></tr>
+                <tr class="ant-table-row" role="row"><td>设备状态上报</td><td>/api/device/status</td><td><span class="ant-tag ant-tag-blue">POST</span></td><td>Device</td><td>设备上报状态数据</td></tr>
+                <tr class="ant-table-row" role="row"><td>场站信息更新</td><td>/api/station/{id}</td><td><span class="ant-tag ant-tag-orange">PUT</span></td><td>Station</td><td>更新场站基本信息</td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- Developer CodeGen -->
+          <div id="content-developer-codegen" class="page-content hidden">
+            <div class="ant-card">
+              <div class="ant-form-item"><label>数据库</label><div class="ant-select" id="codegen-db-select">jgsy_device</div></div>
+              <div class="ant-form-item"><label>数据表</label><div class="ant-select" id="codegen-table-select">device.device_list</div></div>
+              <div class="ant-form-item"><label>生成类型</label>
+                <div class="ant-checkbox-group">
+                  <label class="ant-checkbox-wrapper"><input type="checkbox" checked> Entity</label>
+                  <label class="ant-checkbox-wrapper"><input type="checkbox" checked> Repository</label>
+                  <label class="ant-checkbox-wrapper"><input type="checkbox" checked> Service</label>
+                  <label class="ant-checkbox-wrapper"><input type="checkbox" checked> Controller</label>
+                </div>
+              </div>
+              <button class="ant-btn ant-btn-primary" id="btn-generate-code">生成代码</button>
+            </div>
+          </div>
+
+          <!-- Developer Form Designer -->
+          <div id="content-developer-forms" class="page-content hidden">
+            <div class="toolbar"><input class="ant-input" placeholder="搜索表单模板" style="width:240px"><button class="ant-btn ant-btn-primary" id="btn-add-form">+ 新建表单</button></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>表单名称</th><th>字段数</th><th>使用次数</th><th>状态</th><th>操作</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>工单申报表</td><td>12</td><td>486</td><td><span class="ant-tag ant-tag-green">发布</span></td><td><button class="ant-btn">设计</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>设备入库表</td><td>8</td><td>120</td><td><span class="ant-tag ant-tag-green">发布</span></td><td><button class="ant-btn">设计</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>租户申请表</td><td>15</td><td>32</td><td><span class="ant-tag ant-tag-orange">草稿</span></td><td><button class="ant-btn">设计</button></td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- Device Asset -->
+          <div id="content-device-asset" class="page-content hidden">
+            <div class="toolbar"><input class="ant-input" placeholder="搜索资产编号/名称" style="width:240px"><div class="ant-select">全部类型</div><button class="ant-btn ant-btn-primary" id="btn-add-asset">登记资产</button></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>资产编号</th><th>名称</th><th>类型</th><th>价值</th><th>折旧率</th><th>状态</th><th>操作</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>AST202600001</td><td>DC充电桩-150kW</td><td>充电设备</td><td>¥68000</td><td>10%</td><td><span class="ant-tag ant-tag-green">在用</span></td><td><button class="ant-btn">详情</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>AST202600002</td><td>集中式储能系统</td><td>储能设备</td><td>¥1250000</td><td>6.67%</td><td><span class="ant-tag ant-tag-green">在用</span></td><td><button class="ant-btn">详情</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>AST202500156</td><td>组串式逆变器</td><td>光伏设备</td><td>¥48000</td><td>10%</td><td><span class="ant-tag ant-tag-orange">维修中</span></td><td><button class="ant-btn">详情</button></td></tr>
+              </tbody>
+            </table></div>
+            <ul class="ant-pagination"><li>上一页</li><li class="active">1</li><li>2</li><li>下一页</li><li class="ant-pagination-options"><div class="ant-select ant-select-selector"><span>10 条/页</span></div></li></ul>
+          </div>
+
+          <!-- Device Control -->
+          <div id="content-device-control" class="page-content hidden">
+            <div class="toolbar"><input class="ant-input" placeholder="搜索设备" style="width:240px"><div class="ant-select">全部设备</div></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>设备编号</th><th>名称</th><th>当前状态</th><th>指令</th><th>最近操作</th><th>操作</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>PILE-001</td><td>朝阳1号桩</td><td><span class="ant-tag ant-tag-blue">充电中</span></td><td>-</td><td>2026-03-06 10:00</td><td><button class="ant-btn" id="btn-device-ctrl-stop">远程停止</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>ESS-001</td><td>储能系统1</td><td><span class="ant-tag ant-tag-green">待机</span></td><td>-</td><td>2026-03-06 09:00</td><td><button class="ant-btn" id="btn-device-ctrl-charge">启动充电</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>PV-001</td><td>光伏逆变器1</td><td><span class="ant-tag ant-tag-green">发电中</span></td><td>-</td><td>2026-03-06 06:00</td><td><button class="ant-btn">详情</button></td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- Device Firmware -->
+          <div id="content-device-firmware" class="page-content hidden">
+            <div class="toolbar"><button class="ant-btn ant-btn-primary" id="btn-upload-firmware">上传固件</button></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>固件版本</th><th>适用型号</th><th>大小</th><th>发布时间</th><th>变更说明</th><th>操作</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>v3.2.1</td><td>DC-150KW</td><td>12.4 MB</td><td>2026-03-01</td><td>修复通信断连问题</td><td><button class="ant-btn">推送</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>v2.8.0</td><td>AC-20KW</td><td>8.2 MB</td><td>2026-02-15</td><td>新增远程控制指令</td><td><button class="ant-btn">推送</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>v1.5.3</td><td>DC-120KW</td><td>10.6 MB</td><td>2026-01-10</td><td>性能优化</td><td><button class="ant-btn">推送</button></td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- Edge Gateway -->
+          <div id="content-edge-gateway" class="page-content hidden">
+            <div class="toolbar"><button class="ant-btn ant-btn-primary" id="btn-add-gateway">+ 新增网关</button></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>网关编号</th><th>型号</th><th>IP地址</th><th>接入设备数</th><th>状态</th><th>操作</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>GW-BJ-001</td><td>EdgeBox-Pro</td><td>192.168.10.1</td><td>32</td><td><span class="ant-tag ant-tag-green">在线</span></td><td><button class="ant-btn">详情</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>GW-SH-001</td><td>EdgeBox-Pro</td><td>192.168.20.1</td><td>28</td><td><span class="ant-tag ant-tag-green">在线</span></td><td><button class="ant-btn">详情</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>GW-GD-001</td><td>EdgeBox-Lite</td><td>192.168.30.1</td><td>15</td><td><span class="ant-tag ant-tag-red">离线</span></td><td><button class="ant-btn">详情</button></td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- DigitalTwin Dashboard -->
+          <div id="content-dt-dashboard" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">孪生实例数</div><div class="ant-statistic-content">356</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">同步率</div><div class="ant-statistic-content">99.2%</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">数据延迟</div><div class="ant-statistic-content">128ms</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">3D场景数</div><div class="ant-statistic-content">12</div></div></div>
+            </div>
+            <div class="ant-card"><div class="chart-container"><canvas id="dt-dashboard-chart"></canvas></div></div>
+          </div>
+
+          <!-- DigitalTwin Monitor -->
+          <div id="content-dt-monitor" class="page-content hidden">
+            <div class="toolbar"><input class="ant-input" placeholder="搜索孪生设备" style="width:240px"></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>孪生ID</th><th>物理设备</th><th>同步状态</th><th>最新数据时间</th><th>数据频率</th><th>操作</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>DT-PILE-001</td><td>PILE-001</td><td><span class="ant-tag ant-tag-green">同步中</span></td><td>2026-03-06 10:00:00</td><td>1s</td><td><button class="ant-btn">查看</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>DT-ESS-001</td><td>ESS-001</td><td><span class="ant-tag ant-tag-green">同步中</span></td><td>2026-03-06 10:00:00</td><td>5s</td><td><button class="ant-btn">查看</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>DT-PV-001</td><td>PV-001</td><td><span class="ant-tag ant-tag-orange">延迟</span></td><td>2026-03-06 09:58:30</td><td>10s</td><td><button class="ant-btn">查看</button></td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- DigitalTwin Realtime -->
+          <div id="content-dt-realtime" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">实时功率</div><div class="ant-statistic-content">450 kW</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">今日电量</div><div class="ant-statistic-content">4820 kWh</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">设备温度均值</div><div class="ant-statistic-content">38.5°C</div></div></div>
+            </div>
+            <div class="toolbar"><button class="ant-btn" id="btn-dt-realtime-pause">暂停更新</button></div>
+            <div class="ant-card"><div class="chart-container"><canvas id="dt-realtime-chart"></canvas></div></div>
+          </div>
+
+          <!-- DigitalTwin Playback -->
+          <div id="content-dt-playback" class="page-content hidden">
+            <div class="ant-card">
+              <div class="ant-form-item"><label>设备</label><div class="ant-select" id="playback-device-select">PILE-001 - 朝阳1号桩</div></div>
+              <div class="ant-form-item"><label>回放时间</label><input class="ant-input" id="playback-time-range" value="2026-03-05 00:00 ~ 2026-03-05 23:59"></div>
+              <button class="ant-btn ant-btn-primary" id="btn-start-playback">开始回放</button>
+            </div>
+          </div>
+
+          <!-- DigitalTwin Analysis -->
+          <div id="content-dt-analysis" class="page-content hidden">
+            <div class="toolbar"><div class="ant-select" id="dt-analysis-device">选择设备</div><div class="ant-select" id="dt-analysis-metric">选择指标</div><button class="ant-btn ant-btn-primary" id="btn-dt-analyze">分析</button></div>
+            <div class="ant-card"><div class="chart-container"><canvas id="dt-analysis-chart"></canvas></div></div>
+          </div>
+
+          <!-- DigitalTwin Control -->
+          <div id="content-dt-control" class="page-content hidden">
+            <div class="ant-card">
+              <div class="ant-form-item"><label>目标设备</label><div class="ant-select" id="dt-ctrl-device">ESS-001</div></div>
+              <div class="ant-form-item"><label>控制指令</label>
+                <div class="ant-radio-group">
+                  <label class="ant-radio-wrapper active"><input type="radio" name="ctrl" checked> 启动充电</label>
+                  <label class="ant-radio-wrapper"><input type="radio" name="ctrl"> 启动放电</label>
+                  <label class="ant-radio-wrapper"><input type="radio" name="ctrl"> 待机</label>
+                </div>
+              </div>
+              <div class="ant-form-item"><label>执行功率</label><input class="ant-input" id="dt-ctrl-power" value="200"></div>
+              <button class="ant-btn ant-btn-primary" id="btn-dt-send-ctrl">发送指令</button>
+            </div>
+          </div>
+
+          <!-- DigitalTwin Scene3D -->
+          <div id="content-dt-scene" class="page-content hidden">
+            <div class="toolbar"><div class="ant-select" id="scene-select">北京朝阳充电站</div><button class="ant-btn" id="btn-scene-fullscreen">全屏</button><button class="ant-btn ant-btn-primary" id="btn-scene-add">+ 新建场景</button></div>
+            <div class="ant-card" style="height:300px;background:#0a1628;color:#4a9eff;display:flex;align-items:center;justify-content:center;">
+              <span style="font-size:18px;">🏗 3D 场景视图加载中...</span>
+            </div>
+          </div>
+
+          <!-- DigitalTwin Simulation -->
+          <div id="content-dt-simulation" class="page-content hidden">
+            <div class="toolbar"><button class="ant-btn ant-btn-primary" id="btn-add-simulation">+ 新建仿真</button></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>仿真名称</th><th>类型</th><th>时长</th><th>状态</th><th>操作</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>场站容量规划仿真</td><td>容量规划</td><td>365天</td><td><span class="ant-tag ant-tag-green">完成</span></td><td><button class="ant-btn">查看</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>峰谷套利策略仿真</td><td>策略优化</td><td>30天</td><td><span class="ant-tag ant-tag-blue">运行中</span></td><td><button class="ant-btn">停止</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>故障场景仿真</td><td>故障分析</td><td>7天</td><td><span class="ant-tag ant-tag-orange">排队</span></td><td><button class="ant-btn">取消</button></td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- 充电统计 -->
+          <div id="content-charging-stats" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">今日充电量</div><div class="ant-statistic-content">12480 kWh</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">今日充电次数</div><div class="ant-statistic-content">386</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">今日收入</div><div class="ant-statistic-content">¥18620</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">平均时长</div><div class="ant-statistic-content">48分钟</div></div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+              <div class="ant-segmented"><div class="ant-segmented-item active">今日</div><div class="ant-segmented-item">本周</div><div class="ant-segmented-item">本月</div></div>
+              <button class="ant-btn" id="btn-charging-stats-export">导出报表</button>
+            </div>
+            <div class="ant-card"><div class="chart-container"><canvas id="charging-stats-chart"></canvas></div></div>
+          </div>
+
+          <!-- 充电卡管理 -->
+          <div id="content-charging-card" class="page-content hidden">
+            <div class="toolbar">
+              <input class="ant-input" placeholder="搜索卡号/用户" style="width:240px">
+              <div class="ant-select">全部状态</div>
+              <button class="ant-btn ant-btn-primary" id="btn-add-card">+ 发行充电卡</button>
+            </div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>卡号</th><th>用户</th><th>余额</th><th>类型</th><th>状态</th><th>操作</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>CARD-00123456</td><td>张三</td><td>¥580.00</td><td><span class="ant-tag ant-tag-blue">个人卡</span></td><td><span class="ant-tag ant-tag-green">正常</span></td><td><button class="ant-btn">管理</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>CARD-00234567</td><td>北京公司</td><td>¥12400.00</td><td><span class="ant-tag ant-tag-orange">企业卡</span></td><td><span class="ant-tag ant-tag-green">正常</span></td><td><button class="ant-btn">管理</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>CARD-00345678</td><td>李四</td><td>¥0.00</td><td><span class="ant-tag ant-tag-blue">个人卡</span></td><td><span class="ant-tag ant-tag-red">冻结</span></td><td><button class="ant-btn">管理</button></td></tr>
+              </tbody>
+            </table></div>
+            <ul class="ant-pagination"><li>上一页</li><li class="active">1</li><li>2</li><li>下一页</li><li class="ant-pagination-options"><div class="ant-select ant-select-selector"><span>10 条/页</span></div></li></ul>
+          </div>
+
+          <!-- 设备健康管理 (PHM) -->
+          <div id="content-device-phm" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">监控设备</div><div class="ant-statistic-content">256</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">健康设备</div><div class="ant-statistic-content">241</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">亚健康</div><div class="ant-statistic-content">12</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">高风险</div><div class="ant-statistic-content">3</div></div></div>
+            </div>
+            <div class="toolbar"><input class="ant-input" placeholder="搜索设备" style="width:240px"><div class="ant-select">全部状态</div></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>设备ID</th><th>设备名称</th><th>健康评分</th><th>风险等级</th><th>剩余寿命</th><th>操作</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>ESS-001</td><td>储能系统1号</td><td>72</td><td><span class="ant-tag ant-tag-orange">中风险</span></td><td>180天</td><td><button class="ant-btn">详情</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>PILE-003</td><td>充电桩3号</td><td>45</td><td><span class="ant-tag ant-tag-red">高风险</span></td><td>30天</td><td><button class="ant-btn">详情</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>PV-001</td><td>光伏逆变器1</td><td>91</td><td><span class="ant-tag ant-tag-green">低风险</span></td><td>-</td><td><button class="ant-btn">详情</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>WTG-001</td><td>风机1号</td><td>88</td><td><span class="ant-tag ant-tag-green">低风险</span></td><td>-</td><td><button class="ant-btn">详情</button></td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- 碳交易 -->
+          <div id="content-energy-carbon-trade" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">碳配额余量</div><div class="ant-statistic-content">12580 tCO₂</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">今日碳价</div><div class="ant-statistic-content">¥68.50/t</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">本月交易量</div><div class="ant-statistic-content">2400 t</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">累计收益</div><div class="ant-statistic-content">¥86400</div></div></div>
+            </div>
+            <div class="toolbar"><button class="ant-btn ant-btn-primary" id="btn-add-carbon-order">+ 新建交易</button><button class="ant-btn" id="btn-carbon-export">导出记录</button></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>交易编号</th><th>类型</th><th>数量</th><th>单价</th><th>金额</th><th>状态</th><th>时间</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>CT20260306001</td><td>卖出</td><td>500 t</td><td>¥68.50</td><td>¥34250</td><td><span class="ant-tag ant-tag-green">已成交</span></td><td>2026-03-06</td></tr>
+                <tr class="ant-table-row" role="row"><td>CT20260305001</td><td>买入</td><td>200 t</td><td>¥66.20</td><td>¥13240</td><td><span class="ant-tag ant-tag-green">已成交</span></td><td>2026-03-05</td></tr>
+                <tr class="ant-table-row" role="row"><td>CT20260304001</td><td>卖出</td><td>1000 t</td><td>¥65.00</td><td>¥65000</td><td><span class="ant-tag ant-tag-orange">待审核</span></td><td>2026-03-04</td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- 需求响应 -->
+          <div id="content-energy-demand-resp" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">本月响应次数</div><div class="ant-statistic-content">8</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">响应容量</div><div class="ant-statistic-content">1200 kW</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">响应收益</div><div class="ant-statistic-content">¥24600</div></div></div>
+            </div>
+            <div class="toolbar"><button class="ant-btn ant-btn-primary" id="btn-add-demand-resp">+ 申报响应</button></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>响应编号</th><th>类型</th><th>容量</th><th>持续时长</th><th>状态</th><th>收益</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>DR20260306001</td><td>削峰</td><td>800 kW</td><td>2小时</td><td><span class="ant-tag ant-tag-green">已完成</span></td><td>¥6400</td></tr>
+                <tr class="ant-table-row" role="row"><td>DR20260304001</td><td>填谷</td><td>400 kW</td><td>1小时</td><td><span class="ant-tag ant-tag-blue">执行中</span></td><td>¥2400</td></tr>
+                <tr class="ant-table-row" role="row"><td>DR20260302001</td><td>调频</td><td>200 kW</td><td>30分钟</td><td><span class="ant-tag ant-tag-green">已完成</span></td><td>¥3600</td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- 电力交易 -->
+          <div id="content-energy-elec-trade" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">今日中标量</div><div class="ant-statistic-content">8400 kWh</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">中标均价</div><div class="ant-statistic-content">¥0.62/kWh</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">今日收益</div><div class="ant-statistic-content">¥5208</div></div></div>
+            </div>
+            <div class="toolbar"><button class="ant-btn ant-btn-primary" id="btn-add-elec-bid">+ 提交报价</button><button class="ant-btn" id="btn-elec-trade-export">导出</button></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>交易日</th><th>时段</th><th>报量</th><th>报价</th><th>中标量</th><th>状态</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>2026-03-06</td><td>08:00-12:00</td><td>2000 kWh</td><td>¥0.58</td><td>1800 kWh</td><td><span class="ant-tag ant-tag-green">已中标</span></td></tr>
+                <tr class="ant-table-row" role="row"><td>2026-03-06</td><td>12:00-18:00</td><td>3000 kWh</td><td>¥0.65</td><td>3000 kWh</td><td><span class="ant-tag ant-tag-green">已中标</span></td></tr>
+                <tr class="ant-table-row" role="row"><td>2026-03-06</td><td>18:00-22:00</td><td>2000 kWh</td><td>¥0.72</td><td>0 kWh</td><td><span class="ant-tag ant-tag-red">未中标</span></td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- 能效管理 -->
+          <div id="content-energy-eff" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">综合能效</div><div class="ant-statistic-content">88.4%</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">节能量</div><div class="ant-statistic-content">1240 kWh</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">碳减排</div><div class="ant-statistic-content">620 kgCO₂</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">节能收益</div><div class="ant-statistic-content">¥4680</div></div></div>
+            </div>
+            <div class="ant-card"><div class="chart-container"><canvas id="energy-eff-chart"></canvas></div></div>
+          </div>
+
+          <!-- 综合能源 -->
+          <div id="content-energy-multi" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">光伏发电</div><div class="ant-statistic-content">4820 kWh</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">风力发电</div><div class="ant-statistic-content">2160 kWh</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">储能充放</div><div class="ant-statistic-content">1680 kWh</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">综合消纳率</div><div class="ant-statistic-content">96.2%</div></div></div>
+            </div>
+            <div class="ant-tabs"><div class="ant-tabs-tab active">实时拓扑</div><div class="ant-tabs-tab">能流分析</div><div class="ant-tabs-tab">优化调度</div></div>
+            <div class="ant-card"><div class="chart-container"><canvas id="multi-energy-chart"></canvas></div></div>
+          </div>
+
+          <!-- 安全管控 -->
+          <div id="content-energy-safe" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">安全评分</div><div class="ant-statistic-content">96</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">活跃风险点</div><div class="ant-statistic-content">2</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">今日告警</div><div class="ant-statistic-content">5</div></div></div>
+            </div>
+            <div class="toolbar"><button class="ant-btn" id="btn-safe-export">导出报告</button></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>风险名称</th><th>设备</th><th>风险级别</th><th>状态</th><th>处置建议</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>过载风险</td><td>变压器T1</td><td><span class="ant-tag ant-tag-orange">中</span></td><td><span class="ant-tag ant-tag-orange">监控中</span></td><td>降低负荷</td></tr>
+                <tr class="ant-table-row" role="row"><td>绝缘老化</td><td>PILE-003</td><td><span class="ant-tag ant-tag-red">高</span></td><td><span class="ant-tag ant-tag-orange">处理中</span></td><td>立即检修</td></tr>
+                <tr class="ant-table-row" role="row"><td>谐波超标</td><td>逆变器INV-02</td><td><span class="ant-tag ant-tag-blue">低</span></td><td><span class="ant-tag ant-tag-green">已处理</span></td><td>更换滤波器</td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- 微网管理 -->
+          <div id="content-energy-microgrid" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">微网数量</div><div class="ant-statistic-content">6</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">运行中</div><div class="ant-statistic-content">5</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">总装机容量</div><div class="ant-statistic-content">12 MW</div></div></div>
+            </div>
+            <div class="toolbar"><button class="ant-btn ant-btn-primary" id="btn-add-microgrid">+ 新建微网</button></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>微网名称</th><th>类型</th><th>容量</th><th>状态</th><th>当前功率</th><th>操作</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>北京园区微网</td><td>工商业</td><td>3 MW</td><td><span class="ant-tag ant-tag-green">离网运行</span></td><td>2.4 MW</td><td><button class="ant-btn">调度</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>上海港区微网</td><td>工商业</td><td>2 MW</td><td><span class="ant-tag ant-tag-blue">并网运行</span></td><td>1.8 MW</td><td><button class="ant-btn">调度</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>深圳数据中心微网</td><td>数据中心</td><td>4 MW</td><td><span class="ant-tag ant-tag-green">离网运行</span></td><td>3.6 MW</td><td><button class="ant-btn">调度</button></td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- 光伏储能 -->
+          <div id="content-energy-pvessc" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">光伏装机</div><div class="ant-statistic-content">8.4 MWp</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">储能容量</div><div class="ant-statistic-content">12 MWh</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">今日光伏发电</div><div class="ant-statistic-content">4820 kWh</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">SOC</div><div class="ant-statistic-content">78%</div></div></div>
+            </div>
+            <div class="ant-tabs"><div class="ant-tabs-tab active">光伏监控</div><div class="ant-tabs-tab">储能状态</div><div class="ant-tabs-tab">协同优化</div></div>
+            <div class="ant-card"><div class="chart-container"><canvas id="pvessc-chart"></canvas></div></div>
+          </div>
+
+          <!-- 能源协调 -->
+          <div id="content-energy-orchestrator" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">协调任务数</div><div class="ant-statistic-content">24</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">执行成功率</div><div class="ant-statistic-content">98.2%</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">今日优化收益</div><div class="ant-statistic-content">¥12460</div></div></div>
+            </div>
+            <div class="toolbar"><button class="ant-btn ant-btn-primary" id="btn-add-orch-task">+ 新建协调任务</button></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>任务名称</th><th>触发条件</th><th>参与资源</th><th>状态</th><th>执行时间</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>峰时削峰协调</td><td>负荷>80%</td><td>储能+VPP</td><td><span class="ant-tag ant-tag-green">运行中</span></td><td>10:00-14:00</td></tr>
+                <tr class="ant-table-row" role="row"><td>谷时充电协调</td><td>电价<¥0.5</td><td>充电桩+储能</td><td><span class="ant-tag ant-tag-green">运行中</span></td><td>00:00-06:00</td></tr>
+                <tr class="ant-table-row" role="row"><td>光伏消纳协调</td><td>光伏>70%</td><td>全部资源</td><td><span class="ant-tag ant-tag-orange">待触发</span></td><td>-</td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- 场站地图 -->
+          <div id="content-station-map" class="page-content hidden">
+            <div class="toolbar"><input class="ant-input" placeholder="搜索场站名称" style="width:240px"><div class="ant-select">全部区域</div><div class="ant-select">全部类型</div></div>
+            <div class="ant-card" style="height:400px;display:flex;align-items:center;justify-content:center;font-size:18px;color:rgba(0,0,0,0.45);">
+              <span>🗺️ 场站地图 — 显示 42 个场站分布</span>
+            </div>
+            <div class="card-grid" style="margin-top:16px;">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">在线场站</div><div class="ant-statistic-content">38</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">离线场站</div><div class="ant-statistic-content">4</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">覆盖城市</div><div class="ant-statistic-content">18</div></div></div>
+            </div>
+          </div>
+
+          <!-- 场站统计 -->
+          <div id="content-station-stats" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">总场站数</div><div class="ant-statistic-content">42</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">总装机容量</div><div class="ant-statistic-content">840 MW</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">本月发电量</div><div class="ant-statistic-content">1.24 GWh</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">平均利用率</div><div class="ant-statistic-content">68.4%</div></div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+              <div class="ant-segmented"><div class="ant-segmented-item active">本月</div><div class="ant-segmented-item">上月</div><div class="ant-segmented-item">本年</div></div>
+              <button class="ant-btn" id="btn-station-stats-export">导出</button>
+            </div>
+            <div class="ant-card"><div class="chart-container"><canvas id="station-stats-chart"></canvas></div></div>
+          </div>
+
+          <!-- 储能管理 -->
+          <div id="content-storage" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">储能系统数</div><div class="ant-statistic-content">18</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">总容量</div><div class="ant-statistic-content">48 MWh</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">平均SOC</div><div class="ant-statistic-content">72%</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">今日充放量</div><div class="ant-statistic-content">8640 kWh</div></div></div>
+            </div>
+            <div class="toolbar"><input class="ant-input" placeholder="搜索储能系统" style="width:240px"><div class="ant-select">全部状态</div></div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>系统ID</th><th>场站</th><th>容量</th><th>SOC</th><th>状态</th><th>操作</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>ESS-001</td><td>北京朝阳站</td><td>4 MWh</td><td>78%</td><td><span class="ant-tag ant-tag-green">充电中</span></td><td><button class="ant-btn">详情</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>ESS-002</td><td>上海浦东站</td><td>6 MWh</td><td>65%</td><td><span class="ant-tag ant-tag-blue">待机</span></td><td><button class="ant-btn">详情</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>ESS-003</td><td>广州天河站</td><td>2 MWh</td><td>90%</td><td><span class="ant-tag ant-tag-orange">放电中</span></td><td><button class="ant-btn">详情</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>ESS-004</td><td>深圳南山站</td><td>8 MWh</td><td>45%</td><td><span class="ant-tag ant-tag-blue">待机</span></td><td><button class="ant-btn">详情</button></td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- 工单统计 -->
+          <div id="content-workorder-stats" class="page-content hidden">
+            <div class="card-grid">
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">本月工单总数</div><div class="ant-statistic-content">286</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">完成率</div><div class="ant-statistic-content">94.4%</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">平均处理时长</div><div class="ant-statistic-content">4.2小时</div></div></div>
+              <div class="ant-card"><div class="ant-statistic"><div class="ant-statistic-title">超时工单</div><div class="ant-statistic-content">16</div></div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+              <div class="ant-segmented"><div class="ant-segmented-item active">本月</div><div class="ant-segmented-item">上月</div><div class="ant-segmented-item">本季</div></div>
+              <button class="ant-btn" id="btn-workorder-stats-export">导出</button>
+            </div>
+            <div class="ant-card"><div class="chart-container"><canvas id="workorder-stats-chart"></canvas></div></div>
+          </div>
+
+          <!-- 结算发票 -->
+          <div id="content-settlement-invoice" class="page-content hidden">
+            <div class="toolbar">
+              <input class="ant-input" placeholder="搜索发票号/企业" style="width:240px">
+              <div class="ant-select">全部状态</div>
+              <button class="ant-btn ant-btn-primary" id="btn-settlement-apply-invoice">申请开票</button>
+            </div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>发票号</th><th>企业名称</th><th>金额</th><th>类型</th><th>状态</th><th>申请时间</th><th>操作</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>INV-2026030001</td><td>北京能源科技</td><td>¥28460</td><td>增值税专票</td><td><span class="ant-tag ant-tag-green">已开具</span></td><td>2026-03-01</td><td><button class="ant-btn">下载</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>INV-2026030002</td><td>上海充电运营</td><td>¥15230</td><td>增值税普票</td><td><span class="ant-tag ant-tag-orange">开票中</span></td><td>2026-03-03</td><td><button class="ant-btn">查看</button></td></tr>
+                <tr class="ant-table-row" role="row"><td>INV-2026020001</td><td>广州绿能</td><td>¥42680</td><td>增值税专票</td><td><span class="ant-tag ant-tag-green">已开具</span></td><td>2026-02-28</td><td><button class="ant-btn">下载</button></td></tr>
+              </tbody>
+            </table></div>
+            <ul class="ant-pagination"><li>上一页</li><li class="active">1</li><li>2</li><li>下一页</li><li class="ant-pagination-options"><div class="ant-select ant-select-selector"><span>10 条/页</span></div></li></ul>
+          </div>
+
+          <!-- 规则调试 -->
+          <div id="content-ruleengine-debug" class="page-content hidden">
+            <div class="ant-card" style="margin-bottom:16px;">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                <div class="ant-select" style="width:200px">选择规则链</div>
+                <button class="ant-btn ant-btn-primary" id="btn-run-debug">▶ 运行调试</button>
+                <button class="ant-btn" id="btn-clear-debug-log">清空日志</button>
+              </div>
+              <div style="background:#001529;color:#00ff00;padding:16px;border-radius:4px;min-height:200px;font-family:monospace;font-size:13px;" id="debug-console">
+                <div>[2026-03-06 10:00:01] 规则引擎调试控制台就绪</div>
+                <div>[2026-03-06 10:00:02] 加载规则链: 告警处理链</div>
+                <div>[2026-03-06 10:00:03] 节点1: 消息过滤器 → PASSED</div>
+                <div>[2026-03-06 10:00:04] 节点2: 告警分类器 → PASSED</div>
+                <div>[2026-03-06 10:00:05] 节点3: 通知发送器 → PASSED</div>
+                <div>[2026-03-06 10:00:05] ✅ 调试完成，全部节点通过</div>
+              </div>
+            </div>
+            <div class="ant-table-wrapper"><table class="ant-table">
+              <thead class="ant-table-thead"><tr><th>节点</th><th>执行时间</th><th>输入</th><th>输出</th><th>状态</th></tr></thead>
+              <tbody class="ant-table-tbody">
+                <tr class="ant-table-row" role="row"><td>消息过滤器</td><td>12ms</td><td>{"type":"alarm"}</td><td>{"passed":true}</td><td><span class="ant-tag ant-tag-green">通过</span></td></tr>
+                <tr class="ant-table-row" role="row"><td>告警分类器</td><td>8ms</td><td>{"passed":true}</td><td>{"level":"high"}</td><td><span class="ant-tag ant-tag-green">通过</span></td></tr>
+                <tr class="ant-table-row" role="row"><td>通知发送器</td><td>45ms</td><td>{"level":"high"}</td><td>{"sent":true}</td><td><span class="ant-tag ant-tag-green">通过</span></td></tr>
+              </tbody>
+            </table></div>
+          </div>
+
+          <!-- 404 -->
+          <div id="content-404" class="page-content hidden" style="text-align:center;padding:80px;">
+            <p>页面未找到</p>
+            <a href="/dashboard" class="ant-btn ant-btn-primary">返回首页</a>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <!-- 全局模态框 -->
+  <div class="ant-modal-mask modal-hidden" id="modal-mask"></div>
+  <div class="ant-modal modal-hidden" id="modal-dialog">
+    <div class="ant-modal-header" id="modal-title">新增</div>
+    <div class="ant-modal-body">
+      <div class="ant-form-item"><label class="ant-form-item-label">名称</label><input class="ant-input" placeholder="请输入名称"></div>
+      <div class="ant-form-item"><label class="ant-form-item-label">编码</label><input class="ant-input" placeholder="请输入编码"></div>
+      <div class="ant-form-item"><label class="ant-form-item-label">描述</label><input class="ant-input" placeholder="请输入描述"></div>
+      <div class="ant-form-item"><label class="ant-form-item-label">数量</label><div class="ant-input-number"><input type="number" class="ant-input-number-input" placeholder="请输入数量" value="" step="1" min="0"></div></div>
+      <div class="ant-form-item"><label class="ant-form-item-label">金额</label><div class="ant-input-number"><input type="number" class="ant-input-number-input" placeholder="请输入金额" value="" step="0.01" min="0"></div></div>
+    </div>
+    <div class="ant-modal-footer">
+      <button class="ant-btn" id="modal-cancel">取消</button>
+      <button class="ant-btn ant-btn-primary" id="modal-ok">确定</button>
+    </div>
+  </div>
+
+  <!-- 全局抽屉 -->
+  <div class="ant-drawer drawer-hidden" id="drawer-dialog">
+    <div class="ant-drawer-header">
+      <span id="drawer-title">详情</span>
+      <button class="ant-btn" id="drawer-close" style="border:none;font-size:18px;">✕</button>
+    </div>
+    <div class="ant-drawer-body">
+      <div class="ant-form-item"><label class="ant-form-item-label">订单号</label><div>CD20260306001</div></div>
+      <div class="ant-form-item"><label class="ant-form-item-label">设备编码</label><div>PILE-001</div></div>
+      <div class="ant-form-item"><label class="ant-form-item-label">用户</label><div>张三</div></div>
+      <div class="ant-form-item"><label class="ant-form-item-label">充电量</label><div>45.5 kWh</div></div>
+      <div class="ant-form-item"><label class="ant-form-item-label">金额</label><div>¥68.25</div></div>
+      <div class="ant-form-item"><label class="ant-form-item-label">状态</label><div><span class="ant-tag ant-tag-green">已完成</span></div></div>
+    </div>
+    <div style="text-align:right;margin-top:16px;">
+      <button class="ant-btn" id="drawer-footer-close">关闭</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // 路由映射
+  const routes = {
+    '/user/login': { page: 'login', title: '登录' },
+    '/login': { page: 'login', title: '登录' },
+    '/dashboard': { page: 'dashboard', title: '仪表盘' },
+    '/welcome': { page: 'dashboard', title: '欢迎' },
+    '/station': { page: 'station', title: '场站管理' },
+    '/device': { page: 'device', title: '设备管理' },
+    '/permission': { page: 'permission', title: '权限管理' },
+    '/workorder': { page: 'workorder', title: '工单管理' },
+    '/user': { page: 'user', title: '用户管理' },
+    '/energy': { page: 'energy', title: '能源服务' },
+    '/charging/monitor': { page: 'charging-monitor', title: '充电监控' },
+    '/charging/orders': { page: 'charging-orders', title: '充电订单' },
+    '/charging': { page: 'charging-orders', title: '充电运营' },
+    '/analytics': { page: 'analytics', title: '分析中心' },
+    '/ai': { page: 'ai', title: 'AI智能' },
+    '/blockchain': { page: 'blockchain', title: '区块链' },
+    '/ruleengine': { page: 'ruleengine', title: '规则引擎' },
+    '/settlement': { page: 'settlement', title: '结算管理' },
+    '/simulator': { page: 'simulator', title: '模拟器' },
+    '/digital-twin': { page: 'digital-twin', title: '数字孪生' },
+    '/tenant': { page: 'tenant', title: '租户管理' },
+    '/system': { page: 'system', title: '系统配置' },
+    '/monitor': { page: 'monitor', title: '系统监控' },
+    '/account': { page: 'account', title: '账户设置' },
+    '/message': { page: 'message', title: '消息中心' },
+    '/workflow': { page: 'workflow', title: '工作流' },
+    '/log': { page: 'log', title: '操作日志' },
+    '/security': { page: 'security', title: '安全管理' },
+    '/report': { page: 'report', title: '报表中心' },
+    '/ingestion': { page: 'ingestion', title: '数据接入' },
+    '/charging/piles': { page: 'charging-piles', title: '充电桩管理' },
+    '/charging/pricing': { page: 'charging-pricing', title: '充电定价' },
+    '/device/alerts': { page: 'device-alerts', title: '设备告警' },
+    '/energy/vpp': { page: 'energy-vpp', title: '虚拟电厂' },
+    '/finance': { page: 'finance', title: '财务统计' },
+    '/ops': { page: 'ops', title: '运维管理' },
+    // 账户子页面
+    '/account/profile': { page: 'account-profile', title: '个人信息' },
+    '/account/invoice': { page: 'account-invoice', title: '发票管理' },
+    '/account/membership': { page: 'account-membership', title: '会员等级' },
+    '/account/points': { page: 'account-points', title: '积分管理' },
+    '/account/recharge': { page: 'account-recharge', title: '账户充值' },
+    // 代理商
+    '/agent': { page: 'agent-manage', title: '代理商管理' },
+    '/agent/commission': { page: 'agent-commission', title: '佣金管理' },
+    // AI 子页面
+    '/ai/dashboard': { page: 'ai-dashboard', title: 'AI总览' },
+    '/ai/models': { page: 'ai-models', title: '模型管理' },
+    '/ai/training': { page: 'ai-training', title: '训练任务' },
+    '/ai/pred/load': { page: 'ai-pred-load', title: '负荷预测' },
+    '/ai/pred/power': { page: 'ai-pred-power', title: '发电预测' },
+    '/ai/pred/price': { page: 'ai-pred-price', title: '电价预测' },
+    '/ai/peakvalley': { page: 'ai-peakvalley', title: '峰谷套利' },
+    '/ai/health': { page: 'ai-health', title: '设备健康预测' },
+    '/ai/fault': { page: 'ai-fault', title: 'AI故障预警' },
+    '/ai/carbon': { page: 'ai-carbon', title: 'AI碳交易' },
+    '/ai/market': { page: 'ai-market', title: 'AI市场策略' },
+    // 分析子页面
+    '/analytics/charging': { page: 'analytics-charging', title: '充电分析' },
+    '/analytics/device': { page: 'analytics-device', title: '设备分析' },
+    '/analytics/revenue': { page: 'analytics-revenue', title: '收入分析' },
+    '/analytics/anomaly': { page: 'analytics-anomaly', title: '异常分析' },
+    '/analytics/events': { page: 'analytics-events', title: '事件分析' },
+    '/analytics/funnel': { page: 'analytics-funnel', title: '漏斗分析' },
+    '/analytics/nlquery': { page: 'analytics-nlquery', title: 'NL查询' },
+    '/analytics/realtime': { page: 'analytics-realtime', title: '实时分析' },
+    '/analytics/drilldown': { page: 'analytics-drilldown', title: '下钻分析' },
+    '/analytics/path': { page: 'analytics-path', title: '路径分析' },
+    '/analytics/userprofile': { page: 'analytics-userprofile', title: '用户画像' },
+    // 区块链子页面
+    '/blockchain/dashboard': { page: 'blockchain-dashboard', title: '区块链总览' },
+    '/blockchain/txns': { page: 'blockchain-txns', title: '交易记录' },
+    '/blockchain/wallet': { page: 'blockchain-wallet', title: '数字钱包' },
+    '/blockchain/carbon': { page: 'blockchain-carbon', title: '碳存证' },
+    // 充电子页面
+    '/charging/refund': { page: 'charging-refund', title: '充电退款' },
+    '/charging/reservation': { page: 'charging-reservation', title: '充电预约' },
+    '/charging/stats': { page: 'charging-stats', title: '充电统计' },
+    '/charging/card': { page: 'charging-card', title: '充电卡' },
+    // 内容与媒体
+    '/content': { page: 'content-manage', title: '内容管理' },
+    '/media': { page: 'media-manage', title: '媒体管理' },
+    // 开发者工具
+    '/developer/api': { page: 'developer-api', title: 'API文档' },
+    '/developer/codegen': { page: 'developer-codegen', title: '代码生成' },
+    '/developer/forms': { page: 'developer-forms', title: '表单设计器' },
+    // 设备子页面
+    '/device/asset': { page: 'device-asset', title: '资产管理' },
+    '/device/control': { page: 'device-control', title: '远程控制' },
+    '/device/firmware': { page: 'device-firmware', title: '固件升级' },
+    '/device/phm': { page: 'device-phm', title: '健康管理' },
+    // 边缘网关
+    '/edge': { page: 'edge-gateway', title: '边缘网关' },
+    // 数字孪生子页面
+    '/digital-twin/dashboard': { page: 'dt-dashboard', title: '孪生总览' },
+    '/digital-twin/monitor': { page: 'dt-monitor', title: '孪生监控' },
+    '/digital-twin/realtime': { page: 'dt-realtime', title: '实时数据' },
+    '/digital-twin/playback': { page: 'dt-playback', title: '历史回放' },
+    '/digital-twin/analysis': { page: 'dt-analysis', title: '仿真分析' },
+    '/digital-twin/control': { page: 'dt-control', title: '孪生控制' },
+    '/digital-twin/scene': { page: 'dt-scene', title: '场景管理' },
+    '/digital-twin/simulation': { page: 'dt-simulation', title: '孪生仿真' },
+    // 能源服务子页面
+    '/energy/carbon-trade': { page: 'energy-carbon-trade', title: '碳交易' },
+    '/energy/demand-resp': { page: 'energy-demand-resp', title: '需求响应' },
+    '/energy/elec-trade': { page: 'energy-elec-trade', title: '电力交易' },
+    '/energy/eff': { page: 'energy-eff', title: '能效管理' },
+    '/energy/multi': { page: 'energy-multi', title: '综合能源' },
+    '/energy/safe': { page: 'energy-safe', title: '安全管控' },
+    '/energy/microgrid': { page: 'energy-microgrid', title: '微网管理' },
+    '/energy/pvessc': { page: 'energy-pvessc', title: '光伏储能' },
+    '/energy/orchestrator': { page: 'energy-orchestrator', title: '能源协调' },
+    // 场站子页面
+    '/station/map': { page: 'station-map', title: '场站地图' },
+    '/station/stats': { page: 'station-stats', title: '场站统计' },
+    // 储能
+    '/storage': { page: 'storage', title: '储能管理' },
+    // 工单子页面
+    '/workorder/stats': { page: 'workorder-stats', title: '工单统计' },
+    // 结算子页面
+    '/settlement/invoice': { page: 'settlement-invoice', title: '发票管理' },
+    // 规则引擎子页面
+    '/ruleengine/debug': { page: 'ruleengine-debug', title: '规则调试' },
+  };
+
+  function getRoute(pathname) {
+    // 精确匹配
+    if (routes[pathname]) return routes[pathname];
+    // 前缀匹配
+    for (const [path, route] of Object.entries(routes)) {
+      if (pathname.startsWith(path + '/')) return route;
+    }
+    return null;
+  }
+
+  function navigate() {
+    const pathname = window.location.pathname;
+    const token = localStorage.getItem('jgsy_access_token');
+    const route = getRoute(pathname);
+
+    // 隐藏所有页面内容
+    document.querySelectorAll('.page-content').forEach(el => el.classList.add('hidden'));
+    document.getElementById('page-login').classList.add('hidden');
+    document.getElementById('page-main').classList.add('hidden');
+
+    // 登录页
+    if (!route || route.page === 'login') {
+      document.getElementById('page-login').classList.remove('hidden');
+      return;
+    }
+
+    // 未登录 → 重定向到登录
+    if (!token && pathname !== '/' && pathname !== '/user/login') {
+      window.location.href = '/user/login';
+      return;
+    }
+
+    // 主布局
+    document.getElementById('page-main').classList.remove('hidden');
+
+    // 显示对应内容
+    const contentEl = document.getElementById('content-' + route.page);
+    if (contentEl) {
+      contentEl.classList.remove('hidden');
+      document.getElementById('breadcrumb-current').textContent = route.title;
+    } else {
+      document.getElementById('content-404').classList.remove('hidden');
+    }
+  }
+
+  // 登录表单
+  document.getElementById('login-btn').addEventListener('click', function(e) {
+    e.preventDefault();
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const usernameErr = document.getElementById('username-error');
+    const passwordErr = document.getElementById('password-error');
+    const loginErr = document.getElementById('login-error');
+
+    // 重置错误
+    usernameErr.classList.add('hidden');
+    passwordErr.classList.add('hidden');
+    loginErr.classList.remove('visible');
+
+    let hasError = false;
+    if (!username) { usernameErr.classList.remove('hidden'); hasError = true; }
+    if (!password) { passwordErr.classList.remove('hidden'); hasError = true; }
+    if (hasError) return;
+
+    // 发送登录请求（会被 Cypress intercept 拦截）
+    fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success && data.data) {
+        const token = data.data.token || data.data.accessToken || 'mock-token';
+        localStorage.setItem('jgsy_access_token', token);
+        window.location.href = '/dashboard';
+      } else {
+        loginErr.classList.add('visible');
+        loginErr.style.display = 'block';
+      }
+    })
+    .catch(() => {
+      loginErr.classList.add('visible');
+      loginErr.style.display = 'block';
+    });
+  });
+
+  // 侧边栏折叠
+  document.getElementById('sider-trigger').addEventListener('click', function() {
+    document.getElementById('sider').classList.toggle('collapsed');
+  });
+
+  // 菜单导航（SPA 式）
+  document.querySelectorAll('#sider-menu a').forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      const href = this.getAttribute('href');
+      window.history.pushState({}, '', href);
+      navigate();
+    });
+  });
+
+  // 模态框
+  function openModal(title) {
+    document.getElementById('modal-title').textContent = title || '新增';
+    document.getElementById('modal-mask').classList.remove('modal-hidden');
+    document.getElementById('modal-dialog').classList.remove('modal-hidden');
+  }
+  function closeModal() {
+    document.getElementById('modal-mask').classList.add('modal-hidden');
+    document.getElementById('modal-dialog').classList.add('modal-hidden');
+  }
+  document.getElementById('modal-cancel').addEventListener('click', closeModal);
+  document.getElementById('modal-ok').addEventListener('click', closeModal);
+  document.getElementById('modal-mask').addEventListener('click', closeModal);
+
+  // 抽屉
+  function openDrawer(title) {
+    document.getElementById('drawer-title').textContent = title || '详情';
+    document.getElementById('drawer-dialog').classList.remove('drawer-hidden');
+  }
+  function closeDrawer() {
+    document.getElementById('drawer-dialog').classList.add('drawer-hidden');
+  }
+  document.getElementById('drawer-close').addEventListener('click', closeDrawer);
+  document.getElementById('drawer-footer-close').addEventListener('click', closeDrawer);
+
+  // 新增按钮 → 模态框
+  ['btn-add-station', 'btn-add-device', 'btn-add-role', 'btn-add-workorder', 'btn-add-user',
+   'btn-add-ai-model', 'btn-add-rule', 'btn-add-simulator', 'btn-add-digital-twin',
+   'btn-add-tenant', 'btn-add-workflow', 'btn-add-ingestion', 'btn-add-pile',
+   'btn-add-pricing', 'btn-add-vpp', 'btn-add-whitelist', 'btn-generate-report',
+   'btn-add-card', 'btn-add-carbon-order', 'btn-add-demand-resp', 'btn-add-elec-bid',
+   'btn-add-microgrid', 'btn-add-orch-task', 'btn-apply-invoice', 'btn-settlement-apply-invoice',
+   'btn-run-debug', 'btn-deploy-model', 'btn-new-training', 'btn-pv-strategy'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('click', () => openModal('新增'));
+  });
+
+  // 充电订单详情 → 抽屉
+  document.querySelectorAll('.btn-order-detail').forEach(btn => {
+    btn.addEventListener('click', () => openDrawer('订单详情'));
+  });
+
+  // 结算详情 → 抽屉
+  document.querySelectorAll('.btn-settlement-detail').forEach(btn => {
+    btn.addEventListener('click', () => openDrawer('结算详情'));
+  });
+
+  // Tab 切换
+  document.querySelectorAll('.ant-tabs-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      const parent = this.closest('.ant-tabs');
+      parent.querySelectorAll('.ant-tabs-tab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+
+  // 树节点切换
+  document.querySelectorAll('.ant-tree-switcher').forEach(sw => {
+    sw.addEventListener('click', function() {
+      this.textContent = this.textContent === '▶' ? '▼' : '▶';
+    });
+  });
+
+  // 根路径处理
+  if (window.location.pathname === '/') {
+    const token = localStorage.getItem('jgsy_access_token');
+    if (token) {
+      window.location.href = '/dashboard';
+    } else {
+      window.location.href = '/user/login';
+    }
+    return;
+  }
+
+  // 初始导航
+  navigate();
+
+  // popstate
+  window.addEventListener('popstate', navigate);
+})();
+</script>
+</body>
+</html>

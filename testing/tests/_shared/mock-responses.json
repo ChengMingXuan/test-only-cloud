@@ -1,0 +1,200 @@
+{
+  "_comment": "统一 ApiResult<T> 响应模板 — Cypress/Puppeteer 等前端 Mock 工具直接引用",
+
+  "auth": {
+    "loginSuccess": {
+      "success": true, "code": "200", "message": "OK",
+      "data": {
+        "accessToken": "mock-token-for-testing",
+        "refreshToken": "mock-refresh-token",
+        "expiresIn": 86400,
+        "user": {
+          "id": "user-001", "username": "admin", "name": "系统管理员",
+          "email": "admin@jgsy.com", "tenantId": "00000000-0000-0000-0000-000000000001",
+          "roles": [{ "id": "role-001", "name": "SUPER_ADMIN", "displayName": "超级管理员" }],
+          "permissions": ["*"]
+        }
+      }
+    },
+    "currentUser": {
+      "success": true, "code": "200", "message": "OK",
+      "data": {
+        "id": "user-001", "username": "admin", "name": "系统管理员", "realName": "系统管理员",
+        "email": "admin@jgsy.com", "phone": "13800138000", "avatar": null,
+        "tenantId": "00000000-0000-0000-0000-000000000001", "tenantName": "演示租户",
+        "isAdmin": true,
+        "roles": [{ "id": "role-001", "name": "SUPER_ADMIN", "displayName": "超级管理员" }],
+        "permissions": ["*"]
+      }
+    },
+    "captcha": {
+      "success": true, "code": "200", "message": "OK",
+      "data": { "key": "captcha-key-001", "image": "data:image/png;base64,iVBORw==" }
+    }
+  },
+
+  "device": {
+    "list": {
+      "success": true, "code": "200", "message": "OK",
+      "data": {
+        "items": [
+          { "id": "dev-001", "code": "DEV-TEST-001", "name": "测试充电桩A", "type": "charger", "status": "online", "stationId": "sta-001", "stationName": "测试场站A" },
+          { "id": "dev-002", "code": "DEV-TEST-002", "name": "测试充电桩B", "type": "charger", "status": "offline", "stationId": "sta-001", "stationName": "测试场站A" },
+          { "id": "dev-003", "code": "DEV-TEST-003", "name": "测试逆变器", "type": "inverter", "status": "online", "stationId": "sta-002", "stationName": "测试场站B" }
+        ],
+        "totalCount": 3, "total": 3, "pageIndex": 1, "pageSize": 20
+      }
+    },
+    "detail": {
+      "success": true, "code": "200", "message": "OK",
+      "data": {
+        "id": "dev-001", "code": "DEV-TEST-001", "name": "测试充电桩A", "type": "charger", "status": "online",
+        "stationId": "sta-001", "stationName": "测试场站A",
+        "manufacturer": "测试厂商", "model": "DC-120kW", "power": 120,
+        "createTime": "2025-01-01T00:00:00Z", "updateTime": "2025-01-15T12:00:00Z"
+      }
+    },
+    "createSuccess": {
+      "success": true, "code": "200", "message": "创建成功",
+      "data": { "id": "dev-new-001", "code": "DEV-NEW-001", "name": "新设备" }
+    },
+    "updateSuccess": {
+      "success": true, "code": "200", "message": "更新成功", "data": null
+    },
+    "deleteSuccess": {
+      "success": true, "code": "200", "message": "删除成功", "data": null
+    }
+  },
+
+  "station": {
+    "list": {
+      "success": true, "code": "200", "message": "OK",
+      "data": {
+        "items": [
+          { "id": "sta-001", "code": "STA-TEST-001", "name": "测试场站A", "address": "北京市朝阳区测试路1号", "status": "active", "deviceCount": 5 },
+          { "id": "sta-002", "code": "STA-TEST-002", "name": "测试场站B", "address": "上海市浦东新区测试路2号", "status": "active", "deviceCount": 3 }
+        ],
+        "totalCount": 2, "total": 2, "pageIndex": 1, "pageSize": 20
+      }
+    },
+    "detail": {
+      "success": true, "code": "200", "message": "OK",
+      "data": {
+        "id": "sta-001", "code": "STA-TEST-001", "name": "测试场站A",
+        "address": "北京市朝阳区测试路1号", "status": "active",
+        "lng": 116.46, "lat": 39.92, "capacity": 1000, "deviceCount": 5,
+        "createTime": "2025-01-01T00:00:00Z"
+      }
+    },
+    "options": {
+      "success": true, "code": "200", "message": "OK",
+      "data": [
+        { "id": "sta-001", "name": "测试场站A" },
+        { "id": "sta-002", "name": "测试场站B" }
+      ]
+    }
+  },
+
+  "charging": {
+    "orderList": {
+      "success": true, "code": "200", "message": "OK",
+      "data": {
+        "items": [
+          { "id": "order-001", "orderNo": "CHG20250101001", "deviceId": "dev-001", "deviceName": "测试充电桩A", "stationName": "测试场站A", "status": "completed", "amount": 35.80, "startTime": "2025-01-15T08:00:00Z", "endTime": "2025-01-15T09:30:00Z", "energy": 28.5 },
+          { "id": "order-002", "orderNo": "CHG20250101002", "deviceId": "dev-002", "deviceName": "测试充电桩B", "stationName": "测试场站A", "status": "charging", "amount": 0, "startTime": "2025-01-15T10:00:00Z", "endTime": null, "energy": 12.3 }
+        ],
+        "totalCount": 2, "total": 2, "pageIndex": 1, "pageSize": 20
+      }
+    },
+    "orderDetail": {
+      "success": true, "code": "200", "message": "OK",
+      "data": {
+        "id": "order-001", "orderNo": "CHG20250101001",
+        "deviceId": "dev-001", "deviceName": "测试充电桩A",
+        "stationId": "sta-001", "stationName": "测试场站A",
+        "userId": "user-002", "userName": "测试用户",
+        "status": "completed", "amount": 35.80, "energy": 28.5,
+        "startTime": "2025-01-15T08:00:00Z", "endTime": "2025-01-15T09:30:00Z",
+        "powerRate": 120, "unit": "kWh", "unitPrice": 1.256
+      }
+    }
+  },
+
+  "workorder": {
+    "list": {
+      "success": true, "code": "200", "message": "OK",
+      "data": {
+        "items": [
+          { "id": "wo-001", "code": "WO20250115001", "title": "充电桩故障维修", "type": "repair", "status": "pending", "priority": "high", "deviceId": "dev-002", "stationName": "测试场站A", "assignee": "张三", "createTime": "2025-01-15T08:00:00Z" },
+          { "id": "wo-002", "code": "WO20250115002", "title": "日常巡检", "type": "inspection", "status": "in_progress", "priority": "normal", "deviceId": null, "stationName": "测试场站B", "assignee": "李四", "createTime": "2025-01-15T09:00:00Z" }
+        ],
+        "totalCount": 2, "total": 2, "pageIndex": 1, "pageSize": 20
+      }
+    }
+  },
+
+  "permission": {
+    "roleList": {
+      "success": true, "code": "200", "message": "OK",
+      "data": {
+        "items": [
+          { "id": "role-001", "code": "SUPER_ADMIN", "name": "超级管理员", "description": "系统超级管理员", "userCount": 1 },
+          { "id": "role-002", "code": "ADMIN", "name": "管理员", "description": "普通管理员", "userCount": 3 },
+          { "id": "role-003", "code": "OPERATOR", "name": "运维人员", "description": "运维操作人员", "userCount": 5 }
+        ],
+        "totalCount": 3, "total": 3, "pageIndex": 1, "pageSize": 20
+      }
+    },
+    "permissionTree": {
+      "success": true, "code": "200", "message": "OK",
+      "data": [
+        {
+          "id": "perm-device", "code": "device", "name": "设备管理",
+          "children": [
+            { "id": "perm-device-list", "code": "device:device:list", "name": "设备列表" },
+            { "id": "perm-device-create", "code": "device:device:create", "name": "新增设备" },
+            { "id": "perm-device-update", "code": "device:device:update", "name": "编辑设备" },
+            { "id": "perm-device-delete", "code": "device:device:delete", "name": "删除设备" }
+          ]
+        },
+        {
+          "id": "perm-station", "code": "station", "name": "场站管理",
+          "children": [
+            { "id": "perm-station-list", "code": "station:station:list", "name": "场站列表" },
+            { "id": "perm-station-create", "code": "station:station:create", "name": "新增场站" }
+          ]
+        }
+      ]
+    }
+  },
+
+  "user": {
+    "list": {
+      "success": true, "code": "200", "message": "OK",
+      "data": {
+        "items": [
+          { "id": "user-001", "username": "admin", "name": "系统管理员", "email": "admin@jgsy.com", "status": "active", "roles": ["超级管理员"] },
+          { "id": "user-002", "username": "testuser", "name": "测试用户", "email": "testuser@jgsy.com", "status": "active", "roles": ["运维人员"] },
+          { "id": "user-003", "username": "readonly", "name": "只读用户", "email": "readonly@jgsy.com", "status": "active", "roles": ["只读角色"] }
+        ],
+        "totalCount": 3, "total": 3, "pageIndex": 1, "pageSize": 20
+      }
+    }
+  },
+
+  "dashboard": {
+    "overview": {
+      "success": true, "code": "200", "message": "OK",
+      "data": {
+        "totalStations": 15,
+        "totalDevices": 128,
+        "onlineDevices": 95,
+        "todayOrders": 342,
+        "todayEnergy": 4567.89,
+        "todayRevenue": 5732.45,
+        "chargingDevices": 38,
+        "faultDevices": 3
+      }
+    }
+  }
+}

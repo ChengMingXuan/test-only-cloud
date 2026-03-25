@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="50" failures="0" errors="0" time="102.034">
+  <testsuite name="[渲染测试] 登录页" errors="0" failures="0" skipped="0" timestamp="2026-03-12T19:44:06" time="101.987" tests="50">
+    <testcase classname="[渲染测试] 登录页 页面渲染 [R001] 页面能正常加载" name="[渲染测试] 登录页 页面渲染 [R001] 页面能正常加载" time="2.188">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 页面渲染 [R002] 页面无白屏" name="[渲染测试] 登录页 页面渲染 [R002] 页面无白屏" time="0.589">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 页面渲染 [R003] 根容器渲染" name="[渲染测试] 登录页 页面渲染 [R003] 根容器渲染" time="2.038">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 页面渲染 [R004] 标题正确设置" name="[渲染测试] 登录页 页面渲染 [R004] 标题正确设置" time="2.027">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 页面渲染 [R005] 样式正确加载" name="[渲染测试] 登录页 页面渲染 [R005] 样式正确加载" time="2.045">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 页面渲染 [R006] 主要脚本加载" name="[渲染测试] 登录页 页面渲染 [R006] 主要脚本加载" time="2.042">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 页面渲染 [R007] 布局容器完整" name="[渲染测试] 登录页 页面渲染 [R007] 布局容器完整" time="2.042">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 页面渲染 [R008] 导航区域渲染" name="[渲染测试] 登录页 页面渲染 [R008] 导航区域渲染" time="2.041">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 页面渲染 [R009] 内容区域渲染" name="[渲染测试] 登录页 页面渲染 [R009] 内容区域渲染" time="2.042">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 页面渲染 [R010] 无图片加载失败" name="[渲染测试] 登录页 页面渲染 [R010] 无图片加载失败" time="2.027">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 页面渲染 [R011] Favicon 存在" name="[渲染测试] 登录页 页面渲染 [R011] Favicon 存在" time="2.036">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 页面渲染 [R012] 字体正确加载" name="[渲染测试] 登录页 页面渲染 [R012] 字体正确加载" time="2.027">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 页面渲染 [R013] 响应时间合理" name="[渲染测试] 登录页 页面渲染 [R013] 响应时间合理" time="0.516">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 页面渲染 [R014] DOM 节点数量合理" name="[渲染测试] 登录页 页面渲染 [R014] DOM 节点数量合理" time="2.028">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 页面渲染 [R015] 视口正确设置" name="[渲染测试] 登录页 页面渲染 [R015] 视口正确设置" time="2.026">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 JS错误检测 [E001] 无严重 JS 错误" name="[渲染测试] 登录页 JS错误检测 [E001] 无严重 JS 错误" time="2.025">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 JS错误检测 [E002] 无未捕获异常" name="[渲染测试] 登录页 JS错误检测 [E002] 无未捕获异常" time="2.027">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 JS错误检测 [E003] 无语法错误" name="[渲染测试] 登录页 JS错误检测 [E003] 无语法错误" time="2.025">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 JS错误检测 [E004] 无类型错误" name="[渲染测试] 登录页 JS错误检测 [E004] 无类型错误" time="2.024">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 JS错误检测 [E005] 无引用错误" name="[渲染测试] 登录页 JS错误检测 [E005] 无引用错误" time="2.025">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 JS错误检测 [E006] 无范围错误" name="[渲染测试] 登录页 JS错误检测 [E006] 无范围错误" time="2.026">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 JS错误检测 [E007] React 错误边界正常" name="[渲染测试] 登录页 JS错误检测 [E007] React 错误边界正常" time="2.037">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 JS错误检测 [E008] 无内存泄漏警告" name="[渲染测试] 登录页 JS错误检测 [E008] 无内存泄漏警告" time="2.031">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 JS错误检测 [E009] 无废弃 API 警告" name="[渲染测试] 登录页 JS错误检测 [E009] 无废弃 API 警告" time="2.028">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 JS错误检测 [E010] 控制台错误数量可控" name="[渲染测试] 登录页 JS错误检测 [E010] 控制台错误数量可控" time="2.029">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 资源加载 [L001] CSS 文件全部加载" name="[渲染测试] 登录页 资源加载 [L001] CSS 文件全部加载" time="2.024">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 资源加载 [L002] JS 文件全部加载" name="[渲染测试] 登录页 资源加载 [L002] JS 文件全部加载" time="2.026">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 资源加载 [L003] 无 404 资源" name="[渲染测试] 登录页 资源加载 [L003] 无 404 资源" time="2.024">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 资源加载 [L004] 无 500 错误" name="[渲染测试] 登录页 资源加载 [L004] 无 500 错误" time="2.029">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 资源加载 [L005] 关键资源加载顺序正确" name="[渲染测试] 登录页 资源加载 [L005] 关键资源加载顺序正确" time="2.031">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 资源加载 [L006] 资源总大小合理" name="[渲染测试] 登录页 资源加载 [L006] 资源总大小合理" time="2.026">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 资源加载 [L007] 无混合内容" name="[渲染测试] 登录页 资源加载 [L007] 无混合内容" time="2.03">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 资源加载 [L008] 懒加载正常" name="[渲染测试] 登录页 资源加载 [L008] 懒加载正常" time="2.038">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 资源加载 [L009] 请求数量合理" name="[渲染测试] 登录页 资源加载 [L009] 请求数量合理" time="2.023">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 资源加载 [L010] 缓存策略正确" name="[渲染测试] 登录页 资源加载 [L010] 缓存策略正确" time="2.027">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 异常恢复 [X001] 网络断开恢复" name="[渲染测试] 登录页 异常恢复 [X001] 网络断开恢复" time="0.746">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 异常恢复 [X002] 页面刷新正常" name="[渲染测试] 登录页 异常恢复 [X002] 页面刷新正常" time="3.206">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 异常恢复 [X003] 后退前进正常" name="[渲染测试] 登录页 异常恢复 [X003] 后退前进正常" time="5.045">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 异常恢复 [X004] 缩放不破坏布局" name="[渲染测试] 登录页 异常恢复 [X004] 缩放不破坏布局" time="2.043">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 异常恢复 [X005] 窗口大小变化正常" name="[渲染测试] 登录页 异常恢复 [X005] 窗口大小变化正常" time="2.538">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 异常恢复 [X006] 慢速网络正常" name="[渲染测试] 登录页 异常恢复 [X006] 慢速网络正常" time="0.948">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 异常恢复 [X007] 无限循环检测" name="[渲染测试] 登录页 异常恢复 [X007] 无限循环检测" time="2.03">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 异常恢复 [X008] 内存使用合理" name="[渲染测试] 登录页 异常恢复 [X008] 内存使用合理" time="2.029">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 异常恢复 [X009] CPU 使用合理" name="[渲染测试] 登录页 异常恢复 [X009] CPU 使用合理" time="2.034">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 异常恢复 [X010] 并发访问稳定" name="[渲染测试] 登录页 异常恢复 [X010] 并发访问稳定" time="1.358">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 可访问性 [A001] 页面语言属性" name="[渲染测试] 登录页 可访问性 [A001] 页面语言属性" time="2.045">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 可访问性 [A002] 图片有 alt 属性" name="[渲染测试] 登录页 可访问性 [A002] 图片有 alt 属性" time="2.038">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 可访问性 [A003] 表单有 label" name="[渲染测试] 登录页 可访问性 [A003] 表单有 label" time="2.027">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 可访问性 [A004] 色彩对比度" name="[渲染测试] 登录页 可访问性 [A004] 色彩对比度" time="2.044">
+    </testcase>
+    <testcase classname="[渲染测试] 登录页 可访问性 [A005] 键盘可导航" name="[渲染测试] 登录页 可访问性 [A005] 键盘可导航" time="2.03">
+    </testcase>
+  </testsuite>
+</testsuites>

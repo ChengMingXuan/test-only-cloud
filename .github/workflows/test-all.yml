@@ -1,0 +1,936 @@
+# ═══════════════════════════════════════════════════════════════════
+# 云端自动化测试工作流
+# 推送到 main 分支自动触发，按选择清单执行 6 类中的指定工具
+# 每个工具分别生成独立报告 → 提交到仓库 → 主仓库按工具覆盖拉取
+# 优化：各工具内部启用并行执行（pytest-xdist, Jest workers 等）
+# ═══════════════════════════════════════════════════════════════════
+name: "🚀 云端测试"
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'test-error-reports/**'
+  workflow_dispatch:
+    inputs:
+      test_level:
+        description: '测试级别'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+          - smoke
+          - standard
+          - full
+      run_mode:
+        description: '执行模式'
+        required: false
+        default: 'full'
+        type: choice
+        options:
+          - full
+          - unpassed
+      selected_tools:
+        description: '要执行的云端工具，逗号分隔；all=全部'
+        required: false
+        default: 'all'
+
+# concurrency 临时禁用以解除 runner 死锁 (2026-03-25)
+# concurrency:
+#   group: all-tests-${{ github.ref }}
+#   cancel-in-progress: true
+
+jobs:
+  detect-selection:
+    name: "🧭 解析测试选择"
+    runs-on: ubuntu-latest
+    outputs:
+      selected_tools: ${{ steps.selection.outputs.selected_tools }}
+      run_mode: ${{ steps.selection.outputs.run_mode }}
+      run_pytest: ${{ steps.selection.outputs.run_pytest }}
+      run_cypress: ${{ steps.selection.outputs.run_cypress }}
+      run_playwright: ${{ steps.selection.outputs.run_playwright }}
+      run_puppeteer: ${{ steps.selection.outputs.run_puppeteer }}
+      run_selenium: ${{ steps.selection.outputs.run_selenium }}
+      run_k6: ${{ steps.selection.outputs.run_k6 }}
+      execute_pytest: ${{ steps.selection.outputs.execute_pytest }}
+      execute_cypress: ${{ steps.selection.outputs.execute_cypress }}
+      execute_playwright: ${{ steps.selection.outputs.execute_playwright }}
+      execute_puppeteer: ${{ steps.selection.outputs.execute_puppeteer }}
+      execute_selenium: ${{ steps.selection.outputs.execute_selenium }}
+      execute_k6: ${{ steps.selection.outputs.execute_k6 }}
+      skipped_pytest: ${{ steps.selection.outputs.skipped_pytest }}
+      skipped_cypress: ${{ steps.selection.outputs.skipped_cypress }}
+      skipped_playwright: ${{ steps.selection.outputs.skipped_playwright }}
+      skipped_puppeteer: ${{ steps.selection.outputs.skipped_puppeteer }}
+      skipped_selenium: ${{ steps.selection.outputs.skipped_selenium }}
+      skipped_k6: ${{ steps.selection.outputs.skipped_k6 }}
+      any_executed: ${{ steps.selection.outputs.any_executed }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: selection
+        shell: bash
+        run: |
+          python3 <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          all_tools = ["pytest", "cypress", "playwright", "puppeteer", "selenium", "k6"]
+          dispatch_value = "${{ github.event.inputs.selected_tools || '' }}".strip()
+          dispatch_run_mode = "${{ github.event.inputs.run_mode || '' }}".strip().lower()
+          selected = []
+          manifest = {}
+
+          if dispatch_value and dispatch_value.lower() != "all":
+            selected = [item.strip() for item in dispatch_value.split(',') if item.strip() in all_tools]
+          elif os.path.exists('.github/cloud-test-selection.json'):
+            try:
+              manifest = json.load(open('.github/cloud-test-selection.json', encoding='utf-8-sig'))
+              raw_selected = manifest.get('selectedTools', [])
+              if isinstance(raw_selected, str):
+                raw_selected = [raw_selected]
+              elif not isinstance(raw_selected, list):
+                raw_selected = []
+              selected = [item for item in raw_selected if item in all_tools]
+            except Exception as exc:
+              selected = []
+              manifest = {}
+              print(f"selection_manifest_error={exc}")
+
+          if not selected:
+            selected = all_tools
+
+          run_mode = dispatch_run_mode if dispatch_run_mode in {"full", "unpassed"} else str(manifest.get('runMode', 'full')).lower()
+          if run_mode not in {"full", "unpassed"}:
+            run_mode = "full"
+
+          def previous_report_passed(tool: str) -> bool:
+            report_path = Path('test-error-reports/latest/reports') / f'{tool}-report.json'
+            if not report_path.exists():
+              return False
+            try:
+              data = json.load(open(report_path, encoding='utf-8'))
+              summary = data.get('summary', {})
+              total = int(summary.get('total', 0) or 0)
+              failed = int(summary.get('failed', 0) or 0)
+              return total > 0 and failed == 0
+            except Exception:
+              return False
+
+          execution = {}
+          skipped = {}
+          any_executed = False
+
+          for tool in all_tools:
+            is_selected = tool in selected
+            already_passed = previous_report_passed(tool) if is_selected and run_mode == 'unpassed' else False
+            should_execute = is_selected and not already_passed
+            execution[tool] = should_execute
+            skipped[tool] = is_selected and already_passed
+            any_executed = any_executed or should_execute
+
+          selected_csv = ','.join(selected)
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as fh:
+            fh.write(f"selected_tools={selected_csv}\n")
+            fh.write(f"run_mode={run_mode}\n")
+            fh.write(f"any_executed={'true' if any_executed else 'false'}\n")
+            for tool in all_tools:
+              fh.write(f"run_{tool}={'true' if tool in selected else 'false'}\n")
+              fh.write(f"execute_{tool}={'true' if execution[tool] else 'false'}\n")
+              fh.write(f"skipped_{tool}={'true' if skipped[tool] else 'false'}\n")
+
+          print(f"selected_tools={selected_csv}")
+          print(f"run_mode={run_mode}")
+          PY
+
+  pytest:
+    name: "🐍 pytest"
+    needs: detect-selection
+    if: needs.detect-selection.outputs.execute_pytest == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: 'testing/tests/requirements.txt'
+      - run: |
+          pip install --upgrade pip
+          pip install -r testing/tests/requirements.txt
+      - name: 运行 pytest（并行）
+        working-directory: testing/tests
+        continue-on-error: true
+        run: |
+          mkdir -p ../../TestResults
+          LEVEL="${{ github.event.inputs.test_level || 'full' }}"
+          ARGS="--tb=short --no-header -q --junitxml=../../TestResults/pytest-results.xml -n auto"
+          if [ "$LEVEL" = "smoke" ]; then
+            ARGS="$ARGS -m smoke --maxfail=10"
+          elif [ "$LEVEL" = "standard" ]; then
+            ARGS="$ARGS -m 'p0 or p1' --maxfail=50"
+          fi
+          echo "🚀 并行执行 | 级别: $LEVEL | 参数: pytest $ARGS"
+          pytest $ARGS 2>&1 | tee ../../TestResults/pytest-output.txt || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: all-pytest
+          path: TestResults/
+          retention-days: 7
+
+  cypress-matrix:
+    name: "🌲 Cypress [${{ matrix.shard }}/10]"
+    needs: detect-selection
+    if: needs.detect-selection.outputs.execute_cypress == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: 📦 安装依赖
+        working-directory: testing/tests/cypress-tests
+        run: npm ci || npm install
+      - name: 🧪 运行 Cypress 分片 ${{ matrix.shard }}/10
+        working-directory: testing/tests/cypress-tests
+        continue-on-error: true
+        run: |
+          mkdir -p ../../../TestResults/cypress-shards
+          mkdir -p reports
+          export CYPRESS_VIDEO=false
+          export CYPRESS_SCREENSHOT_ON_RUN_FAILURE=false
+          SHARD=${{ matrix.shard }}
+          TOTAL_SHARDS=10
+
+          TEST_FILES=$(find e2e -name "*.cy.js" -o -name "*.cy.ts" | sort)
+          FILE_COUNT=$(echo "$TEST_FILES" | wc -l)
+          FILES_PER_SHARD=$(( (FILE_COUNT + TOTAL_SHARDS - 1) / TOTAL_SHARDS ))
+          START_IDX=$(( (SHARD - 1) * FILES_PER_SHARD + 1 ))
+          END_IDX=$(( SHARD * FILES_PER_SHARD ))
+
+          SHARD_FILES=$(echo "$TEST_FILES" | sed -n "${START_IDX},${END_IDX}p" | tr '\n' ',' | sed 's/,$//')
+
+          if [ -n "$SHARD_FILES" ]; then
+            echo "分片 $SHARD: 执行文件 $START_IDX 到 $END_IDX"
+            npx cypress run \
+              --spec "$SHARD_FILES" \
+              --reporter mochawesome \
+              --reporter-options "reportDir=reports/shard-${SHARD},overwrite=true,html=false,json=true" \
+              2>&1 | tee ../../../TestResults/cypress-shards/cypress-shard-${SHARD}-output.txt || true
+
+            if [ -f "reports/shard-${SHARD}/mochawesome.json" ]; then
+              cp "reports/shard-${SHARD}/mochawesome.json" ../../../TestResults/cypress-shards/cypress-shard-${SHARD}-results.json
+            fi
+          else
+            echo "分片 $SHARD: 无测试文件"
+            echo '{"stats":{"tests":0,"passes":0,"failures":0,"pending":0,"duration":0},"results":[]}' > ../../../TestResults/cypress-shards/cypress-shard-${SHARD}-results.json
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cypress-shard-${{ matrix.shard }}
+          path: TestResults/cypress-shards/
+          retention-days: 7
+
+  cypress:
+    name: "🌲 Cypress"
+    needs: [detect-selection, cypress-matrix]
+    if: always() && needs.detect-selection.outputs.execute_cypress == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: cypress-shard-*
+          path: TestResults/cypress-shards/
+          merge-multiple: true
+      - name: 📊 聚合 Cypress 结果
+        run: |
+          mkdir -p TestResults
+          python3 << 'EOF'
+          import glob
+          import json
+
+          files = glob.glob('TestResults/cypress-shards/**/cypress-shard-*-results.json', recursive=True)
+          aggregate = {
+            'stats': {'tests': 0, 'passes': 0, 'failures': 0, 'pending': 0, 'duration': 0},
+            'results': []
+          }
+
+          for file in sorted(files):
+            try:
+              data = json.load(open(file, encoding='utf-8'))
+              stats = data.get('stats', {})
+              aggregate['stats']['tests'] += int(stats.get('tests', 0) or 0)
+              aggregate['stats']['passes'] += int(stats.get('passes', 0) or 0)
+              aggregate['stats']['failures'] += int(stats.get('failures', 0) or 0)
+              aggregate['stats']['pending'] += int(stats.get('pending', 0) or 0)
+              aggregate['stats']['duration'] += float(stats.get('duration', 0) or 0)
+              aggregate['results'].append(data)
+            except Exception as error:
+              print(f'警告: 无法解析 {file}: {error}')
+
+          with open('TestResults/cypress-results.json', 'w', encoding='utf-8') as handle:
+            json.dump(aggregate, handle, ensure_ascii=False, indent=2)
+          print(f"✅ 聚合完成: {len(files)} 个分片")
+          EOF
+
+          cat TestResults/cypress-shards/**/cypress-shard-*-output.txt > TestResults/cypress-output.txt 2>/dev/null || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: all-cypress
+          path: TestResults/
+          retention-days: 7
+
+  playwright-matrix:
+    name: "🎭 Playwright [${{ matrix.shard }}/10]"
+    needs: detect-selection
+    if: needs.detect-selection.outputs.execute_playwright == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: 📦 安装依赖
+        working-directory: testing/tests/playwright-tests
+        run: |
+          npm ci || npm install
+          npx playwright install --with-deps chromium
+      - name: 🧪 运行 Playwright 分片 ${{ matrix.shard }}/10
+        working-directory: testing/tests/playwright-tests
+        continue-on-error: true
+        env:
+          FULL_RUN: '1'
+        run: |
+          mkdir -p ../../../TestResults/playwright-shards
+          LEVEL="${{ github.event.inputs.test_level || 'full' }}"
+          SHARD=${{ matrix.shard }}
+
+          ARGS="--reporter=list,junit --shard=${SHARD}/10"
+          if [ "$LEVEL" = "smoke" ]; then
+            ARGS="$ARGS --grep @smoke"
+          fi
+
+          export PLAYWRIGHT_JUNIT_OUTPUT_NAME=playwright-shard-${SHARD}-results.xml
+          export PLAYWRIGHT_JUNIT_OUTPUT_DIR=../../../TestResults/playwright-shards
+          npx playwright test $ARGS 2>&1 | tee ../../../TestResults/playwright-shards/playwright-shard-${SHARD}-output.txt || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-shard-${{ matrix.shard }}
+          path: TestResults/playwright-shards/
+          retention-days: 7
+
+  playwright:
+    name: "🎭 Playwright"
+    needs: [detect-selection, playwright-matrix]
+    if: always() && needs.detect-selection.outputs.execute_playwright == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: playwright-shard-*
+          path: TestResults/playwright-shards/
+          merge-multiple: true
+      - name: 📊 聚合 Playwright 结果
+        run: |
+          mkdir -p TestResults
+          pip install junitparser
+
+          python3 << 'EOF'
+          import glob
+          from junitparser import JUnitXml
+
+          combined = JUnitXml()
+          xml_files = glob.glob('TestResults/playwright-shards/**/playwright-shard-*-results.xml', recursive=True)
+
+          for xml_file in sorted(xml_files):
+              try:
+                  xml = JUnitXml.fromfile(xml_file)
+                  for suite in xml:
+                      combined.add_testsuite(suite)
+              except Exception as error:
+                  print(f"警告: 无法解析 {xml_file}: {error}")
+
+          combined.write('TestResults/playwright-results.xml')
+          print(f"✅ 聚合完成: {len(xml_files)} 个分片")
+          EOF
+
+          cat TestResults/playwright-shards/**/playwright-shard-*-output.txt > TestResults/playwright-output.txt 2>/dev/null || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: all-playwright
+          path: TestResults/
+          retention-days: 7
+
+  puppeteer-matrix:
+    name: "🤖 Puppeteer [${{ matrix.shard }}/5]"
+    needs: detect-selection
+    if: needs.detect-selection.outputs.execute_puppeteer == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: 安装 Puppeteer 依赖
+        working-directory: testing/tests/puppeteer-tests
+        run: npm ci || npm install
+      - name: 运行 Puppeteer 分片 ${{ matrix.shard }}/5
+        working-directory: testing/tests/puppeteer-tests
+        continue-on-error: true
+        run: |
+          mkdir -p ../../../TestResults/puppeteer-shards
+          SHARD=${{ matrix.shard }}
+
+          echo "🚀 分片并发执行 | shard: ${SHARD}/5 | maxWorkers: 4"
+          npx jest \
+            --ci \
+            --forceExit \
+            --shard=${SHARD}/5 \
+            --maxWorkers=4 \
+            --config jest.config.js \
+            --reporters=default \
+            --reporters=jest-junit \
+            2>&1 | tee ../../../TestResults/puppeteer-shards/puppeteer-shard-${SHARD}-output.txt || true
+        env:
+          JEST_JUNIT_OUTPUT_DIR: ../../../TestResults/puppeteer-shards
+          JEST_JUNIT_OUTPUT_NAME: puppeteer-shard-${{ matrix.shard }}-results.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: puppeteer-shard-${{ matrix.shard }}
+          path: TestResults/puppeteer-shards/
+          retention-days: 7
+
+  puppeteer-aggregate:
+    name: "📊 Puppeteer 聚合"
+    needs: [detect-selection, puppeteer-matrix]
+    if: always() && needs.detect-selection.outputs.execute_puppeteer == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: puppeteer-shard-*
+          path: TestResults/puppeteer-shards/
+          merge-multiple: true
+      - name: 聚合 Puppeteer 结果
+        run: |
+          mkdir -p TestResults
+          pip install junitparser
+
+          python3 << 'EOF'
+          import glob
+          from junitparser import JUnitXml
+
+          combined = JUnitXml()
+          xml_files = glob.glob('TestResults/puppeteer-shards/**/puppeteer-shard-*-results.xml', recursive=True)
+
+          for xml_file in sorted(xml_files):
+              try:
+                  xml = JUnitXml.fromfile(xml_file)
+                  for suite in xml:
+                      combined.add_testsuite(suite)
+              except Exception as error:
+                  print(f"警告: 无法解析 {xml_file}: {error}")
+
+          combined.write('TestResults/puppeteer-results.xml')
+          print(f"✅ 聚合完成: {len(xml_files)} 个分片")
+          EOF
+
+          cat TestResults/puppeteer-shards/**/puppeteer-shard-*-output.txt > TestResults/puppeteer-output.txt 2>/dev/null || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: all-puppeteer
+          path: TestResults/
+          retention-days: 7
+
+  selenium:
+    name: "🔬 Selenium"
+    needs: detect-selection
+    if: needs.detect-selection.outputs.execute_selenium == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: 安装浏览器与驱动
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y firefox
+          google-chrome --version || true
+          firefox --version || true
+          sudo bash -c 'if ! command -v microsoft-edge >/dev/null 2>&1; then curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /usr/share/keyrings/microsoft-edge.gpg; echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-edge.gpg] https://packages.microsoft.com/repos/edge stable main" > /etc/apt/sources.list.d/microsoft-edge.list; apt-get update; apt-get install -y microsoft-edge-stable; fi'
+          sudo ln -sf /usr/bin/google-chrome /usr/bin/chrome || true
+          sudo ln -sf /usr/bin/microsoft-edge /usr/bin/msedge || true
+          python - <<'PY'
+          from selenium import webdriver
+          from selenium.webdriver.chrome.options import Options as ChromeOptions
+          from selenium.webdriver.edge.options import Options as EdgeOptions
+          from selenium.webdriver.firefox.options import Options as FirefoxOptions
+
+          def warmup(factory, label):
+              driver = None
+              try:
+                  driver = factory()
+                  print(f"{label}: ok")
+              finally:
+                  if driver is not None:
+                      driver.quit()
+
+          chrome_options = ChromeOptions()
+          chrome_options.add_argument('--headless=new')
+          chrome_options.add_argument('--no-sandbox')
+          chrome_options.add_argument('--disable-dev-shm-usage')
+
+          firefox_options = FirefoxOptions()
+          firefox_options.add_argument('-headless')
+
+          edge_options = EdgeOptions()
+          edge_options.add_argument('--headless=new')
+          edge_options.add_argument('--no-sandbox')
+          edge_options.add_argument('--disable-dev-shm-usage')
+
+          warmup(lambda: webdriver.Chrome(options=chrome_options), 'chrome')
+          warmup(lambda: webdriver.Firefox(options=firefox_options), 'firefox')
+          warmup(lambda: webdriver.Edge(options=edge_options), 'edge')
+          PY
+      - run: |
+          pip install selenium pytest pytest-html webdriver-manager requests pytest-xdist
+          [ -f testing/tests/selenium-tests/requirements.txt ] && pip install -r testing/tests/selenium-tests/requirements.txt || true
+      - name: 运行 Selenium（并行批量执行）
+        working-directory: testing/tests/selenium-tests
+        continue-on-error: true
+        run: |
+          mkdir -p ../../../TestResults
+          echo "🚀 并行执行 | pytest -n auto --dist loadfile"
+          pytest --tb=short -q -n auto --dist loadfile --junitxml=../../../TestResults/selenium-results.xml 2>&1 | tee ../../../TestResults/selenium-output.txt || true
+        env:
+          HEADLESS: 'true'
+          CI: 'true'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: all-selenium
+          path: TestResults/
+          retention-days: 7
+
+  k6-discover:
+    name: "⚡ k6 发现场景"
+    needs: detect-selection
+    if: needs.detect-selection.outputs.execute_k6 == 'true'
+    runs-on: ubuntu-latest
+    outputs:
+      scenarios: ${{ steps.discover.outputs.scenarios }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: 发现 k6 场景
+        id: discover
+        shell: bash
+        run: |
+          python3 <<'PY'
+          import json
+          from pathlib import Path
+
+          scenario_dir = Path('testing/k6/scenarios')
+          scenarios = sorted(path.stem for path in scenario_dir.glob('*.js')) if scenario_dir.exists() else []
+
+          with open(__import__('os').environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as fh:
+            fh.write(f"scenarios={json.dumps(scenarios, ensure_ascii=False)}\n")
+
+          print(f"发现 {len(scenarios)} 个场景")
+          PY
+
+  k6-matrix:
+    name: "⚡ k6 [${{ matrix.scenario }}]"
+    needs: [detect-selection, k6-discover]
+    if: needs.detect-selection.outputs.execute_k6 == 'true' && needs.k6-discover.outputs.scenarios != '[]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        scenario: ${{ fromJson(needs.k6-discover.outputs.scenarios) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: 安装 k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: 启动 Mock 服务器
+        run: |
+          if [ -f testing/k6/mock-server.js ]; then
+            node testing/k6/mock-server.js &
+            MOCK_PID=$!
+            echo "MOCK_PID=$MOCK_PID" >> $GITHUB_ENV
+            sleep 2
+            curl -sf http://localhost:8000/health || echo "Mock 服务器未就绪"
+          fi
+      - name: 运行 k6 场景 ${{ matrix.scenario }}
+        continue-on-error: true
+        run: |
+          rm -rf TestResults
+          mkdir -p TestResults/k6-scenarios
+          SCENARIO="${{ matrix.scenario }}"
+          SCENARIO_FILE="testing/k6/scenarios/${SCENARIO}.js"
+
+          if [ -f "$SCENARIO_FILE" ]; then
+            k6 run \
+              --env BASE_URL=http://localhost:8000 \
+              --duration 30s \
+              --summary-export="TestResults/k6-scenarios/k6-${SCENARIO}-summary.json" \
+              "$SCENARIO_FILE" 2>&1 | tee "TestResults/k6-scenarios/k6-${SCENARIO}-output.txt" || true
+          else
+            echo "场景文件不存在: $SCENARIO_FILE" | tee "TestResults/k6-scenarios/k6-${SCENARIO}-output.txt"
+          fi
+      - name: 停止 Mock 服务器
+        if: always()
+        run: |
+          if [ -n "$MOCK_PID" ]; then
+            kill "$MOCK_PID" 2>/dev/null || true
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: k6-scenario-${{ matrix.scenario }}
+          path: TestResults/k6-scenarios/
+          retention-days: 7
+
+  k6-aggregate:
+    name: "📊 k6 聚合"
+    needs: [detect-selection, k6-discover, k6-matrix]
+    if: always() && needs.detect-selection.outputs.execute_k6 == 'true' && needs.k6-discover.outputs.scenarios != '[]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: k6-scenario-*
+          path: TestResults/k6-scenarios/
+          merge-multiple: true
+      - name: 聚合 k6 结果
+        shell: bash
+        run: |
+          mkdir -p TestResults
+
+          python3 <<'PY'
+          import glob
+          import json
+
+          summaries = sorted(glob.glob('TestResults/k6-scenarios/**/k6-*-summary.json', recursive=True))
+          total_pass = 0
+          total_fail = 0
+
+          for path in summaries:
+            try:
+              data = json.load(open(path, encoding='utf-8'))
+              checks = data.get('metrics', {}).get('checks', {})
+              total_pass += int(checks.get('passes', 0) or 0)
+              total_fail += int(checks.get('fails', 0) or 0)
+            except Exception as exc:
+              print(f'警告: 无法解析 {path}: {exc}')
+
+          combined = {
+            'metrics': {
+              'checks': {
+                'passes': total_pass,
+                'fails': total_fail
+              }
+            },
+            'scenarios': len(summaries)
+          }
+
+          with open('TestResults/k6-summary.json', 'w', encoding='utf-8') as fh:
+            json.dump(combined, fh, indent=2, ensure_ascii=False)
+
+          print(f'✅ 聚合完成: {len(summaries)} 个场景, passes={total_pass}, fails={total_fail}')
+          PY
+
+          {
+            echo "═══════════════════════════════════════"
+            echo "k6 全量测试 - 并发场景聚合"
+            echo "═══════════════════════════════════════"
+            find TestResults/k6-scenarios -name 'k6-*-output.txt' -print0 | sort -z | xargs -0 cat
+          } > TestResults/k6-output.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: all-k6
+          path: TestResults/
+          retention-days: 7
+
+  summary:
+    name: "📊 独立报告整理"
+    needs: [detect-selection, pytest, cypress, playwright, puppeteer-aggregate, selenium, k6-aggregate]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "📥 下载所有测试结果"
+        if: needs.detect-selection.outputs.any_executed == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: all-*
+          path: TestResults/
+          merge-multiple: true
+
+      - name: "📊 生成选中工具的独立报告"
+        if: needs.detect-selection.outputs.any_executed == 'true'
+        env:
+          EXECUTE_PYTEST: ${{ needs.detect-selection.outputs.execute_pytest }}
+          EXECUTE_CYPRESS: ${{ needs.detect-selection.outputs.execute_cypress }}
+          EXECUTE_PLAYWRIGHT: ${{ needs.detect-selection.outputs.execute_playwright }}
+          EXECUTE_PUPPETEER: ${{ needs.detect-selection.outputs.execute_puppeteer }}
+          EXECUTE_SELENIUM: ${{ needs.detect-selection.outputs.execute_selenium }}
+          EXECUTE_K6: ${{ needs.detect-selection.outputs.execute_k6 }}
+        run: |
+          chmod +x .github/scripts/generate-ci-report.sh
+          LEVEL="${{ github.event.inputs.test_level || 'full' }}"
+
+          tool_executed() {
+            case "$1" in
+              pytest) [ "$EXECUTE_PYTEST" = "true" ] ;;
+              cypress) [ "$EXECUTE_CYPRESS" = "true" ] ;;
+              playwright) [ "$EXECUTE_PLAYWRIGHT" = "true" ] ;;
+              puppeteer) [ "$EXECUTE_PUPPETEER" = "true" ] ;;
+              selenium) [ "$EXECUTE_SELENIUM" = "true" ] ;;
+              k6) [ "$EXECUTE_K6" = "true" ] ;;
+              *) return 1 ;;
+            esac
+          }
+
+          rm -f TestResults/*-report.json TestResults/*-report.md
+
+          if tool_executed pytest; then
+            ./.github/scripts/generate-ci-report.sh pytest --xml TestResults/pytest-results.xml --output TestResults/pytest-output.txt --level "$LEVEL" --report-dir TestResults
+          fi
+          if tool_executed cypress; then
+            ./.github/scripts/generate-ci-report.sh cypress --json TestResults/cypress-results.json --output TestResults/cypress-output.txt --level "$LEVEL" --report-dir TestResults
+          fi
+          if tool_executed playwright; then
+            ./.github/scripts/generate-ci-report.sh playwright --xml TestResults/playwright-results.xml --output TestResults/playwright-output.txt --level "$LEVEL" --report-dir TestResults
+          fi
+          if tool_executed puppeteer; then
+            ./.github/scripts/generate-ci-report.sh puppeteer --xml TestResults/puppeteer-results.xml --output TestResults/puppeteer-output.txt --level "$LEVEL" --report-dir TestResults
+          fi
+          if tool_executed selenium; then
+            ./.github/scripts/generate-ci-report.sh selenium --xml TestResults/selenium-results.xml --output TestResults/selenium-output.txt --level "$LEVEL" --report-dir TestResults
+          fi
+          if tool_executed k6; then
+            ./.github/scripts/generate-ci-report.sh k6 --json TestResults/k6-summary.json --output TestResults/k6-output.txt --level "$LEVEL" --report-dir TestResults
+          fi
+
+      - name: "📦 整理本次独立报告"
+        env:
+          SKIPPED_PYTEST: ${{ needs.detect-selection.outputs.skipped_pytest }}
+          SKIPPED_CYPRESS: ${{ needs.detect-selection.outputs.skipped_cypress }}
+          SKIPPED_PLAYWRIGHT: ${{ needs.detect-selection.outputs.skipped_playwright }}
+          SKIPPED_PUPPETEER: ${{ needs.detect-selection.outputs.skipped_puppeteer }}
+          SKIPPED_SELENIUM: ${{ needs.detect-selection.outputs.skipped_selenium }}
+          SKIPPED_K6: ${{ needs.detect-selection.outputs.skipped_k6 }}
+        run: |
+          SELECTED_TOOLS="${{ needs.detect-selection.outputs.selected_tools }}"
+          RUN_MODE="${{ needs.detect-selection.outputs.run_mode }}"
+          PRESERVE_DIR=$(mktemp -d)
+
+          tool_skipped_passed() {
+            case "$1" in
+              pytest) [ "$SKIPPED_PYTEST" = "true" ] ;;
+              cypress) [ "$SKIPPED_CYPRESS" = "true" ] ;;
+              playwright) [ "$SKIPPED_PLAYWRIGHT" = "true" ] ;;
+              puppeteer) [ "$SKIPPED_PUPPETEER" = "true" ] ;;
+              selenium) [ "$SKIPPED_SELENIUM" = "true" ] ;;
+              k6) [ "$SKIPPED_K6" = "true" ] ;;
+              *) return 1 ;;
+            esac
+          }
+
+          for TOOL in $(echo "$SELECTED_TOOLS" | tr ',' ' '); do
+            if tool_skipped_passed "$TOOL"; then
+              cp "test-error-reports/latest/reports/${TOOL}-report.json" "$PRESERVE_DIR/" 2>/dev/null || true
+              cp "test-error-reports/latest/reports/${TOOL}-report.md" "$PRESERVE_DIR/" 2>/dev/null || true
+            fi
+          done
+
+          rm -rf test-error-reports/latest/reports
+          mkdir -p test-error-reports/latest/reports
+          TIMESTAMP=$(date +%Y-%m-%d_%H%M%S)
+
+          find test-error-reports/latest -maxdepth 1 -type f \( -name '*-errors.md' -o -name 'summary.md' \) -delete 2>/dev/null || true
+          cp TestResults/*-report.json test-error-reports/latest/reports/ 2>/dev/null || true
+          cp TestResults/*-report.md test-error-reports/latest/reports/ 2>/dev/null || true
+          cp "$PRESERVE_DIR"/* test-error-reports/latest/reports/ 2>/dev/null || true
+
+          cat > test-error-reports/latest/summary.md << 'HEADER'
+          # 云端独立报告执行摘要
+          HEADER
+
+          echo "" >> test-error-reports/latest/summary.md
+          echo "- **执行时间**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> test-error-reports/latest/summary.md
+          echo "- **Git Commit**: ${{ github.sha }}" >> test-error-reports/latest/summary.md
+          echo "- **测试级别**: ${{ github.event.inputs.test_level || 'full' }}" >> test-error-reports/latest/summary.md
+          echo "- **触发方式**: ${{ github.event_name }}" >> test-error-reports/latest/summary.md
+          echo "- **执行模式**: ${RUN_MODE}" >> test-error-reports/latest/summary.md
+          echo "- **所选工具**: ${SELECTED_TOOLS}" >> test-error-reports/latest/summary.md
+          echo "" >> test-error-reports/latest/summary.md
+          echo "## 本次独立报告状态" >> test-error-reports/latest/summary.md
+          echo "" >> test-error-reports/latest/summary.md
+          echo "| 工具 | 标准用例 | 状态 | 说明 |" >> test-error-reports/latest/summary.md
+          echo "|------|----------|------|------|" >> test-error-reports/latest/summary.md
+
+          declare -A TOOL_CASES=(
+            [pytest]=57774 [cypress]=9877 [playwright]=11093
+            [puppeteer]=8137 [selenium]=6540 [k6]=3651
+          )
+
+          TOTAL_PASS=0
+          TOTAL_FAIL=0
+
+          for TOOL in $(echo "$SELECTED_TOOLS" | tr ',' ' '); do
+            CASES="${TOOL_CASES[$TOOL]}"
+            REPORT_JSON="test-error-reports/latest/reports/${TOOL}-report.json"
+            if tool_skipped_passed "$TOOL"; then
+              if [ -f "$REPORT_JSON" ]; then
+                T=$(python3 -c "import json; d=json.load(open('$REPORT_JSON')); print(d['summary']['total'])" 2>/dev/null || echo "0")
+                P=$(python3 -c "import json; d=json.load(open('$REPORT_JSON')); print(d['summary']['passed'])" 2>/dev/null || echo "0")
+                F=$(python3 -c "import json; d=json.load(open('$REPORT_JSON')); print(d['summary']['failed'])" 2>/dev/null || echo "0")
+                TOTAL_PASS=$((TOTAL_PASS + P))
+                TOTAL_FAIL=$((TOTAL_FAIL + F))
+                echo "| $TOOL | $CASES | ⏭️ | 已通过，未通过模式下跳过；沿用上次报告（执行 $T, 通过 $P, 失败 $F） |" >> test-error-reports/latest/summary.md
+              else
+                echo "| $TOOL | $CASES | ⚠️ | 标记应跳过，但历史报告缺失 |" >> test-error-reports/latest/summary.md
+              fi
+            elif [ -f "$REPORT_JSON" ]; then
+              T=$(python3 -c "import json; d=json.load(open('$REPORT_JSON')); print(d['summary']['total'])" 2>/dev/null || echo "0")
+              P=$(python3 -c "import json; d=json.load(open('$REPORT_JSON')); print(d['summary']['passed'])" 2>/dev/null || echo "0")
+              F=$(python3 -c "import json; d=json.load(open('$REPORT_JSON')); print(d['summary']['failed'])" 2>/dev/null || echo "0")
+              TOTAL_PASS=$((TOTAL_PASS + P))
+              TOTAL_FAIL=$((TOTAL_FAIL + F))
+              if [ "$F" -gt 0 ]; then
+                echo "| $TOOL | $CASES | ❌ | 执行 $T, 通过 $P, 失败 $F |" >> test-error-reports/latest/summary.md
+              elif [ "$T" -gt 0 ]; then
+                echo "| $TOOL | $CASES | ✅ | 执行 $T, 全部通过 |" >> test-error-reports/latest/summary.md
+              else
+                echo "| $TOOL | $CASES | ⚠️ | 未收集到结果 |" >> test-error-reports/latest/summary.md
+              fi
+            else
+              echo "| $TOOL | $CASES | ⚠️ | 无报告文件 |" >> test-error-reports/latest/summary.md
+            fi
+          done
+
+          GRAND_TOTAL=$((TOTAL_PASS + TOTAL_FAIL))
+          echo "" >> test-error-reports/latest/summary.md
+          echo "## 综合统计" >> test-error-reports/latest/summary.md
+          echo "" >> test-error-reports/latest/summary.md
+          echo "- **总执行**: $GRAND_TOTAL" >> test-error-reports/latest/summary.md
+          echo "- **通过**: $TOTAL_PASS" >> test-error-reports/latest/summary.md
+          echo "- **失败**: $TOTAL_FAIL" >> test-error-reports/latest/summary.md
+          if [ "$GRAND_TOTAL" -gt 0 ]; then
+            RATE=$(python3 -c "print(round($TOTAL_PASS / $GRAND_TOTAL * 100, 1))" 2>/dev/null || echo "0")
+            echo "- **通过率**: ${RATE}%" >> test-error-reports/latest/summary.md
+          fi
+
+          echo "" >> test-error-reports/latest/summary.md
+          echo "## 失败详情" >> test-error-reports/latest/summary.md
+          echo "" >> test-error-reports/latest/summary.md
+
+          for TOOL in $(echo "$SELECTED_TOOLS" | tr ',' ' '); do
+            OUTPUT="TestResults/${TOOL}-output.txt"
+            if [ -f "$OUTPUT" ]; then
+              FAIL_LINES=$(grep -E "FAILED|FAIL|✗|✘|Error|assert" "$OUTPUT" 2>/dev/null | head -20 || true)
+              if [ -n "$FAIL_LINES" ]; then
+                echo "### $TOOL" >> test-error-reports/latest/summary.md
+                echo '```' >> test-error-reports/latest/summary.md
+                echo "$FAIL_LINES" >> test-error-reports/latest/summary.md
+                echo '```' >> test-error-reports/latest/summary.md
+                echo "" >> test-error-reports/latest/summary.md
+
+                cat > "test-error-reports/latest/${TOOL}-errors.md" << TOOLEOF
+          # ${TOOL} 测试错误报告
+
+          - **执行时间**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          - **Git Commit**: ${{ github.sha }}
+
+          ## 失败详情
+
+          TOOLEOF
+                echo '```' >> "test-error-reports/latest/${TOOL}-errors.md"
+                grep -E "FAILED|FAIL|✗|✘|Error|assert" "$OUTPUT" | head -50 >> "test-error-reports/latest/${TOOL}-errors.md" || true
+                echo '```' >> "test-error-reports/latest/${TOOL}-errors.md"
+              fi
+            fi
+          done
+
+          mkdir -p "test-error-reports/history/$TIMESTAMP"
+          cp test-error-reports/latest/* "test-error-reports/history/$TIMESTAMP/" 2>/dev/null || true
+          cp -r test-error-reports/latest/reports "test-error-reports/history/$TIMESTAMP/" 2>/dev/null || true
+
+          echo ""
+          echo "═══════════════════════════════════════"
+          echo "📊 选中工具独立报告已生成"
+          echo "  通过: $TOTAL_PASS / 失败: $TOTAL_FAIL"
+          cat test-error-reports/latest/summary.md
+
+      - name: "📤 上传汇总报告"
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-summary-report
+          path: test-error-reports/
+          retention-days: 30
+
+      - name: "💾 提交报告到仓库"
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add test-error-reports/ || true
+          git diff --cached --quiet || git commit -m "📊 云端独立报告 ${{ needs.detect-selection.outputs.selected_tools }} ${{ needs.detect-selection.outputs.run_mode }} ${{ github.event.inputs.test_level || 'full' }} $(date +%Y-%m-%d_%H%M) [skip ci]"
+          for i in 1 2 3; do
+            git stash --include-untracked || true
+            git pull --rebase origin main || true
+            git stash pop || true
+            git push && break
+            sleep $((i * 5))
+          done

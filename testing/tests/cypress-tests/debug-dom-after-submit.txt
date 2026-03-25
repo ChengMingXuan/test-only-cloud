@@ -1,0 +1,4 @@
+=== AFTER SUBMIT ===
+Validation messages found: 0
+Alert elements: 0
+Error-class elements: 0

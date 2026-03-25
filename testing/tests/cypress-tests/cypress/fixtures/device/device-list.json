@@ -1,0 +1,14 @@
+{
+  "success": true, "code": "200", "message": "OK",
+  "data": {
+    "items": [
+      { "id": "dev-001", "code": "DEV-TEST-001", "name": "测试充电桩A", "type": "charger", "status": "online", "power": 120, "stationId": "sta-001", "stationName": "测试场站A", "manufacturer": "测试厂商", "model": "DC-120kW", "createTime": "2025-01-01T00:00:00Z" },
+      { "id": "dev-002", "code": "DEV-TEST-002", "name": "测试充电桩B", "type": "charger", "status": "offline", "power": 60, "stationId": "sta-001", "stationName": "测试场站A", "manufacturer": "测试厂商", "model": "AC-60kW", "createTime": "2025-01-02T00:00:00Z" },
+      { "id": "dev-003", "code": "DEV-TEST-003", "name": "测试逆变器", "type": "inverter", "status": "online", "power": 500, "stationId": "sta-002", "stationName": "测试场站B", "manufacturer": "测试厂商", "model": "INV-500kW", "createTime": "2025-01-03T00:00:00Z" },
+      { "id": "dev-004", "code": "DEV-TEST-004", "name": "测试储能柜", "type": "battery", "status": "online", "power": 200, "stationId": "sta-002", "stationName": "测试场站B", "manufacturer": "测试厂商B", "model": "BAT-200kWh", "createTime": "2025-01-04T00:00:00Z" },
+      { "id": "dev-005", "code": "DEV-TEST-005", "name": "测试光伏板", "type": "solar", "status": "maintenance", "power": 300, "stationId": "sta-002", "stationName": "测试场站B", "manufacturer": "测试厂商C", "model": "PV-300kW", "createTime": "2025-01-05T00:00:00Z" }
+    ],
+    "totalCount": 5, "total": 5, "pageIndex": 1, "pageSize": 20
+  },
+  "timestamp": "2025-01-01T00:00:00Z"
+}

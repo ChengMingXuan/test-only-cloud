@@ -1,0 +1,55 @@
+{
+  "success": true, "code": "200", "message": "OK",
+  "data": [
+    {
+      "id": "perm-dashboard", "code": "dashboard", "name": "仪表盘",
+      "children": [
+        { "id": "perm-dashboard-view", "code": "dashboard:view", "name": "查看仪表盘" }
+      ]
+    },
+    {
+      "id": "perm-device", "code": "device", "name": "设备管理",
+      "children": [
+        { "id": "perm-device-list", "code": "device:device:list", "name": "设备列表" },
+        { "id": "perm-device-detail", "code": "device:device:detail", "name": "设备详情" },
+        { "id": "perm-device-create", "code": "device:device:create", "name": "新增设备" },
+        { "id": "perm-device-update", "code": "device:device:update", "name": "编辑设备" },
+        { "id": "perm-device-delete", "code": "device:device:delete", "name": "删除设备" }
+      ]
+    },
+    {
+      "id": "perm-station", "code": "station", "name": "场站管理",
+      "children": [
+        { "id": "perm-station-list", "code": "station:station:list", "name": "场站列表" },
+        { "id": "perm-station-detail", "code": "station:station:detail", "name": "场站详情" },
+        { "id": "perm-station-create", "code": "station:station:create", "name": "新增场站" },
+        { "id": "perm-station-update", "code": "station:station:update", "name": "编辑场站" },
+        { "id": "perm-station-delete", "code": "station:station:delete", "name": "删除场站" }
+      ]
+    },
+    {
+      "id": "perm-charging", "code": "charging", "name": "充电运营",
+      "children": [
+        { "id": "perm-charging-list", "code": "charging:order:list", "name": "订单列表" },
+        { "id": "perm-charging-detail", "code": "charging:order:detail", "name": "订单详情" }
+      ]
+    },
+    {
+      "id": "perm-workorder", "code": "workorder", "name": "工单管理",
+      "children": [
+        { "id": "perm-workorder-list", "code": "workorder:workorder:list", "name": "工单列表" },
+        { "id": "perm-workorder-create", "code": "workorder:workorder:create", "name": "新建工单" }
+      ]
+    },
+    {
+      "id": "perm-permission", "code": "permission", "name": "权限管理",
+      "children": [
+        { "id": "perm-role-list", "code": "permission:role:list", "name": "角色列表" },
+        { "id": "perm-role-create", "code": "permission:role:create", "name": "新增角色" },
+        { "id": "perm-user-list", "code": "permission:user:list", "name": "用户列表" },
+        { "id": "perm-user-create", "code": "permission:user:create", "name": "新增用户" }
+      ]
+    }
+  ],
+  "timestamp": "2025-01-01T00:00:00Z"
+}

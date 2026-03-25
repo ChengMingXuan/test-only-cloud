@@ -1,0 +1,27 @@
+# Puppeteer 测试产物 - 禁止提交
+
+# 测试报告
+test-reports/
+reports/
+html-report/
+allure-results/
+
+# 浏览器临时 profile（userDataDir 输出到 D 盘）
+.browser-profile/
+
+# 截图
+*.png
+*.jpg
+*.jpeg
+screenshots/
+
+# Node
+node_modules/
+package-lock.json
+
+# 日志
+*.log
+
+# 临时文件
+*.tmp
+*.temp

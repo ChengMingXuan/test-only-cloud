@@ -1,0 +1,41 @@
+{
+  "name": "aiops-playwright-tests",
+  "version": "1.0.0",
+  "description": "AIOPS 平台 Playwright E2E 测试套件",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:ui": "playwright test --ui",
+    "test:chromium": "playwright test --project=chromium",
+    "test:firefox": "playwright test --project=firefox",
+    "test:webkit": "playwright test --project=webkit",
+    "test:mobile": "playwright test --project=mobile-chrome --project=mobile-safari",
+    "test:smoke": "playwright test --grep @smoke",
+    "test:critical": "playwright test --grep @critical",
+    "test:auth": "playwright test tests/auth.spec.ts",
+    "test:charging": "playwright test tests/charging.spec.ts",
+    "test:station": "playwright test tests/station.spec.ts",
+    "report": "playwright show-report ../test-reports/playwright-report",
+    "codegen": "playwright codegen https://aiops.jgsy.com",
+    "install:browsers": "playwright install --with-deps",
+    "clean": "rimraf ../test-reports/playwright-report .auth/test-run-info.json"
+  },
+  "keywords": [
+    "playwright",
+    "e2e",
+    "testing",
+    "aiops"
+  ],
+  "author": "JGSY.AGI Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.42.0",
+    "@types/node": "^20.11.0",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

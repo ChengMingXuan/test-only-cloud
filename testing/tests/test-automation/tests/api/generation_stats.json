@@ -1,0 +1,188 @@
+{
+  "total_apis": 2878,
+  "total_tests": 48926,
+  "standard": 49755,
+  "coverage": 98.33,
+  "services": [
+    {
+      "service": "Account",
+      "apis": 70,
+      "tests": 1190,
+      "file": "test_account_api.py"
+    },
+    {
+      "service": "Analytics",
+      "apis": 142,
+      "tests": 2414,
+      "file": "test_analytics_api.py"
+    },
+    {
+      "service": "Blockchain",
+      "apis": 87,
+      "tests": 1479,
+      "file": "test_blockchain_api.py"
+    },
+    {
+      "service": "Charging",
+      "apis": 94,
+      "tests": 1598,
+      "file": "test_charging_api.py"
+    },
+    {
+      "service": "ContentPlatform",
+      "apis": 322,
+      "tests": 5474,
+      "file": "test_contentplatform_api.py"
+    },
+    {
+      "service": "Device",
+      "apis": 131,
+      "tests": 2227,
+      "file": "test_device_api.py"
+    },
+    {
+      "service": "DigitalTwin",
+      "apis": 129,
+      "tests": 2193,
+      "file": "test_digitaltwin_api.py"
+    },
+    {
+      "service": "EnergyCore.MicroGrid",
+      "apis": 10,
+      "tests": 170,
+      "file": "test_energycore_microgrid_api.py"
+    },
+    {
+      "service": "EnergyCore.Orchestrator",
+      "apis": 5,
+      "tests": 85,
+      "file": "test_energycore_orchestrator_api.py"
+    },
+    {
+      "service": "EnergyCore.PVESSC",
+      "apis": 28,
+      "tests": 476,
+      "file": "test_energycore_pvessc_api.py"
+    },
+    {
+      "service": "EnergyCore.VPP",
+      "apis": 15,
+      "tests": 255,
+      "file": "test_energycore_vpp_api.py"
+    },
+    {
+      "service": "EnergyServices.CarbonTrade",
+      "apis": 3,
+      "tests": 51,
+      "file": "test_energyservices_carbontrade_api.py"
+    },
+    {
+      "service": "EnergyServices.DemandResp",
+      "apis": 15,
+      "tests": 255,
+      "file": "test_energyservices_demandresp_api.py"
+    },
+    {
+      "service": "EnergyServices.DeviceOps",
+      "apis": 1,
+      "tests": 17,
+      "file": "test_energyservices_deviceops_api.py"
+    },
+    {
+      "service": "EnergyServices.ElecTrade",
+      "apis": 20,
+      "tests": 340,
+      "file": "test_energyservices_electrade_api.py"
+    },
+    {
+      "service": "EnergyServices.EnergyEff",
+      "apis": 1,
+      "tests": 17,
+      "file": "test_energyservices_energyeff_api.py"
+    },
+    {
+      "service": "EnergyServices.MultiEnergy",
+      "apis": 1,
+      "tests": 17,
+      "file": "test_energyservices_multienergy_api.py"
+    },
+    {
+      "service": "EnergyServices.SafeControl",
+      "apis": 1,
+      "tests": 17,
+      "file": "test_energyservices_safecontrol_api.py"
+    },
+    {
+      "service": "Identity",
+      "apis": 332,
+      "tests": 5644,
+      "file": "test_identity_api.py"
+    },
+    {
+      "service": "Ingestion",
+      "apis": 98,
+      "tests": 1666,
+      "file": "test_ingestion_api.py"
+    },
+    {
+      "service": "IotCloudAI",
+      "apis": 110,
+      "tests": 1870,
+      "file": "test_iotcloudai_api.py"
+    },
+    {
+      "service": "Observability",
+      "apis": 211,
+      "tests": 3587,
+      "file": "test_observability_api.py"
+    },
+    {
+      "service": "Permission",
+      "apis": 248,
+      "tests": 4216,
+      "file": "test_permission_api.py"
+    },
+    {
+      "service": "RuleEngine",
+      "apis": 38,
+      "tests": 646,
+      "file": "test_ruleengine_api.py"
+    },
+    {
+      "service": "Settlement",
+      "apis": 41,
+      "tests": 697,
+      "file": "test_settlement_api.py"
+    },
+    {
+      "service": "Simulator",
+      "apis": 20,
+      "tests": 340,
+      "file": "test_simulator_api.py"
+    },
+    {
+      "service": "Station",
+      "apis": 47,
+      "tests": 799,
+      "file": "test_station_api.py"
+    },
+    {
+      "service": "Storage",
+      "apis": 48,
+      "tests": 816,
+      "file": "test_storage_api.py"
+    },
+    {
+      "service": "Tenant",
+      "apis": 485,
+      "tests": 8245,
+      "file": "test_tenant_api.py"
+    },
+    {
+      "service": "WorkOrder",
+      "apis": 125,
+      "tests": 2125,
+      "file": "test_workorder_api.py"
+    }
+  ]
+}

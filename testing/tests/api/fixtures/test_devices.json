@@ -1,0 +1,49 @@
+[
+  {
+    "_comment": "正常创建 — 合法数据",
+    "code": "DEV-PYTEST-001",
+    "name": "pytest 测试充电桩",
+    "type": "charger",
+    "power": 120,
+    "manufacturer": "测试厂商",
+    "model": "DC-120kW"
+  },
+  {
+    "_comment": "边界值 — code 最大长度(50字符)",
+    "code": "DEV-PYTEST-BOUNDARY-MAX-LENGTH-CODE-0000000000001",
+    "name": "边界值测试设备",
+    "type": "charger",
+    "power": 0
+  },
+  {
+    "_comment": "特殊字符 — name 含中英文混合",
+    "code": "DEV-PYTEST-SPECIAL",
+    "name": "测试Device-特殊字符#$@!",
+    "type": "inverter",
+    "power": 500
+  },
+  {
+    "_comment": "非法数据 — code 为空（应校验失败）",
+    "code": "",
+    "name": "无编码设备",
+    "type": "charger",
+    "expectError": true,
+    "expectedCode": "400"
+  },
+  {
+    "_comment": "非法数据 — code 重复（应校验冲突）",
+    "code": "DEV-PYTEST-001",
+    "name": "重复编码设备",
+    "type": "charger",
+    "expectError": true,
+    "expectedCode": "409"
+  },
+  {
+    "_comment": "非法数据 — type 不合法",
+    "code": "DEV-PYTEST-INVALID-TYPE",
+    "name": "非法类型设备",
+    "type": "invalid_type_xxx",
+    "expectError": true,
+    "expectedCode": "400"
+  }
+]

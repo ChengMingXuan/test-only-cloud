@@ -1,0 +1,32 @@
+{
+  "name": "aiops-puppeteer-tests",
+  "version": "1.0.0",
+  "description": "AIOPS 平台 Puppeteer 性能监控测试",
+  "main": "tests/performance-baseline.js",
+  "scripts": {
+    "test": "node tests/full-test.js",
+    "test:generated": "jest --config jest.config.js --testTimeout=30000 --maxWorkers=2 --forceExit",
+    "test:generated:fast": "jest --config jest.config.js --testTimeout=10000 --maxWorkers=8 --bail=10",
+    "test:performance": "node tests/performance-baseline.js",
+    "test:visual": "node tests/visual-regression.js",
+    "test:full": "node tests/full-test.js",
+    "report": "start ../test-reports/puppeteer-report/index.html"
+  },
+  "keywords": [
+    "puppeteer",
+    "performance",
+    "monitoring"
+  ],
+  "author": "JGSY.AGI Team",
+  "license": "MIT",
+  "dependencies": {
+    "puppeteer": "^24.40.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-html-reporters": "^3.1.7",
+    "jest-junit": "^16.0.0",
+    "pixelmatch": "^5.3.0",
+    "pngjs": "^7.0.0"
+  }
+}

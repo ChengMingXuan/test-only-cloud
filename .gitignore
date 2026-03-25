@@ -1,0 +1,10 @@
+﻿bin/
+obj/
+node_modules/
+__pycache__/
+.pytest_cache/
+.vs/
+.vscode/
+playwright-report/
+test-results/
+

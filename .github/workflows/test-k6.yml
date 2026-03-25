@@ -1,0 +1,154 @@
+# ═══════════════════════════════════════════════════════════════════
+# k6 性能压测工作流
+# 3,651 检查点 | 仅 smoke 模式（CI安全）
+# ═══════════════════════════════════════════════════════════════════
+name: ⚡ k6
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      scenario:
+        description: '测试场景'
+        required: true
+        default: 'smoke'
+        type: choice
+        options:
+          - smoke
+          - load
+          - stress
+
+concurrency:
+  group: k6-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  k6:
+    name: ⚡ k6 (${{ github.event.inputs.scenario || 'full' }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: ⚡ 安装 k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+          k6 version
+
+      - name: 🚀 启动 Mock 服务器
+        run: |
+          if [ -f testing/k6/mock-server.js ]; then
+            echo "启动 k6 Mock 服务器 (port 8000)..."
+            node testing/k6/mock-server.js &
+            MOCK_PID=$!
+            echo "MOCK_PID=$MOCK_PID" >> $GITHUB_ENV
+            sleep 2
+            curl -sf http://localhost:8000/health || echo "⚠️ Mock 服务器健康检查失败"
+          else
+            echo "⚠️ mock-server.js 不存在，跳过"
+          fi
+
+      - name: 🧪 运行 k6 测试
+        id: test
+        continue-on-error: true
+        run: |
+          SCENARIO="${{ github.event.inputs.scenario || 'full' }}"
+          rm -rf TestResults
+          mkdir -p TestResults
+          
+          # CI 模式：连接 Mock 服务器（localhost:8000）
+          if [ -f "testing/k6/scenarios/${SCENARIO}-test.js" ]; then
+            k6 run \
+              --env BASE_URL=http://localhost:8000 \
+              --out json=TestResults/k6-results.json \
+              --summary-export=TestResults/k6-summary.json \
+              "testing/k6/scenarios/${SCENARIO}-test.js" \
+              2>&1 | tee TestResults/k6-output.txt || true
+          else
+            echo "场景文件不存在: testing/k6/scenarios/${SCENARIO}-test.js"
+            ls -la testing/k6/scenarios/ || true
+          fi
+
+      - name: 🛑 停止 Mock 服务器
+        if: always()
+        run: |
+          if [ -n "$MOCK_PID" ]; then
+            kill $MOCK_PID 2>/dev/null || true
+            echo "Mock 服务器已停止"
+          fi
+
+      - name: 📊 生成错误报告
+        if: always()
+        run: |
+          mkdir -p test-error-reports/latest
+          TIMESTAMP=$(date +%Y-%m-%d_%H%M%S)
+          
+          cat > test-error-reports/latest/k6-errors.md << EOF
+          # ⚡ k6 性能测试错误报告
+          
+          - **执行时间**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          - **Git Commit**: ${{ github.sha }}
+          - **场景**: ${{ github.event.inputs.scenario || 'full' }}
+          
+          ## 测试结果
+          
+          EOF
+          
+          if [ -f TestResults/k6-output.txt ]; then
+            echo '```' >> test-error-reports/latest/k6-errors.md
+            tail -50 TestResults/k6-output.txt >> test-error-reports/latest/k6-errors.md || true
+            echo '```' >> test-error-reports/latest/k6-errors.md
+          fi
+          
+          mkdir -p "test-error-reports/history/$TIMESTAMP"
+          cp test-error-reports/latest/k6-errors.md "test-error-reports/history/$TIMESTAMP/" || true
+
+      - name: 📤 上传测试结果
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: k6-results
+          path: |
+            TestResults/
+            test-error-reports/
+          retention-days: 30
+
+      - name: 📊 生成标准格式报告
+        if: always()
+        run: |
+          chmod +x .github/scripts/generate-ci-report.sh
+          ./.github/scripts/generate-ci-report.sh k6 \
+            --json TestResults/k6-summary.json \
+            --output TestResults/k6-output.txt \
+            --level "${{ github.event.inputs.scenario || 'full' }}"
+
+      - name: 💾 提交报告到仓库
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add test-error-reports/ || true
+          git diff --cached --quiet || git commit -m "📊 k6 报告 $(date +%Y-%m-%d_%H%M) [skip ci]"
+          for i in 1 2 3; do
+            git stash --include-untracked || true
+            git pull --rebase origin main || true
+            git stash pop || true
+            git push && break
+            sleep $((i * 5))
+          done

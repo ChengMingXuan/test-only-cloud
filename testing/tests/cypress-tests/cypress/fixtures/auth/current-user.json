@@ -1,0 +1,12 @@
+{
+  "success": true, "code": "200", "message": "OK",
+  "data": {
+    "id": "user-001", "username": "admin", "name": "系统管理员", "realName": "系统管理员",
+    "email": "admin@jgsy.com", "phone": "13800138000", "avatar": null,
+    "tenantId": "00000000-0000-0000-0000-000000000001", "tenantName": "演示租户",
+    "isAdmin": true,
+    "roles": [{ "id": "role-001", "name": "SUPER_ADMIN", "displayName": "超级管理员" }],
+    "permissions": ["*"]
+  },
+  "timestamp": "2025-01-01T00:00:00Z"
+}

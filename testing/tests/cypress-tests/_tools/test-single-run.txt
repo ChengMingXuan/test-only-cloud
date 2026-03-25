@@ -1,0 +1,27 @@
+﻿
+node.exe : 
+At C:\nvm4w\nodejs\npx.ps1:29 char:3
++   & $NODE_EXE $NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+DevTools listening on ws://127.0.0.1:59089/devtools/browser/e128221b-c945-43ef-
+8cba-570a10ce3a40
+
+====================================================================================================
+
+  (Run Starting)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Cypress:        13.17.0                                                                        │
+  │ Browser:        Electron 118 (headless)                                                        │
+  │ Node Version:   v22.12.0 (C:\nvm4w\nodejs\node.exe)                                            │
+  │ Specs:          1 found (03-station.cy.js)                                                     │
+  │ Searched:       D:\2026\aiops.v2\tests\cypress-tests\e2e\03-station.cy.js                      │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                    
+  Running:  03-station.cy.js                                                                (1 of 1)

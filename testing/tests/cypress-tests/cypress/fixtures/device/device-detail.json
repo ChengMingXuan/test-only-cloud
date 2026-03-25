@@ -1,0 +1,16 @@
+{
+  "success": true, "code": "200", "message": "OK",
+  "data": {
+    "id": "dev-001", "code": "DEV-TEST-001", "name": "测试充电桩A",
+    "type": "charger", "status": "online", "power": 120,
+    "stationId": "sta-001", "stationName": "测试场站A",
+    "manufacturer": "测试厂商", "model": "DC-120kW",
+    "serialNumber": "SN20250101001",
+    "installDate": "2025-01-01",
+    "warrantyExpiry": "2027-01-01",
+    "description": "测试用充电桩设备",
+    "createBy": "user-001", "createName": "系统管理员", "createTime": "2025-01-01T00:00:00Z",
+    "updateBy": "user-001", "updateName": "系统管理员", "updateTime": "2025-01-15T12:00:00Z"
+  },
+  "timestamp": "2025-01-01T00:00:00Z"
+}

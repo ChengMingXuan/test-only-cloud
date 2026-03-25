@@ -1,0 +1,16 @@
+{
+  "name": "aiops-cypress-tests",
+  "version": "2.0.0",
+  "description": "AIOPS 平台 Cypress 全量组件交互测试",
+  "scripts": {
+    "cy:open": "cypress open",
+    "cy:run": "cypress run --reporter mochawesome --reporter-options reportDir=reports,overwrite=true,html=false,json=true",
+    "generate-report": "npx mochawesome-merge reports/*.json > reports/merged.json && npx marge reports/merged.json --reportDir reports --inline"
+  },
+  "devDependencies": {
+    "cypress": "^13.17.0",
+    "mochawesome": "^7.1.4",
+    "mochawesome-merge": "^4.4.1",
+    "mochawesome-report-generator": "^6.3.2"
+  }
+}

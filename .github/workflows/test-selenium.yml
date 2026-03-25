@@ -1,0 +1,171 @@
+﻿# ═══════════════════════════════════════════════════════════════════
+# Selenium 多浏览器兼容性测试工作流
+# 6,540 用例 | Python 3.11 + Chrome/Firefox | 支持 pytest-xdist 并行
+# ═══════════════════════════════════════════════════════════════════
+name: 🧪 Selenium
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      browser:
+        description: '浏览器'
+        required: true
+        default: 'chrome'
+        type: choice
+        options:
+          - chrome
+          - firefox
+          - all
+      parallel_workers:
+        description: '并行 Worker 数量'
+        required: false
+        default: 'auto'
+        type: choice
+        options:
+          - '1'
+          - '4'
+          - '8'
+          - 'auto'
+
+concurrency:
+  group: selenium-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  selenium:
+    name: 🧪 Selenium (${{ github.event.inputs.browser || 'chrome' }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 🌐 安装浏览器
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable firefox || true
+          sudo bash -c 'if ! command -v microsoft-edge >/dev/null 2>&1; then curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /usr/share/keyrings/microsoft-edge.gpg; echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-edge.gpg] https://packages.microsoft.com/repos/edge stable main" > /etc/apt/sources.list.d/microsoft-edge.list; apt-get update; apt-get install -y microsoft-edge-stable; fi'
+          sudo ln -sf /usr/bin/google-chrome /usr/bin/chrome || true
+          sudo ln -sf /usr/bin/microsoft-edge /usr/bin/msedge || true
+
+      - name: 📦 安装依赖
+        run: |
+          pip install --upgrade pip
+          pip install selenium pytest pytest-html webdriver-manager requests pytest-xdist
+          if [ -f testing/tests/selenium-tests/requirements.txt ]; then
+            pip install -r testing/tests/selenium-tests/requirements.txt
+          fi
+
+      - name: 🔧 预热 Selenium Manager
+        run: |
+          python - <<'PY'
+          from selenium import webdriver
+          from selenium.webdriver.chrome.options import Options as ChromeOptions
+          from selenium.webdriver.firefox.options import Options as FirefoxOptions
+          from selenium.webdriver.edge.options import Options as EdgeOptions
+
+          def warmup(factory, label):
+            driver = None
+            try:
+              driver = factory()
+              print(f"{label}: ok")
+            finally:
+              if driver is not None:
+                driver.quit()
+
+          warmup(lambda: webdriver.Chrome(options=(lambda o: [o.add_argument('--headless=new'), o.add_argument('--no-sandbox'), o.add_argument('--disable-dev-shm-usage'), o][3])(ChromeOptions())), 'chrome')
+          warmup(lambda: webdriver.Firefox(options=(lambda o: [o.add_argument('-headless'), o][1])(FirefoxOptions())), 'firefox')
+          warmup(lambda: webdriver.Edge(options=(lambda o: [o.add_argument('--headless=new'), o.add_argument('--no-sandbox'), o.add_argument('--disable-dev-shm-usage'), o][3])(EdgeOptions())), 'edge')
+          PY
+
+      - name: 🧪 运行 Selenium 测试（并行）
+        id: test
+        working-directory: testing/tests/selenium-tests
+        continue-on-error: true
+        run: |
+          mkdir -p ../../../TestResults
+          WORKERS="${{ github.event.inputs.parallel_workers || 'auto' }}"
+          
+          echo "🚀 并行执行: $WORKERS workers"
+          pytest \
+            --tb=short \
+            --no-header \
+            -q \
+            -n $WORKERS \
+            --junitxml=../../../TestResults/selenium-results.xml \
+            2>&1 | tee ../../../TestResults/selenium-output.txt || true
+        env:
+          HEADLESS: "true"
+          BROWSER: ${{ github.event.inputs.browser || 'chrome' }}
+
+      - name: 📊 生成错误报告
+        if: always()
+        run: |
+          mkdir -p test-error-reports/latest
+          TIMESTAMP=$(date +%Y-%m-%d_%H%M%S)
+          
+          cat > test-error-reports/latest/selenium-errors.md << EOF
+          # 🔬 Selenium 测试错误报告
+          
+          - **执行时间**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          - **Git Commit**: ${{ github.sha }}
+          - **浏览器**: ${{ github.event.inputs.browser || 'chrome' }}
+          
+          ## 失败详情
+          
+          EOF
+          
+          if [ -f TestResults/selenium-output.txt ]; then
+            echo '```' >> test-error-reports/latest/selenium-errors.md
+            grep -E "FAILED|ERROR|assert|selenium" TestResults/selenium-output.txt | head -100 >> test-error-reports/latest/selenium-errors.md || true
+            echo '```' >> test-error-reports/latest/selenium-errors.md
+          fi
+          
+          mkdir -p "test-error-reports/history/$TIMESTAMP"
+          cp test-error-reports/latest/selenium-errors.md "test-error-reports/history/$TIMESTAMP/" || true
+
+      - name: 📤 上传测试结果
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: selenium-results
+          path: |
+            TestResults/
+            test-error-reports/
+          retention-days: 30
+
+      - name: 📊 生成标准格式报告
+        if: always()
+        run: |
+          chmod +x .github/scripts/generate-ci-report.sh
+          ./.github/scripts/generate-ci-report.sh selenium \
+            --xml TestResults/selenium-results.xml \
+            --output TestResults/selenium-output.txt \
+            --level "smoke"
+
+      - name: 💾 提交报告到仓库
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add test-error-reports/ || true
+          git diff --cached --quiet || git commit -m "📊 Selenium 报告 $(date +%Y-%m-%d_%H%M) [skip ci]"
+          for i in 1 2 3; do
+            git stash --include-untracked || true
+            git pull --rebase origin main || true
+            git stash pop || true
+            git push && break
+            sleep $((i * 5))
+          done

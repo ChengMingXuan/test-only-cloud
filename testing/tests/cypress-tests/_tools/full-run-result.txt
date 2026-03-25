@@ -1,0 +1,1322 @@
+﻿
+node.exe : 
+At C:\nvm4w\nodejs\npx.ps1:29 char:3
++   & $NODE_EXE $NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+DevTools listening on ws://127.0.0.1:64918/devtools/browser/31e8139a-6089-4cad-b2b9-54020ded1ea6
+
+====================================================================================================
+
+  (Run Starting)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Cypress:        13.17.0                                                                        │
+  │ Browser:        Electron 118 (headless)                                                        │
+  │ Node Version:   v22.12.0 (C:\nvm4w\nodejs\node.exe)                                            │
+  │ Specs:          138 found (01-login.cy.js, 02-dashboard.cy.js, 03-station.cy.js, 04-device.cy. │
+  │                 js, 05-permission.cy.js, 06-workorder.cy.js, 07-user.cy.js, 08-navigation.cy.j │
+  │                 s, 09-energy.cy.js, 10-charging-monitor.cy.js, 11-analytics.cy.js, 12-ai.cy.js │
+  │                 , 13-blockchain.cy.js, 1...)                                                   │
+  │ Searched:       e2e/**/*.cy.js                                                                 │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                    
+  Running:  01-login.cy.js                                                                (1 of 138)
+
+
+  登录页面 - Mock API 测试
+    (Attempt 1 of 2) [P0] 登录页面正常加载
+    1) [P0] 登录页面正常加载
+    (Attempt 1 of 2) [P0] 用户名/密码输入框交互
+    2) [P0] 用户名/密码输入框交互
+    (Attempt 1 of 2) [P0] 空表单提交显示验证错误
+    3) [P0] 空表单提交显示验证错误
+    (Attempt 1 of 2) [P0] 有效凭证登录请求成功
+    4) [P0] 有效凭证登录请求成功
+    (Attempt 1 of 2) [P1] 无效凭证显示服务器错误
+    5) [P1] 无效凭证显示服务器错误
+    (Attempt 1 of 2) [P1] 表单字段交互和清除
+    6) [P1] 表单字段交互和清除
+
+
+  0 passing (2m)
+  6 failing
+
+  1) 登录页面 - Mock API 测试
+       [P0] 登录页面正常加载:
+     AssertionError: Timed out retrying after 20000ms: Expected to find element: `#page-login`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/01-login.cy.js:65:46)
+
+  2) 登录页面 - Mock API 测试
+       [P0] 用户名/密码输入框交互:
+     AssertionError: Timed out retrying after 8000ms: Expected to find element: `#username`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/01-login.cy.js:72:7)
+
+  3) 登录页面 - Mock API 测试
+       [P0] 空表单提交显示验证错误:
+     AssertionError: Timed out retrying after 8000ms: Expected to find element: `#username`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/01-login.cy.js:84:7)
+
+  4) 登录页面 - Mock API 测试
+       [P0] 有效凭证登录请求成功:
+     AssertionError: Timed out retrying after 8000ms: Expected to find element: `#username`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/01-login.cy.js:93:7)
+
+  5) 登录页面 - Mock API 测试
+       [P1] 无效凭证显示服务器错误:
+     AssertionError: Timed out retrying after 8000ms: Expected to find element: `#username`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/01-login.cy.js:101:7)
+
+  6) 登录页面 - Mock API 测试
+       [P1] 表单字段交互和清除:
+     AssertionError: Timed out retrying after 8000ms: Expected to find element: `#username`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/01-login.cy.js:110:7)
+
+
+
+
+  (Results)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        6                                                                                │
+  │ Passing:      0                                                                                │
+  │ Failing:      6                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  12                                                                               │
+  │ Video:        false                                                                            │
+  │ Duration:     2 minutes, 5 seconds                                                             │
+  │ Spec Ran:     01-login.cy.js                                                                   │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+  (Screenshots)
+
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\01-login.cy.js\登录页…      (1280x720)
+     ock API 测试 -- [P0] 登录页面正常加载 (failed).png                                             
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\01-login.cy.js\登录页…      (1280x720)
+     ock API 测试 -- [P0] 登录页面正常加载 (failed) (attempt 2).png                                 
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\01-login.cy.js\登录页…      (1280x720)
+     ock API 测试 -- [P0] 用户名密码输入框交互 (failed).png                                         
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\01-login.cy.js\登录页…      (1280x720)
+     ock API 测试 -- [P0] 用户名密码输入框交互 (failed) (attempt 2).png                             
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\01-login.cy.js\登录页…      (1280x720)
+     ock API 测试 -- [P0] 空表单提交显示验证错误 (failed).png                                       
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\01-login.cy.js\登录页…      (1280x720)
+     ock API 测试 -- [P0] 空表单提交显示验证错误 (failed) (attempt 2).png                           
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\01-login.cy.js\登录页…      (1280x720)
+     ock API 测试 -- [P0] 有效凭证登录请求成功 (failed).png                                         
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\01-login.cy.js\登录页…      (1280x720)
+     ock API 测试 -- [P0] 有效凭证登录请求成功 (failed) (attempt 2).png                             
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\01-login.cy.js\登录页…      (1280x720)
+     ock API 测试 -- [P1] 无效凭证显示服务器错误 (failed).png                                       
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\01-login.cy.js\登录页…      (1280x720)
+     ock API 测试 -- [P1] 无效凭证显示服务器错误 (failed) (attempt 2).png                           
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\01-login.cy.js\登录页…      (1280x720)
+     ock API 测试 -- [P1] 表单字段交互和清除 (failed).png                                           
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\01-login.cy.js\登录页…      (1280x720)
+     ock API 测试 -- [P1] 表单字段交互和清除 (failed) (attempt 2).png                               
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                    
+  Running:  02-dashboard.cy.js                                                            (2 of 138)
+
+
+  仪表盘 - Mock API 测试
+    √ [P0] 仪表盘页面正常加载 (138ms)
+    √ [P0] 页面加载后包含主要内容区域 (80ms)
+    √ [P0] 统计卡片/数据区域存在且可见 (86ms)
+    √ [P0] 页面包含有文本内容的元素（非空） (2080ms)
+    (Attempt 1 of 2) [P1] 侧边菜单可以折叠和展开
+    1) [P1] 侧边菜单可以折叠和展开
+    √ [P1] 顶部头部区域显示用户信息 (385ms)
+    √ [P1] 侧边菜单项可点击并导航 (134ms)
+    √ [P2] 页面标题或导航存在 (80ms)
+    √ [P2] 页面布局稳定（无显示错误） (78ms)
+
+
+  8 passing (34s)
+  1 failing
+
+  1) 仪表盘 - Mock API 测试
+       [P1] 侧边菜单可以折叠和展开:
+     AssertionError: Timed out retrying after 15000ms: Expected to find element: `.ant-layout-sider-trigger, .ant-pro-sider-collapsed-button, [class*="trigger"]`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/02-dashboard.cy.js:90:12)
+
+
+
+
+  (Results)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        9                                                                                │
+  │ Passing:      8                                                                                │
+  │ Failing:      1                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  2                                                                                │
+  │ Video:        false                                                                            │
+  │ Duration:     33 seconds                                                                       │
+  │ Spec Ran:     02-dashboard.cy.js                                                               │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+  (Screenshots)
+
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\02-dashboard.cy.js\仪…      (1280x720)
+     - Mock API 测试 -- [P1] 侧边菜单可以折叠和展开 (failed).png                                    
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\02-dashboard.cy.js\仪…      (1280x720)
+     - Mock API 测试 -- [P1] 侧边菜单可以折叠和展开 (failed) (attempt 2).png                        
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                    
+  Running:  03-station.cy.js                                                              (3 of 138)
+
+
+  场站管理 - Mock API 测试
+    √ [P0] 场站列表页面加载 (203ms)
+    √ [P0] 列表包含数据行 (104ms)
+    √ [P0] 表格包含列字段 (92ms)
+    √ [P1] 新增场站按钮功能 (1165ms)
+    √ [P1] 搜索功能可用 (1591ms)
+    √ [P1] 表格行可以展开或操作 (76ms)
+    √ [P1] 分页组件显示 (73ms)
+    √ [P2] 列表数据包含关键字段 (114ms)
+    √ [P2] 页面响应式布局正常 (78ms)
+
+
+  9 passing (4s)
+
+
+  (Results)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        9                                                                                │
+  │ Passing:      9                                                                                │
+  │ Failing:      0                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  0                                                                                │
+  │ Video:        false                                                                            │
+  │ Duration:     3 seconds                                                                        │
+  │ Spec Ran:     03-station.cy.js                                                                 │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                    
+  Running:  04-device.cy.js                                                               (4 of 138)
+
+
+  设备管理 - Mock API 测试
+    √ [P0] 设备列表页面加载 (240ms)
+    √ [P0] 设备数据渲染 (111ms)
+    √ [P0] 设备状态指示器显示 (93ms)
+    √ [P1] 搜索设备功能 (1813ms)
+    √ [P1] 新增设备按钮 (1131ms)
+    √ [P1] 设备行操作按钮 (365ms)
+    √ [P2] 设备列表包含设备内容 (67ms)
+
+
+  7 passing (4s)
+
+
+  (Results)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        7                                                                                │
+  │ Passing:      7                                                                                │
+  │ Failing:      0                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  0                                                                                │
+  │ Video:        false                                                                            │
+  │ Duration:     3 seconds                                                                        │
+  │ Spec Ran:     04-device.cy.js                                                                  │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                    
+  Running:  05-permission.cy.js                                                           (5 of 138)
+
+
+  权限管理 - Mock API 测试
+    √ [P0] 权限管理页面加载 (126ms)
+    √ [P0] 页面包含列表或树形结构 (72ms)
+    √ [P0] 角色或权限数据加载 (69ms)
+    √ [P1] 新增按钮操作 (1144ms)
+    √ [P1] 权限树展开折叠 (106ms)
+    √ [P1] Tab 切换（如有） (442ms)
+    √ [P2] 列表数据包含内容 (71ms)
+
+
+  7 passing (2s)
+
+
+  (Results)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        7                                                                                │
+  │ Passing:      7                                                                                │
+  │ Failing:      0                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  0                                                                                │
+  │ Video:        false                                                                            │
+  │ Duration:     2 seconds                                                                        │
+  │ Spec Ran:     05-permission.cy.js                                                              │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                    
+  Running:  06-workorder.cy.js                                                            (6 of 138)
+
+
+  工单管理 - Mock API 测试
+    (Attempt 1 of 2) [P0] 工单列表页面加载
+    1) [P0] 工单列表页面加载
+    √ [P0] 工单数据渲染 (384ms)
+    √ [P0] 优先级和状态标签显示 (78ms)
+    (Attempt 1 of 2) [P1] 按优先级/状态筛选
+    2) [P1] 按优先级/状态筛选
+    (Attempt 1 of 2) [P1] 新增工单按钮
+    3) [P1] 新增工单按钮
+    (Attempt 1 of 2) [P1] 工单行项可点击查看详情
+    4) [P1] 工单行项可点击查看详情
+    √ [P2] 分页功能 (378ms)
+    (Attempt 1 of 2) [P2] 工单列表包含真实数据
+    5) [P2] 工单列表包含真实数据
+
+
+  3 passing (3m)
+  5 failing
+
+  1) 工单管理 - Mock API 测试
+       [P0] 工单列表页面加载:
+     AssertionError: Timed out retrying after 20000ms: Expected to find element: `.ant-table-wrapper, .ant-list`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/06-workorder.cy.js:34:64)
+
+  2) 工单管理 - Mock API 测试
+       [P1] 按优先级/状态筛选:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `.ant-table-tbody tr, .ant-empty, .ant-spin-container`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/06-workorder.cy.js:54:91)
+
+  3) 工单管理 - Mock API 测试
+       [P1] 新增工单按钮:
+     AssertionError: Timed out retrying after 15000ms: Expected to find element: `#btn-add-workorder`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/06-workorder.cy.js:61:7)
+
+  4) 工单管理 - Mock API 测试
+       [P1] 工单行项可点击查看详情:
+     AssertionError: Timed out retrying after 15000ms: Expected to find element: `.ant-table-tbody tr, .ant-empty, .ant-spin-container`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/06-workorder.cy.js:73:7)
+
+  5) 工单管理 - Mock API 测试
+       [P2] 工单列表包含真实数据:
+     AssertionError: Timed out retrying after 15000ms: Expected to find element: `.ant-table-tbody tr, .ant-empty, .ant-spin-container`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/06-workorder.cy.js:86:7)
+
+
+
+
+  (Results)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        8                                                                                │
+  │ Passing:      3                                                                                │
+  │ Failing:      5                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  10                                                                               │
+  │ Video:        false                                                                            │
+  │ Duration:     2 minutes, 35 seconds                                                            │
+  │ Spec Ran:     06-workorder.cy.js                                                               │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+  (Screenshots)
+
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\06-workorder.cy.js\工…      (1280x720)
+      - Mock API 测试 -- [P0] 工单列表页面加载 (failed).png                                         
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\06-workorder.cy.js\工…      (1280x720)
+      - Mock API 测试 -- [P0] 工单列表页面加载 (failed) (attempt 2).png                             
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\06-workorder.cy.js\工…      (1280x720)
+      - Mock API 测试 -- [P1] 按优先级状态筛选 (failed).png                                         
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\06-workorder.cy.js\工…      (1280x720)
+      - Mock API 测试 -- [P1] 按优先级状态筛选 (failed) (attempt 2).png                             
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\06-workorder.cy.js\工…      (1280x720)
+      - Mock API 测试 -- [P1] 新增工单按钮 (failed).png                                             
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\06-workorder.cy.js\工…      (1280x720)
+      - Mock API 测试 -- [P1] 新增工单按钮 (failed) (attempt 2).png                                 
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\06-workorder.cy.js\工…      (1280x720)
+      - Mock API 测试 -- [P1] 工单行项可点击查看详情 (failed).png                                   
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\06-workorder.cy.js\工…      (1280x720)
+      - Mock API 测试 -- [P1] 工单行项可点击查看详情 (failed) (attempt 2).png                       
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\06-workorder.cy.js\工…      (1280x720)
+      - Mock API 测试 -- [P2] 工单列表包含真实数据 (failed).png                                     
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\06-workorder.cy.js\工…      (1280x720)
+      - Mock API 测试 -- [P2] 工单列表包含真实数据 (failed) (attempt 2).png                         
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                    
+  Running:  07-user.cy.js                                                                 (7 of 138)
+
+
+  用户管理 - Mock API 测试
+    √ [P0] 用户列表页面加载 (199ms)
+    √ [P0] 用户表格数据渲染 (78ms)
+    √ [P0] 表格包含用户字段 (73ms)
+    √ [P1] 搜索用户功能 (3622ms)
+    √ [P1] 新增用户按钮 (1439ms)
+    √ [P1] 用户行操作（编辑/删除） (71ms)
+    √ [P2] 用户状态指示 (73ms)
+    √ [P2] 用户列表包含真实内容 (64ms)
+
+
+  8 passing (6s)
+
+
+  (Results)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        8                                                                                │
+  │ Passing:      8                                                                                │
+  │ Failing:      0                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  0                                                                                │
+  │ Video:        false                                                                            │
+  │ Duration:     5 seconds                                                                        │
+  │ Spec Ran:     07-user.cy.js                                                                    │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                    
+  Running:  08-navigation.cy.js                                                           (8 of 138)
+
+
+  路由导航 - Mock API 测试
+    √ [P0] 访问受保护页面无 Token 跳转登录页 (116ms)
+    √ [P0] 访问根路径不崩溃 (78ms)
+    √ [P0] 非存在路径处理 (79ms)
+    √ [P1] 登录后访问仪表盘页面加载 (102ms)
+    √ [P1] 侧边菜单点击导航 (677ms)
+    √ [P1] 面包屑导航点击 (627ms)
+    √ [P2] URL 路由正确 (64ms)
+
+
+  7 passing (2s)
+
+
+  (Results)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        7                                                                                │
+  │ Passing:      7                                                                                │
+  │ Failing:      0                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  0                                                                                │
+  │ Video:        false                                                                            │
+  │ Duration:     1 second                                                                         │
+  │ Spec Ran:     08-navigation.cy.js                                                              │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                    
+  Running:  09-energy.cy.js                                                               (9 of 138)
+
+
+  能源服务 - Mock API 测试
+    √ [P0] 能源页面加载 (131ms)
+    √ [P0] 能源数据卡片渲染 (81ms)
+    √ [P0] 统计数据显示 (72ms)
+    (Attempt 1 of 2) [P1] 图表容器存在
+    1) [P1] 图表容器存在
+    √ [P1] 时间范围选择器 (743ms)
+    √ [P1] 刷新数据按钮 (70ms)
+    √ [P2] 页面布局合理 (69ms)
+
+
+  6 passing (32s)
+  1 failing
+
+  1) 能源服务 - Mock API 测试
+       [P1] 图表容器存在:
+     AssertionError: Timed out retrying after 15000ms: Expected to find element: `canvas, [class*="chart"], [class*="Chart"], svg[data-testid]`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/09-energy.cy.js:67:7)
+
+
+
+
+  (Results)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        7                                                                                │
+  │ Passing:      6                                                                                │
+  │ Failing:      1                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  2                                                                                │
+  │ Video:        false                                                                            │
+  │ Duration:     31 seconds                                                                       │
+  │ Spec Ran:     09-energy.cy.js                                                                  │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+  (Screenshots)
+
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\09-energy.cy.js\能源服…     (1280x720)
+     Mock API 测试 -- [P1] 图表容器存在 (failed).png                                                
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\09-energy.cy.js\能源服…     (1280x720)
+     Mock API 测试 -- [P1] 图表容器存在 (failed) (attempt 2).png                                    
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                    
+  Running:  10-charging-monitor.cy.js                                                    (10 of 138)
+
+
+  充电监控 - Mock API 测试
+    √ [P0] 充电监控页面加载 (125ms)
+    √ [P0] 监控数据卡片显示 (73ms)
+    √ [P0] 统计数据包含内容 (70ms)
+    √ [P1] Tab/分段器切换 (437ms)
+    √ [P1] 图表区域存在 (69ms)
+    √ [P1] 筛选或操作按钮 (68ms)
+    √ [P2] 无显示错误 (64ms)
+
+
+  7 passing (991ms)
+
+
+  (Results)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        7                                                                                │
+  │ Passing:      7                                                                                │
+  │ Failing:      0                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  0                                                                                │
+  │ Video:        false                                                                            │
+  │ Duration:     0 seconds                                                                        │
+  │ Spec Ran:     10-charging-monitor.cy.js                                                        │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                    
+  Running:  11-analytics.cy.js                                                           (11 of 138)
+
+
+  分析中心
+    √ [P0] 分析中心页面加载成功 (163ms)
+    √ [P0] 显示4个统计卡片 (106ms)
+    √ [P0] 异常检测数统计卡片值正确 (100ms)
+    (Attempt 1 of 2) [P1] 分析列表包含4条数据行
+    1) [P1] 分析列表包含4条数据行
+    (Attempt 1 of 2) [P1] 列表包含趋势标签
+    2) [P1] 列表包含趋势标签
+    (Attempt 1 of 2) [P1] 搜索框存在可输入
+    3) [P1] 搜索框存在可输入
+    (Attempt 1 of 2) [P1] 查询按钮可点击
+    4) [P1] 查询按钮可点击
+    (Attempt 1 of 2) [P2] 导出按钮存在
+    5) [P2] 导出按钮存在
+    √ [P2] 图表区域存在 (418ms)
+
+
+  4 passing (2m)
+  5 failing
+
+  1) 分析中心
+       [P1] 分析列表包含4条数据行:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `.ant-table-tbody tr, .ant-empty`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/11-analytics.cy.js:25:46)
+
+  2) 分析中心
+       [P1] 列表包含趋势标签:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `#content-analytics .ant-table-tbody td`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/11-analytics.cy.js:29:53)
+
+  3) 分析中心
+       [P1] 搜索框存在可输入:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `#content-analytics input.ant-input`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/11-analytics.cy.js:33:7)
+
+  4) 分析中心
+       [P1] 查询按钮可点击:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `#content-analytics button`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/11-analytics.cy.js:39:7)
+
+  5) 分析中心
+       [P2] 导出按钮存在:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `#content-analytics button`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/11-analytics.cy.js:43:7)
+
+
+
+
+  (Results)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        9                                                                                │
+  │ Passing:      4                                                                                │
+  │ Failing:      5                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  10                                                                               │
+  │ Video:        false                                                                            │
+  │ Duration:     1 minute, 46 seconds                                                             │
+  │ Spec Ran:     11-analytics.cy.js                                                               │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+  (Screenshots)
+
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\11-analytics.cy.js\分…      (1280x720)
+      -- [P1] 分析列表包含4条数据行 (failed).png                                                    
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\11-analytics.cy.js\分…      (1280x720)
+      -- [P1] 分析列表包含4条数据行 (failed) (attempt 2).png                                        
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\11-analytics.cy.js\分…      (1280x720)
+      -- [P1] 列表包含趋势标签 (failed).png                                                         
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\11-analytics.cy.js\分…      (1280x720)
+      -- [P1] 列表包含趋势标签 (failed) (attempt 2).png                                             
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\11-analytics.cy.js\分…      (1280x720)
+      -- [P1] 搜索框存在可输入 (failed).png                                                         
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\11-analytics.cy.js\分…      (1280x720)
+      -- [P1] 搜索框存在可输入 (failed) (attempt 2).png                                             
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\11-analytics.cy.js\分…      (1280x720)
+      -- [P1] 查询按钮可点击 (failed).png                                                           
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\11-analytics.cy.js\分…      (1280x720)
+      -- [P1] 查询按钮可点击 (failed) (attempt 2).png                                               
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\11-analytics.cy.js\分…      (1280x720)
+      -- [P2] 导出按钮存在 (failed).png                                                             
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\11-analytics.cy.js\分…      (1280x720)
+      -- [P2] 导出按钮存在 (failed) (attempt 2).png                                                 
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                    
+  Running:  12-ai.cy.js                                                                  (12 of 138)
+
+
+  AI 智能
+    √ [P0] AI页面加载成功 (153ms)
+    √ [P0] 显示4个统计卡片 (96ms)
+    √ [P0] AI模型数统计卡片 (101ms)
+    (Attempt 1 of 2) [P0] 模型列表包含4行
+    1) [P0] 模型列表包含4行
+    √ [P1] 模型状态标签存在（运行中/训练中） (414ms)
+    (Attempt 1 of 2) [P1] 搜索框可输入
+    2) [P1] 搜索框可输入
+    (Attempt 1 of 2) [P1] 新增模型按钮点击打开模态框
+    3) [P1] 新增模型按钮点击打开模态框
+    (Attempt 1 of 2) [P2] 模型版本号展示
+    4) [P2] 模型版本号展示
+    (Attempt 1 of 2) [P2] 配置操作按钮存在
+    5) [P2] 配置操作按钮存在
+
+
+  4 passing (2m)
+  5 failing
+
+  1) AI 智能
+       [P0] 模型列表包含4行:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `.ant-table-tbody tr, .ant-empty`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/12-ai.cy.js:25:46)
+
+  2) AI 智能
+       [P1] 搜索框可输入:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `#content-ai input.ant-input`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/12-ai.cy.js:36:7)
+
+  3) AI 智能
+       [P1] 新增模型按钮点击打开模态框:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `#btn-add-ai-model`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/12-ai.cy.js:41:7)
+
+  4) AI 智能
+       [P2] 模型版本号展示:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `.ant-table-tbody tr, .ant-empty`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/12-ai.cy.js:48:7)
+
+  5) AI 智能
+       [P2] 配置操作按钮存在:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `.ant-table-tbody tr, .ant-empty`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/12-ai.cy.js:53:7)
+
+
+
+
+  (Results)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        9                                                                                │
+  │ Passing:      4                                                                                │
+  │ Failing:      5                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  10                                                                               │
+  │ Video:        false                                                                            │
+  │ Duration:     1 minute, 45 seconds                                                             │
+  │ Spec Ran:     12-ai.cy.js                                                                      │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+  (Screenshots)
+
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\12-ai.cy.js\AI 智能 --…     (1280x720)
+     0] 模型列表包含4行 (failed).png                                                                
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\12-ai.cy.js\AI 智能 --…     (1280x720)
+     0] 模型列表包含4行 (failed) (attempt 2).png                                                    
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\12-ai.cy.js\AI 智能 --…     (1280x720)
+     1] 搜索框可输入 (failed).png                                                                   
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\12-ai.cy.js\AI 智能 --…     (1280x720)
+     1] 搜索框可输入 (failed) (attempt 2).png                                                       
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\12-ai.cy.js\AI 智能 --…     (1280x720)
+     1] 新增模型按钮点击打开模态框 (failed).png                                                     
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\12-ai.cy.js\AI 智能 --…     (1280x720)
+     1] 新增模型按钮点击打开模态框 (failed) (attempt 2).png                                         
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\12-ai.cy.js\AI 智能 --…     (1280x720)
+     2] 模型版本号展示 (failed).png                                                                 
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\12-ai.cy.js\AI 智能 --…     (1280x720)
+     2] 模型版本号展示 (failed) (attempt 2).png                                                     
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\12-ai.cy.js\AI 智能 --…     (1280x720)
+     2] 配置操作按钮存在 (failed).png                                                               
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\12-ai.cy.js\AI 智能 --…     (1280x720)
+     2] 配置操作按钮存在 (failed) (attempt 2).png                                                   
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                    
+  Running:  13-blockchain.cy.js                                                          (13 of 138)
+
+
+  区块链
+    √ [P0] 区块链页面加载成功 (183ms)
+    √ [P0] 显示4个统计卡片 (105ms)
+    √ [P0] 智能合约数为8 (133ms)
+    (Attempt 1 of 2) [P0] 交易列表包含4行
+    1) [P0] 交易列表包含4行
+    (Attempt 1 of 2) [P1] 交易哈希格式展示（0x开头）
+    2) [P1] 交易哈希格式展示（0x开头）
+    √ [P1] 状态标签（已确认/待确认）存在 (428ms)
+    (Attempt 1 of 2) [P1] 搜索框可输入
+    3) [P1] 搜索框可输入
+    (Attempt 1 of 2) [P2] 导出按钮存在
+    4) [P2] 导出按钮存在
+
+
+  4 passing (1m)
+  4 failing
+
+  1) 区块链
+       [P0] 交易列表包含4行:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `.ant-table-tbody tr, .ant-empty`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/13-blockchain.cy.js:25:46)
+
+  2) 区块链
+       [P1] 交易哈希格式展示（0x开头）:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `.ant-table-tbody tr, .ant-empty`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/13-blockchain.cy.js:29:7)
+
+  3) 区块链
+       [P1] 搜索框可输入:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `#content-blockchain input.ant-input`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/13-blockchain.cy.js:41:7)
+
+  4) 区块链
+       [P2] 导出按钮存在:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `#content-blockchain button`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/13-blockchain.cy.js:45:7)
+
+
+
+
+  (Results)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        8                                                                                │
+  │ Passing:      4                                                                                │
+  │ Failing:      4                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  8                                                                                │
+  │ Video:        false                                                                            │
+  │ Duration:     1 minute, 24 seconds                                                             │
+  │ Spec Ran:     13-blockchain.cy.js                                                              │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+  (Screenshots)
+
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\13-blockchain.cy.js\区…     (1280x720)
+      -- [P0] 交易列表包含4行 (failed).png                                                          
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\13-blockchain.cy.js\区…     (1280x720)
+      -- [P0] 交易列表包含4行 (failed) (attempt 2).png                                              
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\13-blockchain.cy.js\区…     (1280x720)
+      -- [P1] 交易哈希格式展示（0x开头） (failed).png                                               
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\13-blockchain.cy.js\区…     (1280x720)
+      -- [P1] 交易哈希格式展示（0x开头） (failed) (attempt 2).png                                   
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\13-blockchain.cy.js\区…     (1280x720)
+      -- [P1] 搜索框可输入 (failed).png                                                             
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\13-blockchain.cy.js\区…     (1280x720)
+      -- [P1] 搜索框可输入 (failed) (attempt 2).png                                                 
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\13-blockchain.cy.js\区…     (1280x720)
+      -- [P2] 导出按钮存在 (failed).png                                                             
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\13-blockchain.cy.js\区…     (1280x720)
+      -- [P2] 导出按钮存在 (failed) (attempt 2).png                                                 
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                    
+  Running:  14-ruleengine.cy.js                                                          (14 of 138)
+
+
+  规则引擎
+    √ [P0] 规则引擎页面加载成功 (173ms)
+    (Attempt 1 of 2) [P0] 规则链列表包含4行
+    1) [P0] 规则链列表包含4行
+    √ [P0] 规则链名称正确 (459ms)
+    √ [P1] 启用/停用状态标签存在 (129ms)
+    (Attempt 1 of 2) [P1] 搜索框可输入
+    2) [P1] 搜索框可输入
+    (Attempt 1 of 2) [P1] 新增规则链按钮点击打开模态框
+    3) [P1] 新增规则链按钮点击打开模态框
+    (Attempt 1 of 2) [P2] 节点数列数据展示
+    4) [P2] 节点数列数据展示
+    √ [P2] 分页存在 (415ms)
+
+
+  4 passing (1m)
+  4 failing
+
+  1) 规则引擎
+       [P0] 规则链列表包含4行:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `.ant-table-tbody tr, .ant-empty`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/14-ruleengine.cy.js:16:46)
+
+  2) 规则引擎
+       [P1] 搜索框可输入:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `#content-ruleengine input.ant-input`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/14-ruleengine.cy.js:31:7)
+
+  3) 规则引擎
+       [P1] 新增规则链按钮点击打开模态框:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `#content-ruleengine button`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/14-ruleengine.cy.js:35:7)
+
+  4) 规则引擎
+       [P2] 节点数列数据展示:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `.ant-table-tbody tr, .ant-empty`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/14-ruleengine.cy.js:42:7)
+
+
+
+
+  (Results)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        8                                                                                │
+  │ Passing:      4                                                                                │
+  │ Failing:      4                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  8                                                                                │
+  │ Video:        false                                                                            │
+  │ Duration:     1 minute, 25 seconds                                                             │
+  │ Spec Ran:     14-ruleengine.cy.js                                                              │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+  (Screenshots)
+
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\14-ruleengine.cy.js\规…     (1280x720)
+     擎 -- [P0] 规则链列表包含4行 (failed).png                                                      
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\14-ruleengine.cy.js\规…     (1280x720)
+     擎 -- [P0] 规则链列表包含4行 (failed) (attempt 2).png                                          
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\14-ruleengine.cy.js\规…     (1280x720)
+     擎 -- [P1] 搜索框可输入 (failed).png                                                           
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\14-ruleengine.cy.js\规…     (1280x720)
+     擎 -- [P1] 搜索框可输入 (failed) (attempt 2).png                                               
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\14-ruleengine.cy.js\规…     (1280x720)
+     擎 -- [P1] 新增规则链按钮点击打开模态框 (failed).png                                           
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\14-ruleengine.cy.js\规…     (1280x720)
+     擎 -- [P1] 新增规则链按钮点击打开模态框 (failed) (attempt 2).png                               
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\14-ruleengine.cy.js\规…     (1280x720)
+     擎 -- [P2] 节点数列数据展示 (failed).png                                                       
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\14-ruleengine.cy.js\规…     (1280x720)
+     擎 -- [P2] 节点数列数据展示 (failed) (attempt 2).png                                           
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                    
+  Running:  15-settlement.cy.js                                                          (15 of 138)
+
+
+  结算管理
+    √ [P0] 结算管理页面加载成功 (163ms)
+    √ [P0] 显示4个统计卡片 (110ms)
+    √ [P0] 本月结算单数为286 (108ms)
+    (Attempt 1 of 2) [P0] 结算列表包含4行
+    1) [P0] 结算列表包含4行
+    (Attempt 1 of 2) [P1] 结算单号格式（ST开头）
+    2) [P1] 结算单号格式（ST开头）
+    √ [P1] 状态标签（已结算/待结算/异常） (466ms)
+    (Attempt 1 of 2) [P1] 搜索框可输入
+    3) [P1] 搜索框可输入
+    (Attempt 1 of 2) [P1] 点击详情按钮打开抽屉
+    4) [P1] 点击详情按钮打开抽屉
+
+
+  4 passing (1m)
+  4 failing
+
+  1) 结算管理
+       [P0] 结算列表包含4行:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `.ant-table-tbody tr, .ant-empty`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/15-settlement.cy.js:25:46)
+
+  2) 结算管理
+       [P1] 结算单号格式（ST开头）:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `.ant-table-tbody tr, .ant-empty`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/15-settlement.cy.js:29:7)
+
+  3) 结算管理
+       [P1] 搜索框可输入:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `#content-settlement input.ant-input`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/15-settlement.cy.js:41:7)
+
+  4) 结算管理
+       [P1] 点击详情按钮打开抽屉:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `#content-settlement button`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/15-settlement.cy.js:45:7)
+
+
+
+
+  (Results)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        8                                                                                │
+  │ Passing:      4                                                                                │
+  │ Failing:      4                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  8                                                                                │
+  │ Video:        false                                                                            │
+  │ Duration:     1 minute, 24 seconds                                                             │
+  │ Spec Ran:     15-settlement.cy.js                                                              │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+  (Screenshots)
+
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\15-settlement.cy.js\结…     (1280x720)
+     理 -- [P0] 结算列表包含4行 (failed).png                                                        
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\15-settlement.cy.js\结…     (1280x720)
+     理 -- [P0] 结算列表包含4行 (failed) (attempt 2).png                                            
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\15-settlement.cy.js\结…     (1280x720)
+     理 -- [P1] 结算单号格式（ST开头） (failed).png                                                 
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\15-settlement.cy.js\结…     (1280x720)
+     理 -- [P1] 结算单号格式（ST开头） (failed) (attempt 2).png                                     
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\15-settlement.cy.js\结…     (1280x720)
+     理 -- [P1] 搜索框可输入 (failed).png                                                           
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\15-settlement.cy.js\结…     (1280x720)
+     理 -- [P1] 搜索框可输入 (failed) (attempt 2).png                                               
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\15-settlement.cy.js\结…     (1280x720)
+     理 -- [P1] 点击详情按钮打开抽屉 (failed).png                                                   
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\15-settlement.cy.js\结…     (1280x720)
+     理 -- [P1] 点击详情按钮打开抽屉 (failed) (attempt 2).png                                       
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                    
+  Running:  16-simulator.cy.js                                                           (16 of 138)
+
+
+  模拟器
+    √ [P0] 模拟器页面加载成功 (176ms)
+    √ [P0] 显示4个统计卡片 (104ms)
+    √ [P0] 模拟实例数统计为24 (108ms)
+    (Attempt 1 of 2) [P0] 模拟器列表包含4行
+    1) [P0] 模拟器列表包含4行
+    (Attempt 1 of 2) [P1] 设备类型展示（充电桩/储能/光伏/电表）
+    2) [P1] 设备类型展示（充电桩/储能/光伏/电表）
+    √ [P1] 状态标签（运行中/已停止）存在 (442ms)
+    (Attempt 1 of 2) [P1] 搜索框可输入
+    3) [P1] 搜索框可输入
+    (Attempt 1 of 2) [P1] 新增模拟器按钮点击打开模态框
+    4) [P1] 新增模拟器按钮点击打开模态框
+
+
+  4 passing (1m)
+  4 failing
+
+  1) 模拟器
+       [P0] 模拟器列表包含4行:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `.ant-table-tbody tr, .ant-empty`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/16-simulator.cy.js:25:46)
+
+  2) 模拟器
+       [P1] 设备类型展示（充电桩/储能/光伏/电表）:
+     AssertionError: Timed out retrying after 10000ms: expected '<table.ant-table>' to contain '储能'
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/16-simulator.cy.js:29:71)
+
+  3) 模拟器
+       [P1] 搜索框可输入:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `#content-simulator input.ant-input`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/16-simulator.cy.js:40:7)
+
+  4) 模拟器
+       [P1] 新增模拟器按钮点击打开模态框:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `#content-simulator button`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/16-simulator.cy.js:44:7)
+
+
+
+
+  (Results)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        8                                                                                │
+  │ Passing:      4                                                                                │
+  │ Failing:      4                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  8                                                                                │
+  │ Video:        false                                                                            │
+  │ Duration:     1 minute, 24 seconds                                                             │
+  │ Spec Ran:     16-simulator.cy.js                                                               │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+  (Screenshots)
+
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\16-simulator.cy.js\模…      (1280x720)
+     -- [P0] 模拟器列表包含4行 (failed).png                                                         
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\16-simulator.cy.js\模…      (1280x720)
+     -- [P0] 模拟器列表包含4行 (failed) (attempt 2).png                                             
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\16-simulator.cy.js\模…      (1280x720)
+     -- [P1] 设备类型展示（充电桩储能光伏电表） (failed).png                                        
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\16-simulator.cy.js\模…      (1280x720)
+     -- [P1] 设备类型展示（充电桩储能光伏电表） (failed) (attempt 2).png                            
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\16-simulator.cy.js\模…      (1280x720)
+     -- [P1] 搜索框可输入 (failed).png                                                              
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\16-simulator.cy.js\模…      (1280x720)
+     -- [P1] 搜索框可输入 (failed) (attempt 2).png                                                  
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\16-simulator.cy.js\模…      (1280x720)
+     -- [P1] 新增模拟器按钮点击打开模态框 (failed).png                                              
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\16-simulator.cy.js\模…      (1280x720)
+     -- [P1] 新增模拟器按钮点击打开模态框 (failed) (attempt 2).png                                  
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                    
+  Running:  17-digital-twin.cy.js                                                        (17 of 138)
+
+
+  数字孪生
+    √ [P0] 数字孪生页面加载成功 (188ms)
+    (Attempt 1 of 2) [P0] 孪生体列表包含4行
+    1) [P0] 孪生体列表包含4行
+    (Attempt 1 of 2) [P1] 孪生体类型标签（场站/设备/系统）
+    2) [P1] 孪生体类型标签（场站/设备/系统）
+    (Attempt 1 of 2) [P1] 数据点数展示
+    3) [P1] 数据点数展示
+    √ [P1] 同步状态标签（同步中/离线） (439ms)
+    (Attempt 1 of 2) [P1] 搜索框可输入
+    4) [P1] 搜索框可输入
+    (Attempt 1 of 2) [P1] 新建孪生体按钮点击打开模态框
+    5) [P1] 新建孪生体按钮点击打开模态框
+
+
+  2 passing (2m)
+  5 failing
+
+  1) 数字孪生
+       [P0] 孪生体列表包含4行:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `.ant-table-tbody tr, .ant-empty`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/17-digital-twin.cy.js:16:46)
+
+  2) 数字孪生
+       [P1] 孪生体类型标签（场站/设备/系统）:
+     AssertionError: Timed out retrying after 10000ms: expected '<table.ant-table>' to contain '设备'
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/17-digital-twin.cy.js:22:7)
+
+  3) 数字孪生
+       [P1] 数据点数展示:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `.ant-table-tbody tr, .ant-empty`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/17-digital-twin.cy.js:27:7)
+
+  4) 数字孪生
+       [P1] 搜索框可输入:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `#content-digital-twin input.ant-input`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/17-digital-twin.cy.js:39:7)
+
+  5) 数字孪生
+       [P1] 新建孪生体按钮点击打开模态框:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `#content-digital-twin button`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/17-digital-twin.cy.js:43:7)
+
+
+
+
+  (Results)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        7                                                                                │
+  │ Passing:      2                                                                                │
+  │ Failing:      5                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  10                                                                               │
+  │ Video:        false                                                                            │
+  │ Duration:     1 minute, 45 seconds                                                             │
+  │ Spec Ran:     17-digital-twin.cy.js                                                            │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+  (Screenshots)
+
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\17-digital-twin.cy.js\…     (1280x720)
+     字孪生 -- [P0] 孪生体列表包含4行 (failed).png                                                  
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\17-digital-twin.cy.js\…     (1280x720)
+     字孪生 -- [P0] 孪生体列表包含4行 (failed) (attempt 2).png                                      
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\17-digital-twin.cy.js\…     (1280x720)
+     字孪生 -- [P1] 孪生体类型标签（场站设备系统） (failed).png                                     
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\17-digital-twin.cy.js\…     (1280x720)
+     字孪生 -- [P1] 孪生体类型标签（场站设备系统） (failed) (attempt 2).png                         
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\17-digital-twin.cy.js\…     (1280x720)
+     字孪生 -- [P1] 数据点数展示 (failed).png                                                       
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\17-digital-twin.cy.js\…     (1280x720)
+     字孪生 -- [P1] 数据点数展示 (failed) (attempt 2).png                                           
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\17-digital-twin.cy.js\…     (1280x720)
+     字孪生 -- [P1] 搜索框可输入 (failed).png                                                       
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\17-digital-twin.cy.js\…     (1280x720)
+     字孪生 -- [P1] 搜索框可输入 (failed) (attempt 2).png                                           
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\17-digital-twin.cy.js\…     (1280x720)
+     字孪生 -- [P1] 新建孪生体按钮点击打开模态框 (failed).png                                       
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\17-digital-twin.cy.js\…     (1280x720)
+     字孪生 -- [P1] 新建孪生体按钮点击打开模态框 (failed) (attempt 2).png                           
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                    
+  Running:  18-tenant.cy.js                                                              (18 of 138)
+
+
+  租户管理
+    √ [P0] 租户管理页面加载成功 (177ms)
+    (Attempt 1 of 2) [P0] 租户列表包含4行
+    1) [P0] 租户列表包含4行
+    √ [P0] 租户名称正确展示 (434ms)
+    (Attempt 1 of 2) [P1] 租户编码展示
+    2) [P1] 租户编码展示
+    (Attempt 1 of 2) [P1] 套餐类型（企业版/专业版）展示
+    3) [P1] 套餐类型（企业版/专业版）展示
+    √ [P1] 状态标签（正常/即将到期/已暂停） (464ms)
+    (Attempt 1 of 2) [P1] 搜索框可输入
+    4) [P1] 搜索框可输入
+    (Attempt 1 of 2) [P1] 新增租户按钮点击打开模态框
+    5) [P1] 新增租户按钮点击打开模态框
+
+
+  3 passing (2m)
+  5 failing
+
+  1) 租户管理
+       [P0] 租户列表包含4行:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `.ant-table-tbody tr, .ant-empty`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/18-tenant.cy.js:16:46)
+
+  2) 租户管理
+       [P1] 租户编码展示:
+     AssertionError: Timed out retrying after 10000ms: expected '<table.ant-table>' to contain 'SHDL'
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/18-tenant.cy.js:24:71)
+
+  3) 租户管理
+       [P1] 套餐类型（企业版/专业版）展示:
+     AssertionError: Timed out retrying after 10000ms: expected '<table.ant-table>' to contain '专业版'
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/18-tenant.cy.js:30:7)
+
+  4) 租户管理
+       [P1] 搜索框可输入:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `#content-tenant input.ant-input`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/18-tenant.cy.js:42:7)
+
+  5) 租户管理
+       [P1] 新增租户按钮点击打开模态框:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `#content-tenant button`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/18-tenant.cy.js:46:7)
+
+
+
+
+  (Results)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        8                                                                                │
+  │ Passing:      3                                                                                │
+  │ Failing:      5                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  10                                                                               │
+  │ Video:        false                                                                            │
+  │ Duration:     1 minute, 46 seconds                                                             │
+  │ Spec Ran:     18-tenant.cy.js                                                                  │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+  (Screenshots)
+
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\18-tenant.cy.js\租户管…     (1280x720)
+      [P0] 租户列表包含4行 (failed).png                                                             
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\18-tenant.cy.js\租户管…     (1280x720)
+      [P0] 租户列表包含4行 (failed) (attempt 2).png                                                 
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\18-tenant.cy.js\租户管…     (1280x720)
+      [P1] 租户编码展示 (failed).png                                                                
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\18-tenant.cy.js\租户管…     (1280x720)
+      [P1] 租户编码展示 (failed) (attempt 2).png                                                    
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\18-tenant.cy.js\租户管…     (1280x720)
+      [P1] 套餐类型（企业版专业版）展示 (failed).png                                                
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\18-tenant.cy.js\租户管…     (1280x720)
+      [P1] 套餐类型（企业版专业版）展示 (failed) (attempt 2).png                                    
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\18-tenant.cy.js\租户管…     (1280x720)
+      [P1] 搜索框可输入 (failed).png                                                                
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\18-tenant.cy.js\租户管…     (1280x720)
+      [P1] 搜索框可输入 (failed) (attempt 2).png                                                    
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\18-tenant.cy.js\租户管…     (1280x720)
+      [P1] 新增租户按钮点击打开模态框 (failed).png                                                  
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\18-tenant.cy.js\租户管…     (1280x720)
+      [P1] 新增租户按钮点击打开模态框 (failed) (attempt 2).png                                      
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                    
+  Running:  19-system.cy.js                                                              (19 of 138)
+
+
+  系统配置
+    √ [P0] 系统配置页面加载成功 (163ms)
+    √ [P0] Tabs展示（基本/安全/邮件/存储） (114ms)
+    (Attempt 1 of 2) [P0] 系统名称输入框值正确
+    1) [P0] 系统名称输入框值正确
+    (Attempt 1 of 2) [P1] 系统版本只读
+    2) [P1] 系统版本只读
+    (Attempt 1 of 2) [P1] 联系邮箱输入框存在
+    3) [P1] 联系邮箱输入框存在
+    (Attempt 1 of 2) [P1] 点击安全设置Tab
+    4) [P1] 点击安全设置Tab
+    (Attempt 1 of 2) [P1] 保存配置按钮存在
+    5) [P1] 保存配置按钮存在
+    (Attempt 1 of 2) [P2] 维护模式选择器存在
+    6) [P2] 维护模式选择器存在
+
+
+  2 passing (2m)
+  6 failing
+
+  1) 系统配置
+       [P0] 系统名称输入框值正确:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `#sys-name`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/19-system.cy.js:20:24)
+
+  2) 系统配置
+       [P1] 系统版本只读:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `#sys-version`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/19-system.cy.js:24:27)
+
+  3) 系统配置
+       [P1] 联系邮箱输入框存在:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `#sys-email-input`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/19-system.cy.js:29:31)
+
+  4) 系统配置
+       [P1] 点击安全设置Tab:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `#content-system .ant-tabs-tab`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/19-system.cy.js:33:7)
+
+  5) 系统配置
+       [P1] 保存配置按钮存在:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `#content-system button`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/19-system.cy.js:37:7)
+
+  6) 系统配置
+       [P2] 维护模式选择器存在:
+     AssertionError: Timed out retrying after 10000ms: Expected to find element: `#content-system input.ant-input`, but never found it.
+      at Context.eval (webpack://aiops-cypress-tests/./e2e/19-system.cy.js:41:7)
+
+
+
+
+  (Results)
+
+  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │ Tests:        8                                                                                │
+  │ Passing:      2                                                                                │
+  │ Failing:      6                                                                                │
+  │ Pending:      0                                                                                │
+  │ Skipped:      0                                                                                │
+  │ Screenshots:  12                                                                               │
+  │ Video:        false                                                                            │
+  │ Duration:     2 minutes, 6 seconds                                                             │
+  │ Spec Ran:     19-system.cy.js                                                                  │
+  └────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+  (Screenshots)
+
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\19-system.cy.js\系统配…     (1280x720)
+      [P0] 系统名称输入框值正确 (failed).png                                                        
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\19-system.cy.js\系统配…     (1280x720)
+      [P0] 系统名称输入框值正确 (failed) (attempt 2).png                                            
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\19-system.cy.js\系统配…     (1280x720)
+      [P1] 系统版本只读 (failed).png                                                                
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\19-system.cy.js\系统配…     (1280x720)
+      [P1] 系统版本只读 (failed) (attempt 2).png                                                    
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\19-system.cy.js\系统配…     (1280x720)
+      [P1] 联系邮箱输入框存在 (failed).png                                                          
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\19-system.cy.js\系统配…     (1280x720)
+      [P1] 联系邮箱输入框存在 (failed) (attempt 2).png                                              
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\19-system.cy.js\系统配…     (1280x720)
+      [P1] 点击安全设置Tab (failed).png                                                             
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\19-system.cy.js\系统配…     (1280x720)
+      [P1] 点击安全设置Tab (failed) (attempt 2).png                                                 
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\19-system.cy.js\系统配…     (1280x720)
+      [P1] 保存配置按钮存在 (failed).png                                                            
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\19-system.cy.js\系统配…     (1280x720)
+      [P1] 保存配置按钮存在 (failed) (attempt 2).png                                                
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\19-system.cy.js\系统配…     (1280x720)
+      [P2] 维护模式选择器存在 (failed).png                                                          
+  -  D:\2026\aiops.v2\tests\cypress-tests\cypress\screenshots\19-system.cy.js\系统配…     (1280x720)
+      [P2] 维护模式选择器存在 (failed) (attempt 2).png                                              
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                    
+  Running:  20-monitor.cy.js                                                             (20 of 138)
+
+
+  系统监控
+    √ [P0] 系统监控页面加载成功 (169ms)
+    √ [P0] 显示4个统计卡片 (122ms)
+    √ [P0] 服务总数为31 (125ms)
+    (Attempt 1 of 2) [P0] 服务列表包含4行
+    1) [P0] 服务列表包含4行
+    √ [P1] 健康/告警状态标签展示 (433ms)
+    √ [P1] 响应时间展示（ms） (110ms)

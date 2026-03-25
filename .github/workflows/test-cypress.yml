@@ -1,0 +1,244 @@
+# ═══════════════════════════════════════════════════════════════════
+# Cypress UI 交互测试工作流
+# 9,877 用例 | Node 18 | cy.intercept() 全量 Mock
+# 支持并行执行：通过多进程并发运行测试文件
+# ═══════════════════════════════════════════════════════════════════
+name: 🌲 Cypress
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_level:
+        description: '测试级别'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+          - smoke
+          - standard
+          - full
+      parallel:
+        description: '启用并行执行'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+concurrency:
+  group: cypress-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cypress:
+    name: 🌲 Cypress (${{ github.event.inputs.test_level || 'full' }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: 📦 安装依赖
+        working-directory: testing/tests/cypress-tests
+        run: npm ci || npm install
+
+      - name: 🧪 运行 Cypress（10路并发）
+        id: test
+        working-directory: testing/tests/cypress-tests
+        continue-on-error: true
+        run: |
+          rm -rf ../../../TestResults reports
+          LEVEL="${{ github.event.inputs.test_level || 'full' }}"
+          PARALLEL="${{ github.event.inputs.parallel || 'true' }}"
+          CONCURRENCY=10
+          
+          mkdir -p ../../../TestResults
+          export CYPRESS_VIDEO=false
+          export CYPRESS_SCREENSHOT_ON_RUN_FAILURE=false
+          
+          # 收集全部 spec 文件
+          SPECS=($(find e2e -name '*.cy.js' -o -name '*.cy.ts' | sort))
+          TOTAL=${#SPECS[@]}
+          echo "📋 共 $TOTAL 个 spec 文件，$CONCURRENCY 路并发"
+          
+          # 创建报告目录
+          mkdir -p reports ../../../TestResults/cypress-shards
+          
+          # 分片并发函数
+          run_shard() {
+            local SHARD_ID=$1
+            shift
+            local FILES=("$@")
+            local SPEC_LIST=$(IFS=,; echo "${FILES[*]}")
+            echo "🚀 [Shard $SHARD_ID] 启动 ${#FILES[@]} 个文件"
+            npx cypress run \
+              --spec "$SPEC_LIST" \
+              --reporter mochawesome \
+              --reporter-options "reportDir=reports/shard-${SHARD_ID},overwrite=false,json=true" \
+              > "../../../TestResults/cypress-shards/shard-${SHARD_ID}.txt" 2>&1 || true
+            if [ -f "reports/shard-${SHARD_ID}/mochawesome.json" ]; then
+              cp "reports/shard-${SHARD_ID}/mochawesome.json" "../../../TestResults/cypress-shards/shard-${SHARD_ID}-mochawesome.json"
+            fi
+            echo "✅ [Shard $SHARD_ID] 完成"
+          }
+          
+          # 按 CONCURRENCY 分片
+          SHARD=0
+          declare -a SHARD_FILES
+          for i in $(seq 0 $((CONCURRENCY - 1))); do
+            SHARD_FILES[$i]=""
+          done
+          
+          for i in "${!SPECS[@]}"; do
+            SLOT=$((i % CONCURRENCY))
+            if [ -n "${SHARD_FILES[$SLOT]}" ]; then
+              SHARD_FILES[$SLOT]="${SHARD_FILES[$SLOT]} ${SPECS[$i]}"
+            else
+              SHARD_FILES[$SLOT]="${SPECS[$i]}"
+            fi
+          done
+          
+          # 启动全部并发进程
+          PIDS=()
+          for i in $(seq 0 $((CONCURRENCY - 1))); do
+            if [ -n "${SHARD_FILES[$i]}" ]; then
+              run_shard $i ${SHARD_FILES[$i]} &
+              PIDS+=($!)
+            fi
+          done
+          
+          # 等待全部完成
+          echo "⏳ 等待 ${#PIDS[@]} 路并发完成..."
+          for PID in "${PIDS[@]}"; do
+            wait $PID || true
+          done
+          
+          # 汇总输出
+          echo "📊 汇总各 shard 输出..."
+          cat ../../../TestResults/cypress-shards/shard-*.txt > ../../../TestResults/cypress-output.txt 2>/dev/null || true
+
+          python3 << 'EOF'
+          import glob
+          import json
+          import os
+          import sys
+
+          files = glob.glob('../../../TestResults/cypress-shards/shard-*-mochawesome.json')
+          aggregate = {
+            'stats': {'tests': 0, 'passes': 0, 'failures': 0, 'pending': 0, 'duration': 0},
+            'results': [],
+            'executedFiles': [],
+            'reportFiles': sorted(files),
+          }
+
+          for file in sorted(files):
+            try:
+              with open(file, encoding='utf-8') as handle:
+                data = json.load(handle)
+              stats = data.get('stats', {})
+              aggregate['stats']['tests'] += int(stats.get('tests', 0) or 0)
+              aggregate['stats']['passes'] += int(stats.get('passes', 0) or 0)
+              aggregate['stats']['failures'] += int(stats.get('failures', 0) or 0)
+              aggregate['stats']['pending'] += int(stats.get('pending', 0) or 0)
+              aggregate['stats']['duration'] += float(stats.get('duration', 0) or 0)
+              for result in data.get('results', []) or []:
+                aggregate['results'].append(result)
+                file_name = result.get('file') or result.get('fullFile') or result.get('spec')
+                if isinstance(file_name, str) and file_name:
+                  aggregate['executedFiles'].append(file_name)
+            except Exception as exc:
+              print(f'warning: failed to parse {file}: {exc}')
+
+          aggregate['executedFiles'] = sorted(set(aggregate['executedFiles']))
+
+          with open('../../../TestResults/cypress-results.json', 'w', encoding='utf-8') as handle:
+            json.dump(aggregate, handle, ensure_ascii=False, indent=2)
+
+          if not files:
+            print('error: no mochawesome shard reports were produced', file=sys.stderr)
+            sys.exit(2)
+
+          if int(aggregate['stats']['tests']) <= 0:
+            print('error: mochawesome reports were produced but total tests is 0', file=sys.stderr)
+            sys.exit(3)
+          EOF
+          
+          # 统计结果
+          PASS=$(grep -c "passing" ../../../TestResults/cypress-output.txt 2>/dev/null || echo "0")
+          FAIL=$(grep -c "failing" ../../../TestResults/cypress-output.txt 2>/dev/null || echo "0")
+          echo "🏁 全部完成 | passing 行: $PASS | failing 行: $FAIL"
+
+      - name: 📊 生成错误报告
+        if: always()
+        run: |
+          mkdir -p test-error-reports/latest
+          TIMESTAMP=$(date +%Y-%m-%d_%H%M%S)
+          
+          cat > test-error-reports/latest/cypress-errors.md << EOF
+          # 🌲 Cypress 测试错误报告
+          
+          - **执行时间**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          - **Git Commit**: ${{ github.sha }}
+          - **触发方式**: ${{ github.event_name }}
+          - **测试级别**: ${{ github.event.inputs.test_level || 'full' }}
+          
+          ## 失败详情
+          
+          EOF
+          
+          if [ -f TestResults/cypress-output.txt ]; then
+            echo '```' >> test-error-reports/latest/cypress-errors.md
+            grep -E "failing|✗|Error|AssertionError|CypressError" TestResults/cypress-output.txt | head -100 >> test-error-reports/latest/cypress-errors.md || true
+            echo '```' >> test-error-reports/latest/cypress-errors.md
+          fi
+          
+          mkdir -p "test-error-reports/history/$TIMESTAMP"
+          cp test-error-reports/latest/cypress-errors.md "test-error-reports/history/$TIMESTAMP/" || true
+
+      - name: 📤 上传测试结果
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cypress-results
+          path: |
+            TestResults/
+            test-error-reports/
+            testing/tests/cypress-tests/reports/
+          retention-days: 30
+
+      - name: 📊 生成标准格式报告
+        if: always()
+        run: |
+          chmod +x .github/scripts/generate-ci-report.sh
+          ./.github/scripts/generate-ci-report.sh cypress \
+            --json TestResults/cypress-results.json \
+            --output TestResults/cypress-output.txt \
+            --level "${{ github.event.inputs.test_level || 'full' }}"
+
+      - name: 💾 提交报告到仓库
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add test-error-reports/ || true
+          git diff --cached --quiet || git commit -m "📊 Cypress 报告 $(date +%Y-%m-%d_%H%M) [skip ci]"
+          for i in 1 2 3; do
+            git stash --include-untracked || true
+            git pull --rebase origin main || true
+            git stash pop || true
+            git push && break
+            sleep $((i * 5))
+          done

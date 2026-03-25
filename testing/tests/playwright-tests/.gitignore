@@ -1,0 +1,24 @@
+# Playwright 测试产物 - 禁止提交
+
+# 测试结果
+test-results/
+playwright-report/
+html-report/
+allure-results/
+
+# 认证状态（包含登录信息）
+.auth/
+storageState*.json
+
+# Node
+node_modules/
+package-lock.json
+
+# 日志和临时文件
+*.log
+*.tmp
+*.temp
+
+# 截图和视频
+screenshots/
+videos/

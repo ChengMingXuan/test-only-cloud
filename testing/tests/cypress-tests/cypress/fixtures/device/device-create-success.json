@@ -1,0 +1,7 @@
+{
+  "success": true, "code": "200", "message": "创建成功",
+  "data": {
+    "id": "dev-new-001", "code": "DEV-NEW-001", "name": "新设备"
+  },
+  "timestamp": "2025-01-01T00:00:00Z"
+}

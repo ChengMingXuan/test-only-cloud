@@ -1,0 +1,14 @@
+pytest==7.4.3
+pytest-html==4.1.1
+pytest-cov==4.1.0
+pytest-xdist==3.5.0
+pytest-timeout==2.2.0
+requests==2.31.0
+psycopg2-binary==2.9.9
+python-dotenv==1.0.0
+allure-pytest==2.13.2
+parameterized==0.9.0
+faker==20.0.0
+# Testcontainers（真实 PostgreSQL 容器测试，100% 兼容生产）
+testcontainers>=4.0.0
+testcontainers-postgres>=0.0.1rc1
