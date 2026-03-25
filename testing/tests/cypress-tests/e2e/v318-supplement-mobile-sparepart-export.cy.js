@@ -216,12 +216,12 @@ describe('导出服务', () => {
   describe('PDF 导出', () => {
     it('报表页应有PDF导出按钮', () => {
       cy.intercept('GET', '/api/microgrid/energy/reports*', mockApiSuccess({ items: [], total: 0 }));
-      cy.visit(`${BASE_URL}/energy/reports`);
+      cy.visit(`${BASE_URL}/data-report/center`);
       cy.get('[data-testid="export-pdf-btn"]').should('be.visible');
     });
 
     it('点击PDF导出应弹出配置对话框', () => {
-      cy.visit(`${BASE_URL}/energy/reports`);
+      cy.visit(`${BASE_URL}/data-report/center`);
       cy.get('[data-testid="export-pdf-btn"]').click();
       cy.get('[data-testid="pdf-config-modal"]').should('be.visible');
     });

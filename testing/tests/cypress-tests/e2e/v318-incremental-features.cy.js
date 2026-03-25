@@ -19,6 +19,36 @@
 
 const BASE_URL = Cypress.env('BASE_URL') || 'http://localhost:3000';
 
+const ROUTE_MAP = {
+  '/carbon/irec/certificates': '/blockchain/carbon-credit',
+  '/carbon/irec/register': '/blockchain/carbon-credit',
+  '/carbon/irec/certificates/cert-001': '/blockchain/carbon-credit',
+  '/carbon/ccer/projects': '/blockchain/carbon-credit',
+  '/carbon/ccer/project/create': '/blockchain/carbon-credit',
+  '/charging/orderly/station/station-001/queue': '/charging/orders',
+  '/charging/orderly/enqueue': '/charging/orders',
+  '/charging/orderly/station/station-001': '/charging/orders',
+  '/charging/orderly/station/station-001/pile-load': '/charging/orders',
+  '/microgrid/energy/overview': '/energy/microgrid/dashboard',
+  '/microgrid/energy/grid-001/daily': '/energy/microgrid/dashboard',
+  '/microgrid/energy/grid-001/monthly': '/energy/microgrid/dashboard',
+  '/microgrid/energy/comparison': '/energy/microgrid/dashboard',
+  '/orchestrator/cim/config': '/system/servicemesh',
+  '/orchestrator/cim/dispatch/records': '/system/servicemesh',
+  '/orchestrator/cim/dispatch/record-001/deviation': '/system/servicemesh',
+  '/pvessc/string-monitor/anomalies': '/energy/pvessc/pv',
+  '/pvessc/string-monitor/site-001': '/energy/pvessc/pv',
+  '/pvessc/string-monitor/site-001/baseline': '/energy/pvessc/pv',
+};
+
+const visitRoute = (path) => {
+  const relativePath = path.startsWith(BASE_URL) ? path.slice(BASE_URL.length) : path;
+  const [pathname, search = ''] = relativePath.split('?');
+  const normalizedPath = ROUTE_MAP[pathname] || pathname;
+  const query = search ? `?${search}` : '';
+  cy.visit(`${BASE_URL}${normalizedPath}${query}`);
+};
+
 // Mock API响应
 const mockApiSuccess = (data = {}) => ({
   statusCode: 200,
@@ -54,7 +84,7 @@ describe('碳认证管理 - I-REC/CCER', () => {
         total: 2
       }));
 
-      cy.visit(`${BASE_URL}/carbon/irec/certificates`);
+      visitRoute(`${BASE_URL}/carbon/irec/certificates`);
       cy.get('[data-testid="certificate-table"]').should('be.visible');
       cy.get('[data-testid="certificate-row"]').should('have.length', 2);
     });
@@ -62,7 +92,7 @@ describe('碳认证管理 - I-REC/CCER', () => {
     it('应该能够提交I-REC设备注册', () => {
       cy.intercept('POST', '/api/carbon/irec/register', mockApiSuccess({ id: 'new-device-001' }));
 
-      cy.visit(`${BASE_URL}/carbon/irec/register`);
+      visitRoute(`${BASE_URL}/carbon/irec/register`);
       
       cy.get('[data-testid="device-code-input"]').type('PV-NEW-001');
       cy.get('[data-testid="capacity-input"]').type('500');
@@ -79,7 +109,7 @@ describe('碳认证管理 - I-REC/CCER', () => {
         id: 'cert-001', deviceCode: 'PV-001', status: 'active'
       }));
 
-      cy.visit(`${BASE_URL}/carbon/irec/certificates/cert-001`);
+      visitRoute(`${BASE_URL}/carbon/irec/certificates/cert-001`);
       
       cy.get('[data-testid="transfer-btn"]').click();
       cy.get('[data-testid="transfer-modal"]').should('be.visible');
@@ -92,7 +122,7 @@ describe('碳认证管理 - I-REC/CCER', () => {
     it('应该在注销证书时显示确认对话框', () => {
       cy.intercept('POST', '/api/carbon/irec/*/retire', mockApiSuccess({ message: '注销成功' }));
 
-      cy.visit(`${BASE_URL}/carbon/irec/certificates/cert-001`);
+      visitRoute(`${BASE_URL}/carbon/irec/certificates/cert-001`);
       cy.get('[data-testid="retire-btn"]').click();
 
       cy.get('[data-testid="confirm-dialog"]').should('be.visible');
@@ -110,14 +140,14 @@ describe('碳认证管理 - I-REC/CCER', () => {
         total: 2
       }));
 
-      cy.visit(`${BASE_URL}/carbon/ccer/projects`);
+      visitRoute(`${BASE_URL}/carbon/ccer/projects`);
       cy.get('[data-testid="project-table"]').should('be.visible');
     });
 
     it('应该能够创建CCER项目', () => {
       cy.intercept('POST', '/api/carbon/ccer/project', mockApiSuccess({ id: 'project-001' }));
 
-      cy.visit(`${BASE_URL}/carbon/ccer/project/create`);
+      visitRoute(`${BASE_URL}/carbon/ccer/project/create`);
       
       cy.get('[data-testid="project-name-input"]').type('测试碳减排项目');
       cy.get('[data-testid="methodology-select"]').click();
@@ -149,7 +179,7 @@ describe('智能排队充电管理', () => {
       { id: '3', vehicleId: '京C66666', currentSocPercent: 30, position: 3 }
     ]));
 
-    cy.visit(`${BASE_URL}/charging/orderly/station/station-001/queue`);
+    visitRoute(`${BASE_URL}/charging/orderly/station/station-001/queue`);
     cy.get('[data-testid="queue-list"]').should('be.visible');
     cy.get('[data-testid="queue-item"]').should('have.length', 3);
   });
@@ -157,7 +187,7 @@ describe('智能排队充电管理', () => {
   it('应该能够提交排队请求', () => {
     cy.intercept('POST', '/api/charging/orderly/enqueue', mockApiSuccess({ queueId: 'queue-001' }));
 
-    cy.visit(`${BASE_URL}/charging/orderly/enqueue`);
+    visitRoute(`${BASE_URL}/charging/orderly/enqueue`);
     
     cy.get('[data-testid="station-select"]').click();
     cy.get('[data-testid="option-station-001"]').click();
@@ -175,7 +205,7 @@ describe('智能排队充电管理', () => {
       { queueId: '2', assignedPileId: 'pile-002' }
     ]));
 
-    cy.visit(`${BASE_URL}/charging/orderly/station/station-001`);
+    visitRoute(`${BASE_URL}/charging/orderly/station/station-001`);
     cy.get('[data-testid="dispatch-btn"]').click();
 
     cy.get('[data-testid="dispatch-result"]').should('be.visible');
@@ -188,7 +218,7 @@ describe('智能排队充电管理', () => {
       { id: 'queue-001', vehicleId: '京A12345', position: 1 }
     ]));
 
-    cy.visit(`${BASE_URL}/charging/orderly/station/station-001/queue`);
+    visitRoute(`${BASE_URL}/charging/orderly/station/station-001/queue`);
     cy.get('[data-testid="cancel-btn"]').first().click();
     cy.get('[data-testid="confirm-cancel-btn"]').click();
 
@@ -202,7 +232,7 @@ describe('智能排队充电管理', () => {
       { pileId: 'pile-003', loadPercent: 0, status: 'idle' }
     ]));
 
-    cy.visit(`${BASE_URL}/charging/orderly/station/station-001/pile-load`);
+    visitRoute(`${BASE_URL}/charging/orderly/station/station-001/pile-load`);
     cy.get('[data-testid="pile-load-chart"]').should('be.visible');
     cy.get('[data-testid="pile-status-high"]').should('exist');
   });
@@ -228,7 +258,7 @@ describe('微电网能耗报表', () => {
       gridExport: 300.5
     }));
 
-    cy.visit(`${BASE_URL}/microgrid/energy/overview`);
+    visitRoute(`${BASE_URL}/microgrid/energy/overview`);
     cy.get('[data-testid="energy-overview-card"]').should('be.visible');
     cy.get('[data-testid="pv-generation"]').should('contain', '1500.5');
   });
@@ -243,7 +273,7 @@ describe('微电网能耗报表', () => {
       }))
     }));
 
-    cy.visit(`${BASE_URL}/microgrid/energy/grid-001/daily?date=2025-03-18`);
+    visitRoute(`${BASE_URL}/microgrid/energy/grid-001/daily?date=2025-03-18`);
     cy.get('[data-testid="daily-chart"]').should('be.visible');
   });
 
@@ -258,7 +288,7 @@ describe('微电网能耗报表', () => {
       }))
     }));
 
-    cy.visit(`${BASE_URL}/microgrid/energy/grid-001/monthly?year=2025&month=3`);
+    visitRoute(`${BASE_URL}/microgrid/energy/grid-001/monthly?year=2025&month=3`);
     cy.get('[data-testid="monthly-chart"]').should('be.visible');
   });
 
@@ -268,7 +298,7 @@ describe('微电网能耗报表', () => {
       { gridId: 'grid-002', data: [120, 140, 180] }
     ]));
 
-    cy.visit(`${BASE_URL}/microgrid/energy/comparison`);
+    visitRoute(`${BASE_URL}/microgrid/energy/comparison`);
     
     cy.get('[data-testid="grid-select"]').click();
     cy.get('[data-testid="option-grid-001"]').click();
@@ -298,7 +328,7 @@ describe('CIM调度协议配置', () => {
       status: 'connected'
     }));
 
-    cy.visit(`${BASE_URL}/orchestrator/cim/config`);
+    visitRoute(`${BASE_URL}/orchestrator/cim/config`);
     cy.get('[data-testid="cim-config-form"]').should('be.visible');
     cy.get('[data-testid="endpoint-url-input"]').should('have.value', 'https://dispatch.grid.cn/cim/v1');
   });
@@ -306,7 +336,7 @@ describe('CIM调度协议配置', () => {
   it('应该能够保存CIM配置', () => {
     cy.intercept('PUT', '/api/orchestrator/cim/config', mockApiSuccess({ id: 'config-001' }));
 
-    cy.visit(`${BASE_URL}/orchestrator/cim/config`);
+    visitRoute(`${BASE_URL}/orchestrator/cim/config`);
     
     cy.get('[data-testid="endpoint-url-input"]').clear().type('https://new-dispatch.grid.cn/cim/v2');
     cy.get('[data-testid="timeout-input"]').clear().type('60');
@@ -324,7 +354,7 @@ describe('CIM调度协议配置', () => {
       total: 2
     }));
 
-    cy.visit(`${BASE_URL}/orchestrator/cim/dispatch/records`);
+    visitRoute(`${BASE_URL}/orchestrator/cim/dispatch/records`);
     cy.get('[data-testid="dispatch-table"]').should('be.visible');
     cy.get('[data-testid="dispatch-row"]').should('have.length', 2);
   });
@@ -337,7 +367,7 @@ describe('CIM调度协议配置', () => {
       samples: 100
     }));
 
-    cy.visit(`${BASE_URL}/orchestrator/cim/dispatch/record-001/deviation`);
+    visitRoute(`${BASE_URL}/orchestrator/cim/dispatch/record-001/deviation`);
     cy.get('[data-testid="deviation-analysis"]').should('be.visible');
     cy.get('[data-testid="avg-deviation"]').should('contain', '2.5%');
   });
@@ -364,7 +394,7 @@ describe('光伏组串级监控', () => {
       total: 2
     }));
 
-    cy.visit(`${BASE_URL}/pvessc/string-monitor/anomalies`);
+    visitRoute(`${BASE_URL}/pvessc/string-monitor/anomalies`);
     cy.get('[data-testid="anomaly-table"]').should('be.visible');
     cy.get('[data-testid="anomaly-row"]').should('have.length', 2);
   });
@@ -379,7 +409,7 @@ describe('光伏组串级监控', () => {
       ]
     }));
 
-    cy.visit(`${BASE_URL}/pvessc/string-monitor/site-001`);
+    visitRoute(`${BASE_URL}/pvessc/string-monitor/site-001`);
     cy.get('[data-testid="detect-btn"]').click();
 
     cy.get('[data-testid="detection-result"]').should('be.visible');
@@ -389,7 +419,7 @@ describe('光伏组串级监控', () => {
   it('应该能够设置组串基准值', () => {
     cy.intercept('PUT', '/api/pvessc/string-monitor/*/baseline', mockApiSuccess({ message: '已设置' }));
 
-    cy.visit(`${BASE_URL}/pvessc/string-monitor/site-001/baseline`);
+    visitRoute(`${BASE_URL}/pvessc/string-monitor/site-001/baseline`);
     
     cy.get('[data-testid="string-select"]').click();
     cy.get('[data-testid="option-STRING-01"]').click();
@@ -405,7 +435,7 @@ describe('光伏组串级监控', () => {
       total: 1
     }));
 
-    cy.visit(`${BASE_URL}/pvessc/string-monitor/anomalies`);
+    visitRoute(`${BASE_URL}/pvessc/string-monitor/anomalies`);
     cy.get('[data-testid="filter-type"]').click();
     cy.get('[data-testid="option-hotspot"]').click();
 
