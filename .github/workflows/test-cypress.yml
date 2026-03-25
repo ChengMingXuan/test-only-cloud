@@ -228,6 +228,12 @@ jobs:
             --output TestResults/cypress-output.txt \
             --level "${{ github.event.inputs.test_level || 'full' }}"
 
+          mkdir -p test-error-reports/latest/reports
+          cp TestResults/*-report.json test-error-reports/latest/reports/ 2>/dev/null || true
+          cp TestResults/*-report.md test-error-reports/latest/reports/ 2>/dev/null || true
+          cp TestResults/reports/*-report.json test-error-reports/latest/reports/ 2>/dev/null || true
+          cp TestResults/reports/*-report.md test-error-reports/latest/reports/ 2>/dev/null || true
+
       - name: 💾 提交报告到仓库
         if: always()
         run: |

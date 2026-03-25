@@ -34,9 +34,10 @@ MOCK_HTML = """<!DOCTYPE html>
     .workflow-board { display: grid; gap: 12px; }
     .ant-tag { display: inline-block; background: #e6f4ff; color: #0958d9; padding: 2px 8px; }
     .ant-badge { display: inline-flex; align-items: center; padding: 2px 8px; background: #f6ffed; color: #389e0d; }
+    .ant-btn, .ant-btn-primary { min-width: 44px; min-height: 32px; padding: 6px 12px; }
     .ant-btn-primary { background: var(--primary-color); color: #fff; border: none; }
     .ant-input-search, .search-panel { display: flex; gap: 8px; align-items: center; }
-    .ant-input { min-height: 32px; padding: 4px 8px; border: 1px solid #d9d9d9; }
+    .ant-input, select, textarea { min-height: 32px; padding: 4px 8px; border: 1px solid #d9d9d9; }
     .ant-alert { padding: 8px 12px; background: #fffbe6; border: 1px solid #ffe58f; }
     .ant-modal { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.35); }
     .ant-modal.open { display: block; }
@@ -55,18 +56,26 @@ MOCK_HTML = """<!DOCTYPE html>
       <div class="content-area" data-testid="content">
         <button type="button" class="ant-btn ant-btn-primary">Click</button>
         <div class="search-panel ant-input-search">
-          <input class="ant-input" type="search" value="" placeholder="搜索规则" />
-          <button type="button" class="ant-btn">Search</button>
+          <label for="search-input">搜索</label>
+          <input id="search-input" class="ant-input" type="search" value="" placeholder="搜索规则" aria-label="搜索规则" />
+          <button type="button" class="ant-btn" aria-label="搜索">Search</button>
         </div>
         <form action="#" class="login-form ant-form">
-          <input data-testid="phone-input" type="tel" placeholder="手机号" />
-          <input id="username" name="username" type="text" autocomplete="username" required />
-          <input id="password" name="password" type="password" required />
-          <textarea placeholder="备注"></textarea>
-          <select><option value="a">Option A</option></select>
-          <input type="checkbox" id="check" />
-          <input type="date" />
-          <button type="submit" class="ant-btn ant-btn-primary">Login</button>
+          <label for="phone-input">手机号</label>
+          <input id="phone-input" data-testid="phone-input" type="tel" placeholder="手机号" aria-label="手机号" />
+          <label for="username">用户名</label>
+          <input id="username" name="username" type="text" autocomplete="username" required aria-label="用户名" />
+          <label for="password">密码</label>
+          <input id="password" name="password" type="password" required aria-label="密码" />
+          <label for="remark">备注</label>
+          <textarea id="remark" placeholder="备注" aria-label="备注"></textarea>
+          <label for="station-select">选项</label>
+          <select id="station-select" aria-label="选项"><option value="a">Option A</option><option value="b">Option B</option></select>
+          <label for="check">确认</label>
+          <input type="checkbox" id="check" aria-label="确认" />
+          <label for="mock-date">日期</label>
+          <input id="mock-date" type="date" aria-label="日期" />
+          <button type="submit" class="ant-btn ant-btn-primary" aria-label="登录">Login</button>
           <div class="field-error">请输入用户名和密码</div>
           <div class="invalid-feedback">表单校验失败</div>
           <div class="error-message">登录失败</div>
@@ -85,9 +94,9 @@ MOCK_HTML = """<!DOCTYPE html>
         <span class="ant-tag">正常</span>
         <span class="ant-tag">告警</span>
         <div class="ant-alert">库存预警</div>
-        <button type="button" class="ant-btn ant-btn-primary" data-testid="add-btn">新增</button>
-        <button type="button" class="ant-btn" data-testid="export-excel-btn" title="导出 Excel">导出</button>
-        <button type="button" class="ant-btn" data-testid="export-pdf-btn" title="PDF 导出">PDF</button>
+        <button type="button" class="ant-btn ant-btn-primary" data-testid="add-btn" aria-label="新增">新增</button>
+        <button type="button" class="ant-btn" data-testid="export-excel-btn" title="导出 Excel" aria-label="导出 Excel">导出</button>
+        <button type="button" class="ant-btn" data-testid="export-pdf-btn" title="PDF 导出" aria-label="导出 PDF">PDF</button>
         <table class="ant-table ant-table-wrapper">
           <thead><tr><th>Name</th><th>Status</th></tr></thead>
           <tbody><tr class="ant-table-row"><td>Item 1</td><td>Active</td></tr></tbody>

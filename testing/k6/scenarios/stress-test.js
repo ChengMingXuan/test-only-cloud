@@ -162,7 +162,7 @@ function readOperations(headers, data) {
   const device = data.devices?.[0] || pickRandom(data.devices) || { id: 1 };
   const endpoints = [
     () => http.get(`${config.baseUrl}/api/device/${device.id}`, { headers }),
-      `${config.baseUrl}/api/device?status=online&page=${nextRandomInt(1, 20)}`,
+    () => http.get(`${config.baseUrl}/api/stations/${nextRandomInt(1, 100)}`, { headers }),
     () => http.get(`${config.baseUrl}/api/charging/admin/orders/${nextRandomInt(1, 10000)}`, { headers }),
     () => http.get(`${config.baseUrl}/api/user/profile`, { headers }),
     () => http.get(`${config.baseUrl}/api/device/${device.id}/realtime`, { headers }),

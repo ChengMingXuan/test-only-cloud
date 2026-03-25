@@ -365,6 +365,11 @@ fi
 MEASUREMENT_MODE="cases"
 COMPARABLE_TOTAL="$TOTAL"
 
+if [ "$TOOL" = "k6" ]; then
+  MEASUREMENT_MODE="checks"
+  COMPARABLE_TOTAL="$STD_CASES"
+fi
+
 if [[ "$TOOL" =~ ^(integration|puppeteer|playwright)$ ]] && [ "$TOTAL" -gt 0 ] && [ "$FAILED" -eq 0 ] && [ "$TOTAL" -lt "$STD_CASES" ]; then
   ACTUAL_METRIC_LABEL="原始执行用例数"
   COVERAGE_GATE_LABEL="过渡兼容口径"
