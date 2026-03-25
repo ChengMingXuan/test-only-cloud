@@ -10,6 +10,18 @@
  */
 const { defineConfig } = require('cypress');
 const http = require('http');
+const fs = require('fs');
+const path = require('path');
+
+const cypressRuntimeRoot = process.env.CYPRESS_RUNTIME_DIR || 'D:/VSCode/cache/cypress-runtime';
+const cypressUserDataDir = path.join(cypressRuntimeRoot, 'user-data');
+const cypressDiskCacheDir = path.join(cypressRuntimeRoot, 'disk-cache');
+
+for (const dir of [cypressRuntimeRoot, cypressUserDataDir, cypressDiskCacheDir]) {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+}
 
 /**
  * 检测前端服务是否可达（3s 超时）
@@ -56,12 +68,22 @@ module.exports = defineConfig({
     },
     
     async setupNodeEvents(on, config) {
-      const fs = require('fs');
       const mockServer = require('./mock-server');
       let mockStarted = false;
 
       // 创建报告目录
       if (!fs.existsSync('reports')) fs.mkdirSync('reports', { recursive: true });
+
+      on('before:browser:launch', (browser = {}, launchOptions) => {
+        if (browser.family === 'chromium' || browser.name === 'electron') {
+          launchOptions.args.push(`--user-data-dir=${cypressUserDataDir}`);
+          launchOptions.args.push(`--disk-cache-dir=${cypressDiskCacheDir}`);
+          launchOptions.args.push('--disable-gpu-shader-disk-cache');
+          launchOptions.args.push('--disable-application-cache');
+        }
+
+        return launchOptions;
+      });
 
       // 双模判断：CI / 显式 Mock / 前端不可达 → 自动启动 mock-server
       // 必须在 setupNodeEvents 中直接启动（before:run 太晚，Cypress 先验 baseUrl）

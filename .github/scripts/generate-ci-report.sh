@@ -493,7 +493,26 @@ try:
         for name in names:
             add_file_name(name, total, passed, failed, skipped, duration)
 
+      def synthesize_from_shards(shards):
+        if not isinstance(shards, list):
+          return
+        for shard in shards:
+          if not isinstance(shard, dict):
+            continue
+          name = shard.get('reportFile') or shard.get('file') or shard.get('name')
+          if not name:
+            shard_id = shard.get('shardId')
+            name = f'shard-{shard_id}' if shard_id is not None else 'shard'
+          total = int(shard.get('total', 0) or 0)
+          passed = int(shard.get('passed', 0) or 0)
+          failed = int(shard.get('failed', 0) or 0)
+          skipped = int(shard.get('skipped', 0) or 0)
+          duration = round(float(shard.get('duration_s', 0) or 0), 3)
+          add_file_name(name, total, passed, failed, skipped, duration)
+
     walk(data)
+    if not files:
+      synthesize_from_shards(data.get('shards', []))
     if not files:
         top_stats = data.get('stats', {}) if isinstance(data, dict) else {}
         synthesize_from_names(data.get('executedFiles', []), top_stats)
