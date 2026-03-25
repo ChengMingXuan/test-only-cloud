@@ -357,10 +357,35 @@ fi
 
 MEASUREMENT_MODE="cases"
 COMPARABLE_TOTAL="$TOTAL"
+DEFINED_CASES="$TOTAL"
 
 if [ "$TOOL" = "k6" ]; then
   MEASUREMENT_MODE="checks"
   COMPARABLE_TOTAL="$STD_CASES"
+fi
+
+if [ "$TOOL" = "cypress" ]; then
+  DEFINED_CASES=$(python3 - <<'PY'
+import glob
+import os
+import re
+
+root = os.getcwd()
+pattern = re.compile(r'(?m)^\s*(?:it|test)(?:\.[A-Za-z_][A-Za-z0-9_]*)?\s*\(')
+count = 0
+for path in glob.glob(os.path.join(root, 'testing', 'tests', 'cypress-tests', 'e2e', '**', '*.cy.js'), recursive=True):
+    try:
+        with open(path, encoding='utf-8') as handle:
+            count += len(pattern.findall(handle.read()))
+    except Exception:
+        continue
+print(count)
+PY
+)
+  if [ -z "$DEFINED_CASES" ] || [ "$DEFINED_CASES" -le 0 ]; then
+    DEFINED_CASES="$TOTAL"
+  fi
+  COMPARABLE_TOTAL="$DEFINED_CASES"
 fi
 
 if [[ "$TOOL" =~ ^(integration|puppeteer|playwright)$ ]] && [ "$TOTAL" -gt 0 ] && [ "$FAILED" -eq 0 ] && [ "$TOTAL" -lt "$STD_CASES" ]; then
@@ -631,6 +656,15 @@ then
   PASS_GE_95=true
 fi
 
+COVERAGE_PASSED=false
+if [ "$TOOL" = "k6" ]; then
+  if [ "$EXECUTED_FILES" -gt 0 ]; then
+    COVERAGE_PASSED=true
+  fi
+elif [ "$TOTAL" -ge "$COMPARABLE_TOTAL" ]; then
+  COVERAGE_PASSED=true
+fi
+
 if [ "$TOOL" = "k6" ]; then
   if [ "$EXECUTED_FILES" -gt 0 ]; then
     COVERAGE_GATE_VALUE="✅ ${EXECUTED_FILES}"
@@ -649,7 +683,7 @@ PY
   fi
 fi
 
-if [ "$FAILED" -eq 0 ] && [ "$TOTAL" -gt 0 ] && [ "$IS_ZERO_EXEC" = false ] && [ "$PASS_GE_95" = true ]; then
+if [ "$FAILED" -eq 0 ] && [ "$TOTAL" -gt 0 ] && [ "$IS_ZERO_EXEC" = false ] && [ "$PASS_GE_95" = true ] && [ "$COVERAGE_PASSED" = true ]; then
   STATUS_TEXT="✅ 全部通过"
   CAN_RELEASE=true
   GATE_TEXT="🟢 **可发布**"
@@ -663,12 +697,18 @@ else
   GATE_TEXT="🔴 **不可发布**"
 fi
 
+DEFINED_CASE_ROW=""
+if [ "$TOOL" = "cypress" ]; then
+  DEFINED_CASE_ROW="| 实际定义用例数（源码扫描）| $DEFINED_CASES |"
+fi
+
 cat > "$REPORT_DIR/${TOOL}-report.json" <<JSONEOF
 {
   "tool": "$TOOL",
   "displayName": "$DISPLAY_NAME",
   "icon": "$ICON",
   "standardCases": $STD_CASES,
+  "definedCases": $DEFINED_CASES,
   "summary": {
     "total": $TOTAL,
     "passed": $PASSED,
@@ -681,6 +721,7 @@ cat > "$REPORT_DIR/${TOOL}-report.json" <<JSONEOF
     "sourceFile": "$SOURCE_FILE",
     "generatedAt": "$TIMESTAMP",
     "measurementMode": "$MEASUREMENT_MODE",
+    "definedCases": $DEFINED_CASES,
     "comparableTotal": $COMPARABLE_TOTAL,
     "executedFiles": $EXECUTED_FILES
   },
@@ -717,6 +758,7 @@ cat > "$REPORT_DIR/${TOOL}-report.md" <<MDEOF
 |------------------|--------------------|
 | 标准用例数（基准）| $STD_CASES |
 | $ACTUAL_METRIC_LABEL | $TOTAL |
+${DEFINED_CASE_ROW}
 | 通过用例数       | $PASSED ✅ |
 | 失败用例数       | $FAILED ❌ |
 | 跳过用例数       | $SKIPPED ⏭️ |
