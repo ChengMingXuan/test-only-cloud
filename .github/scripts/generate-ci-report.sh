@@ -270,11 +270,11 @@ PY
         PASSED=$((TOTAL - FAILED - SKIPPED))
         [ "$PASSED" -lt 0 ] && PASSED=0
       fi
-      if [ "$TOTAL" -eq 0 ]; then
-        PASSED=$(grep -oP '\d+(?= passed)' "$CLEAN_FILE" 2>/dev/null | tail -1 || echo '0')
+      if [ "$COMPARABLE_TOTAL" -gt 0 ]; then
+        COVERAGE_RATE=$(python3 - "$TOTAL" "$COMPARABLE_TOTAL" <<'PY'
         FAILED=$(grep -oP '\d+(?= failed)' "$CLEAN_FILE" 2>/dev/null | tail -1 || echo '0')
         SKIPPED=$(grep -oP '\d+(?= skipped)' "$CLEAN_FILE" 2>/dev/null | tail -1 || echo '0')
-        TOTAL=$((PASSED + FAILED + SKIPPED))
+      base = float(sys.argv[2])
       fi
       ;;
     puppeteer)
@@ -282,21 +282,14 @@ PY
       PASSED=$(grep -oP '\d+(?= passed)' "$CLEAN_FILE" | tail -1 || echo '0')
       FAILED=$(grep -oP '\d+(?= failed)' "$CLEAN_FILE" | tail -1 || echo '0')
       [ -z "$TOTAL" ] && TOTAL=0
-      [ -z "$PASSED" ] && PASSED=0
+      COVERAGE_GATE_LABEL="实际用例执行完整性"
       [ -z "$FAILED" ] && FAILED=0
       SKIPPED=$((TOTAL - PASSED - FAILED))
       [ "$SKIPPED" -lt 0 ] && SKIPPED=0
       ;;
     k6)
-      K6_SUMMARY="TestResults/k6-summary.json"
-      if [ -f "$K6_SUMMARY" ]; then
-        K6_STATS=$(python3 - "$K6_SUMMARY" <<'PY'
-import json, sys
-path = sys.argv[1]
-try:
-    data = json.load(open(path, encoding='utf-8'))
-    checks = data.get('metrics', {}).get('checks', {})
-    passed = int(checks.get('passes', 0) or 0)
+        MEASUREMENT_MODE="checks"
+        COMPARABLE_TOTAL="$TOTAL"
     failed = int(checks.get('fails', 0) or 0)
     print(passed + failed, passed, failed)
 except Exception:
@@ -426,6 +419,25 @@ try:
     data = json.load(open(path, encoding='utf-8'))
     files = []
     seen = set()
+    def add_file_name(file_name, total, passed, failed, skipped, duration):
+        if not isinstance(file_name, str) or not file_name:
+            return
+        if file_name in seen:
+            return
+        seen.add(file_name)
+        status = 'failed' if failed > 0 else ('skipped' if total == 0 else 'passed')
+        files.append({
+            'file': file_name,
+            'tool': tool,
+            'status': status,
+            'total': total,
+            'passed': passed,
+            'failed': failed,
+            'skipped': skipped,
+            'duration_s': duration,
+            'timestamp': timestamp
+        })
+
     def walk(node):
         if isinstance(node, dict):
             results = node.get('results')
@@ -435,27 +447,33 @@ try:
             file_name = node.get('file') or node.get('fullFile') or node.get('spec')
             stats = node.get('stats')
             if isinstance(file_name, str) and file_name and isinstance(stats, dict) and file_name not in seen:
-                seen.add(file_name)
                 total = int(stats.get('tests', 0) or 0)
                 passed = int(stats.get('passes', 0) or 0)
                 failed = int(stats.get('failures', 0) or 0)
                 skipped = int(stats.get('pending', 0) or 0)
-                status = 'failed' if failed > 0 else ('skipped' if total == 0 else 'passed')
-                files.append({
-                    'file': file_name,
-                    'tool': tool,
-                    'status': status,
-                    'total': total,
-                    'passed': passed,
-                    'failed': failed,
-                    'skipped': skipped,
-                    'duration_s': round(float(stats.get('duration', 0) or 0) / 1000.0, 3),
-                    'timestamp': timestamp
-                })
+                duration = round(float(stats.get('duration', 0) or 0) / 1000.0, 3)
+                add_file_name(file_name, total, passed, failed, skipped, duration)
         elif isinstance(node, list):
             for item in node:
                 walk(item)
+
+    def synthesize_from_names(names, stats):
+        if not isinstance(names, list):
+            return
+        total = int(stats.get('tests', 0) or 0) if isinstance(stats, dict) else 0
+        passed = int(stats.get('passes', 0) or 0) if isinstance(stats, dict) else 0
+        failed = int(stats.get('failures', 0) or 0) if isinstance(stats, dict) else 0
+        skipped = int(stats.get('pending', 0) or 0) if isinstance(stats, dict) else 0
+        duration = round(float(stats.get('duration', 0) or 0) / 1000.0, 3) if isinstance(stats, dict) else 0
+        for name in names:
+            add_file_name(name, total, passed, failed, skipped, duration)
+
     walk(data)
+    if not files:
+        top_stats = data.get('stats', {}) if isinstance(data, dict) else {}
+        synthesize_from_names(data.get('executedFiles', []), top_stats)
+        if not files:
+            synthesize_from_names(data.get('reportFiles', []), top_stats)
     print(json.dumps(files, ensure_ascii=False))
 except Exception:
     print('[]')
@@ -619,8 +637,6 @@ if [ "$TOOL" = "k6" ]; then
   else
     COVERAGE_GATE_VALUE="❌ 0"
   fi
-elif [ "$MEASUREMENT_MODE" = "compatible-cases" ]; then
-  :
 else
   if python3 - "$COVERAGE_RATE" <<'PY'
 import sys
