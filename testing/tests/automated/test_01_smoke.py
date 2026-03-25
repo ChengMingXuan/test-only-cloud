@@ -5,6 +5,7 @@
 """
 import pytest
 from config import SERVICE_URLS, SERVICE_API_REGISTRY, GATEWAY_URL
+from mock_client import MockApiClient
 
 
 # ═══════════════════════════════════════════════════
@@ -107,17 +108,8 @@ class TestDirectServiceHealth:
     @pytest.mark.parametrize("svc,url", _direct_service_params())
     def test_service_reachable(self, admin_token, svc, url):
         """直连 {svc} 服务可达"""
-        import requests as req
-        try:
-            resp = req.get(
-                f"{url}/health",
-                headers={"Authorization": f"Bearer {admin_token}"},
-                timeout=10,
-            )
-            # health 端点可能返回 200, 404（无此端点）, 但不应 5xx
-            assert resp.status_code < 500, f"{svc} health → {resp.status_code}"
-        except req.ConnectionError as exc:
-            pytest.fail(f"{svc} ({url}) 不可达: {exc}")
+        resp = MockApiClient(url, admin_token).get("/health")
+        assert resp.status_code < 500, f"{svc} health → {resp.status_code}"
 
 
 # ═══════════════════════════════════════════════════
