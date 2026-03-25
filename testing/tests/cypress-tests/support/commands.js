@@ -182,6 +182,17 @@ Cypress.Commands.add('visitAuth', (path, interceptsFn) => {
   });
 });
 
+// 对常见交互控件的查询默认只保留可见元素，避免命中 Ant Design 的隐藏占位输入。
+Cypress.Commands.overwrite('get', (originalFn, selector, options = {}) => {
+  const result = originalFn(selector, options);
+
+  if (typeof selector === 'string' && !selector.includes(':visible') && /(input|textarea|select|button)/.test(selector)) {
+    return result.filter(':visible');
+  }
+
+  return result;
+});
+
 // ==================== 登录/登出 ====================
 
 /** 模拟完整登录流程（用于登录页测试） */
