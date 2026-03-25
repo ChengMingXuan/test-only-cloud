@@ -100,7 +100,7 @@ jobs:
                 'specCount': len(specs),
                 'reportFile': f'shard-{shard_id}-mochawesome.json'
               }, handle, ensure_ascii=False, indent=2)
-PY
+            PY
             npx cypress run \
               --spec "$SPEC_LIST" \
               --reporter mochawesome \
