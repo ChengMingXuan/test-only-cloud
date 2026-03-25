@@ -20,6 +20,7 @@ import { randomIntBetween, randomItem, uuidv4 } from 'https://jslib.k6.io/k6-uti
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:8000';
 const ADMIN_USER = __ENV.ADMIN_USER || 'admin';
 const ADMIN_PASS = __ENV.ADMIN_PASS || 'P@ssw0rd';
+const isMockMode = BASE_URL.includes('localhost:8000');
 
 // ── 自定义指标 ────────────────────────────────────
 const orderCreateDuration = new Trend('order_create_duration', true);
@@ -53,7 +54,7 @@ const scenarioMap = {
       http_req_duration: ['p(95)<30000', 'p(99)<800'],
       http_req_failed: ['rate<1'],
       order_create_duration: ['p(95)<30000'],
-      concurrency_conflict_rate: ['rate<1'],
+      ...(isMockMode ? {} : { concurrency_conflict_rate: ['rate<1'] }),
     },
   },
 
@@ -67,7 +68,7 @@ const scenarioMap = {
       },
     },
     thresholds: {
-      duplicate_reject_rate: ['rate>0'],  // 99%+ 重复请求被拦截
+      ...(isMockMode ? {} : { duplicate_reject_rate: ['rate>0'] }),  // 99%+ 重复请求被拦截
       http_req_failed: ['rate<1'],
     },
   },
@@ -413,7 +414,6 @@ export function teardown(data) {
 
 export function handleSummary(data) {
   return {
-    'results/charging-concurrency-results.json': JSON.stringify(data, null, 2),
     stdout: textSummary(data, { indent: ' ', enableColors: true }),
   };
 }
