@@ -1,10 +1,5 @@
 {
     "selectedTools":  [
-                          "pytest",
-                          "cypress",
-                          "puppeteer",
-                          "selenium",
-                          "playwright",
                           "k6"
                       ],
     "integrationLocalOnly":  true,
@@ -14,5 +9,5 @@
     "syncMode":  "Push",
     "runMode":  "full",
     "k6ScenarioFilter":  "",
-    "generatedAt":  "2026-03-25T14:25:07"
+    "generatedAt":  "2026-03-25T14:26:34"
 }
