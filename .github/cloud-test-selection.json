@@ -12,7 +12,7 @@
     "dataMode":  "mock",
     "defaultLocalDataMode":  "real",
     "syncMode":  "Push",
-    "runMode":  "full",
+    "runMode":  "unpassed",
     "k6ScenarioFilter":  "",
-    "generatedAt":  "2026-03-26T03:22:50"
+    "generatedAt":  "2026-03-26T04:25:27"
 }

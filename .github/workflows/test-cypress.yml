@@ -86,22 +86,20 @@ jobs:
             local SHARD_MANIFEST="../../../TestResults/cypress-shards/shard-${SHARD_ID}-manifest.json"
             echo "🚀 [Shard $SHARD_ID] 启动 ${#FILES[@]} 个文件"
             python3 - "$SHARD_ID" "$SHARD_MANIFEST" "${FILES[@]}" <<'PY'
-import json
-import sys
-    import os
+            import json
+            import sys
 
-shard_id = int(sys.argv[1])
-manifest_path = sys.argv[2]
-specs = [item for item in sys.argv[3:] if item]
-              import os
+            shard_id = int(sys.argv[1])
+            manifest_path = sys.argv[2]
+            specs = [item for item in sys.argv[3:] if item]
 
-with open(manifest_path, 'w', encoding='utf-8') as handle:
-    json.dump({
-        'shardId': shard_id,
-        'specs': specs,
-        'specCount': len(specs),
-        'reportFile': f'shard-{shard_id}-mochawesome.json'
-    }, handle, ensure_ascii=False, indent=2)
+            with open(manifest_path, 'w', encoding='utf-8') as handle:
+              json.dump({
+                'shardId': shard_id,
+                'specs': specs,
+                'specCount': len(specs),
+                'reportFile': f'shard-{shard_id}-mochawesome.json'
+              }, handle, ensure_ascii=False, indent=2)
 PY
             npx cypress run \
               --spec "$SPEC_LIST" \
