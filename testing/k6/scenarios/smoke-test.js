@@ -173,7 +173,6 @@ export function teardown(data) {
 
 export function handleSummary(data) {
   return {
-    'results/smoke-results.json': JSON.stringify(data, null, 2),
     stdout: textSummary(data, { indent: ' ', enableColors: true }),
   };
 }

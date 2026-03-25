@@ -208,7 +208,6 @@ export function teardown(data) {
 
 export function handleSummary(data) {
   return {
-    'results/phase2-energy-baseline-results.json': JSON.stringify(data, null, 2),
     stdout: textSummary(data, { indent: ' ', enableColors: true }),
   };
 }

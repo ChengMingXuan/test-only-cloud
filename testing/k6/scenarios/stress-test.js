@@ -5,10 +5,23 @@ import { textSummary } from 'https://jslib.k6.io/k6-summary/0.0.1/index.js';
 import http from 'k6/http';
 import { check, group, sleep } from 'k6';
 import { Rate, Trend, Counter, Gauge } from 'k6/metrics';
-import { randomIntBetween, randomItem } from 'k6';
 import config from '../config.js';
 import auth from '../utils/auth.js';
 import helpers from '../utils/helpers.js';
+
+function nextRandomInt(min, max) {
+  const lower = Math.ceil(min);
+  const upper = Math.floor(max);
+  return Math.floor(Math.random() * (upper - lower + 1)) + lower;
+}
+
+function pickRandom(items) {
+  if (!Array.isArray(items) || items.length === 0) {
+    return null;
+  }
+
+  return items[nextRandomInt(0, items.length - 1)];
+}
 
 // 自定义指标
 const successRate = new Rate('success_rate');
@@ -36,7 +49,7 @@ export function setup() {
   
   return { 
     startTime: new Date().toISOString(),
-    users: config.testData.users,
+    token: auth.login(config.testData.users[0].username, config.testData.users[0].password),
     devices: config.testData.devices,
   };
 }
@@ -44,34 +57,36 @@ export function setup() {
 export default function (data) {
   activeConnections.add(1);
   
-  // 快速登录（缓存token更长时间）
-  if (!authToken || __ITER % 50 === 0) {
-    const user = randomItem(data.users);
-    authToken = auth.login(user.username, user.password);
-    
-    if (!authToken) {
-      errorRate.add(1);
-      sleep(0.5);
-      return;
-    }
+  if (!data || !data.token) {
+    errorRate.add(1);
+    activeConnections.add(-1);
+    sleep(0.5);
+    return;
+  }
+
+  if (!authToken) {
+    authToken = data.token;
   }
   
   const authHeaders = auth.getAuthHeaders(authToken);
+  const scenarioData = {
+    devices: Array.isArray(data.devices) ? data.devices : [],
+  };
   
   // 高并发场景：大量快速请求
-  const operations = randomIntBetween(3, 8); // 每次迭代3-8个请求
+  const operations = nextRandomInt(3, 8); // 每次迭代3-8个请求
   
   for (let i = 0; i < operations; i++) {
-    executeRandomOperation(authHeaders, data);
-    sleep(randomIntBetween(50, 200) / 1000); // 50-200ms延迟
+    executeRandomOperation(authHeaders, scenarioData);
+    sleep(nextRandomInt(50, 200) / 1000); // 50-200ms延迟
   }
   
   activeConnections.add(-1);
-  sleep(randomIntBetween(100, 500) / 1000);
+  sleep(nextRandomInt(100, 500) / 1000);
 }
 
 function executeRandomOperation(headers, data) {
-  const op = randomIntBetween(1, 100);
+  const op = nextRandomInt(1, 100);
   let response;
   
   try {
@@ -116,22 +131,23 @@ function executeRandomOperation(headers, data) {
 }
 
 function readOperations(headers, data) {
+  const device = data.devices?.[0] || pickRandom(data.devices) || { id: 1 };
   const endpoints = [
-    () => http.get(`${config.baseUrl}/api/device/${randomItem(data.devices).id}`, { headers }),
-    () => http.get(`${config.baseUrl}/api/stations/${randomIntBetween(1, 100)}`, { headers }),
-    () => http.get(`${config.baseUrl}/api/charging/admin/orders/${randomIntBetween(1, 10000)}`, { headers }),
+    () => http.get(`${config.baseUrl}/api/device/${device.id}`, { headers }),
+    () => http.get(`${config.baseUrl}/api/stations/${nextRandomInt(1, 100)}`, { headers }),
+    () => http.get(`${config.baseUrl}/api/charging/admin/orders/${nextRandomInt(1, 10000)}`, { headers }),
     () => http.get(`${config.baseUrl}/api/user/profile`, { headers }),
-    () => http.get(`${config.baseUrl}/api/device/${randomItem(data.devices).id}/realtime`, { headers }),
+    () => http.get(`${config.baseUrl}/api/device/${device.id}/realtime`, { headers }),
   ];
   
-  const operation = randomItem(endpoints);
+  const operation = pickRandom(endpoints);
   return operation();
 }
 
 function queryOperations(headers, data) {
   const queries = [
     () => http.get(
-      `${config.baseUrl}/api/device?status=online&page=${randomIntBetween(1, 20)}`,
+      `${config.baseUrl}/api/device?status=online&page=${nextRandomInt(1, 20)}`,
       { headers }
     ),
     () => http.get(
@@ -139,7 +155,7 @@ function queryOperations(headers, data) {
       { headers }
     ),
     () => http.get(
-      `${config.baseUrl}/api/workorder/search?q=fault&page=${randomIntBetween(1, 10)}`,
+      `${config.baseUrl}/api/workorder/search?q=fault&page=${nextRandomInt(1, 10)}`,
       { headers }
     ),
     () => http.get(
@@ -148,26 +164,26 @@ function queryOperations(headers, data) {
     ),
   ];
   
-  const operation = randomItem(queries);
+  const operation = pickRandom(queries);
   return operation();
 }
 
 function listOperations(headers) {
   const lists = [
-    () => http.get(`${config.baseUrl}/api/stations?page=${randomIntBetween(1, 50)}&pageSize=20`, { headers }),
-    () => http.get(`${config.baseUrl}/api/device?page=${randomIntBetween(1, 100)}&pageSize=50`, { headers }),
-    () => http.get(`${config.baseUrl}/api/users?page=${randomIntBetween(1, 20)}&pageSize=20`, { headers }),
-    () => http.get(`${config.baseUrl}/api/charging/admin/orders?page=${randomIntBetween(1, 200)}&pageSize=50`, { headers }),
+    () => http.get(`${config.baseUrl}/api/stations?page=${nextRandomInt(1, 50)}&pageSize=20`, { headers }),
+    () => http.get(`${config.baseUrl}/api/device?page=${nextRandomInt(1, 100)}&pageSize=50`, { headers }),
+    () => http.get(`${config.baseUrl}/api/users?page=${nextRandomInt(1, 20)}&pageSize=20`, { headers }),
+    () => http.get(`${config.baseUrl}/api/charging/admin/orders?page=${nextRandomInt(1, 200)}&pageSize=50`, { headers }),
   ];
   
-  const operation = randomItem(lists);
+  const operation = pickRandom(lists);
   return operation();
 }
 
 function writeOperations(headers, data) {
+  const device = data.devices?.[0] || pickRandom(data.devices) || { id: 1 };
   const writes = [
     () => {
-      const device = randomItem(data.devices);
       const deviceData = helpers.generateDeviceData(device.id);
       return http.post(
         `${config.baseUrl}/api/device/${device.id}/data`,
@@ -176,7 +192,7 @@ function writeOperations(headers, data) {
       );
     },
     () => {
-      const record = helpers.generateChargingRecord(randomItem(data.devices).id, 1);
+      const record = helpers.generateChargingRecord(device.id, 1);
       return http.post(
         `${config.baseUrl}/api/charging/admin/orders`,
         JSON.stringify(record),
@@ -184,7 +200,7 @@ function writeOperations(headers, data) {
       );
     },
     () => {
-      const workorder = helpers.generateWorkOrder(randomItem(data.devices).id, 1);
+      const workorder = helpers.generateWorkOrder(device.id, 1);
       return http.post(
         `${config.baseUrl}/api/workorder`,
         JSON.stringify(workorder),
@@ -194,8 +210,8 @@ function writeOperations(headers, data) {
   ];
   
   // 写入操作概率降低（避免产生太多测试数据）
-  if (randomIntBetween(1, 5) === 1) {
-    const operation = randomItem(writes);
+  if (nextRandomInt(1, 5) === 1) {
+    const operation = pickRandom(writes);
     return operation();
   }
   
@@ -215,7 +231,6 @@ export function teardown(data) {
 
 export function handleSummary(data) {
   return {
-    'results/stress-results.json': JSON.stringify(data, null, 2),
     stdout: textSummary(data, { indent: ' ', enableColors: true }),
   };
 }
