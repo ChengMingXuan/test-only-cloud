@@ -1,0 +1,47 @@
+{
+  "tool": "cypress",
+  "displayName": "Cypress（UI交互测试）",
+  "icon": "🌲",
+  "standardCases": 9877,
+  "summary": {
+    "total": 466,
+    "passed": 456,
+    "failed": 10,
+    "skipped": 0,
+    "passRate": 97.85,
+    "duration_s": 424.286,
+    "timestamp": "2026-03-25T14:08:27",
+    "source": "GitHub Actions CI（full）",
+    "sourceFile": "TestResults/cypress-results.json",
+    "generatedAt": "2026-03-25T14:08:27",
+    "measurementMode": "cases",
+    "comparableTotal": 466,
+    "executedFiles": 1
+  },
+  "gateStatus": {
+    "canRelease": false,
+    "statusText": "🔴 **不可发布**"
+  },
+  "ci": {
+    "gitCommit": "6e4b2d92cf4703c665184d836cbd0125237f25a2",
+    "eventName": "push",
+    "testLevel": "full",
+    "runnerOS": "ubuntu-latest",
+    "timestamp": "2026-03-25 14:08:27 UTC"
+  },
+  "fileCount": 1,
+  "files": [
+  {
+    "file": "cypress-results.json",
+    "tool": "cypress",
+    "status": "failed",
+    "total": 466,
+    "passed": 456,
+    "failed": 10,
+    "skipped": 0,
+    "duration_s": 424.286,
+    "timestamp": "2026-03-25T14:08:27"
+  }
+],
+  "failures": []
+}
