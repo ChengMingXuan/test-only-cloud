@@ -40,6 +40,10 @@ on:
         description: '要执行的云端工具，逗号分隔；all=全部'
         required: false
         default: 'all'
+      k6_scenario_filter:
+        description: 'K6 场景名称过滤，留空=全部；例如 stress'
+        required: false
+        default: ''
 
 # concurrency 临时禁用以解除 runner 死锁 (2026-03-25)
 # concurrency:
@@ -65,6 +69,7 @@ jobs:
       execute_puppeteer: ${{ steps.selection.outputs.execute_puppeteer }}
       execute_selenium: ${{ steps.selection.outputs.execute_selenium }}
       execute_k6: ${{ steps.selection.outputs.execute_k6 }}
+      k6_scenario_filter: ${{ steps.selection.outputs.k6_scenario_filter }}
       skipped_pytest: ${{ steps.selection.outputs.skipped_pytest }}
       skipped_cypress: ${{ steps.selection.outputs.skipped_cypress }}
       skipped_playwright: ${{ steps.selection.outputs.skipped_playwright }}
@@ -85,6 +90,7 @@ jobs:
           all_tools = ["pytest", "cypress", "playwright", "puppeteer", "selenium", "k6"]
           dispatch_value = "${{ github.event.inputs.selected_tools || '' }}".strip()
           dispatch_run_mode = "${{ github.event.inputs.run_mode || '' }}".strip().lower()
+          dispatch_k6_filter = "${{ github.event.inputs.k6_scenario_filter || '' }}".strip()
           selected = []
           manifest = {}
 
@@ -110,6 +116,8 @@ jobs:
           run_mode = dispatch_run_mode if dispatch_run_mode in {"full", "unpassed"} else str(manifest.get('runMode', 'full')).lower()
           if run_mode not in {"full", "unpassed"}:
             run_mode = "full"
+
+          k6_scenario_filter = dispatch_k6_filter or str(manifest.get('k6ScenarioFilter', '') or '').strip()
 
           def previous_report_passed(tool: str) -> bool:
             report_path = Path('test-error-reports/latest/reports') / f'{tool}-report.json'
@@ -140,6 +148,7 @@ jobs:
           with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as fh:
             fh.write(f"selected_tools={selected_csv}\n")
             fh.write(f"run_mode={run_mode}\n")
+            fh.write(f"k6_scenario_filter={k6_scenario_filter}\n")
             fh.write(f"any_executed={'true' if any_executed else 'false'}\n")
             for tool in all_tools:
               fh.write(f"run_{tool}={'true' if tool in selected else 'false'}\n")
@@ -148,6 +157,7 @@ jobs:
 
           print(f"selected_tools={selected_csv}")
           print(f"run_mode={run_mode}")
+          print(f"k6_scenario_filter={k6_scenario_filter}")
           PY
 
   pytest:
@@ -568,14 +578,19 @@ jobs:
         run: |
           python3 <<'PY'
           import json
+          import os
           from pathlib import Path
 
           scenario_dir = Path('testing/k6/scenarios')
           scenarios = sorted(path.stem for path in scenario_dir.glob('*.js')) if scenario_dir.exists() else []
+          raw_filter = "${{ needs.detect-selection.outputs.k6_scenario_filter }}".strip().lower()
+          if raw_filter:
+            scenarios = [name for name in scenarios if raw_filter in name.lower()]
 
           with open(__import__('os').environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as fh:
             fh.write(f"scenarios={json.dumps(scenarios, ensure_ascii=False)}\n")
 
+          print(f"过滤器: {raw_filter or 'ALL'}")
           print(f"发现 {len(scenarios)} 个场景")
           PY
 

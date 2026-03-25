@@ -8,5 +8,6 @@
     "defaultLocalDataMode":  "real",
     "syncMode":  "Push",
     "runMode":  "full",
-    "generatedAt":  "2026-03-25T13:50:42"
+    "k6ScenarioFilter":  "stress",
+    "generatedAt":  "2026-03-25T13:52:41"
 }
