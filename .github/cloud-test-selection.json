@@ -1,18 +1,13 @@
 {
     "selectedTools":  [
-                          "pytest",
-                          "cypress",
-                          "puppeteer",
-                          "selenium",
-                          "playwright",
-                          "k6"
+                          "cypress"
                       ],
     "integrationLocalOnly":  true,
     "executionTarget":  "cloud",
     "dataMode":  "mock",
     "defaultLocalDataMode":  "real",
     "syncMode":  "Push",
-    "runMode":  "unpassed",
+    "runMode":  "full",
     "k6ScenarioFilter":  "",
-    "generatedAt":  "2026-03-26T04:26:38"
+    "generatedAt":  "2026-03-26T04:37:09"
 }
