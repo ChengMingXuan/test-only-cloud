@@ -676,8 +676,7 @@ export function teardown(data) {
 // ============================================================
 export function handleSummary(data) {
     return {
-        'stdout': generateSummary(data),
-        'k6/results/blockchain-test-summary.json': JSON.stringify({
+        'stdout': generateSummary(data) + '\n' + JSON.stringify({
             timestamp: new Date().toISOString(),
             metrics: {
                 wallet_latency_p95: data.metrics.wallet_latency?.values['p(95)'] || 0,

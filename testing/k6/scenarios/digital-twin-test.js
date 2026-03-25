@@ -468,8 +468,7 @@ export function teardown(data) {
 // ============================================================
 export function handleSummary(data) {
     return {
-        'stdout': generateSummary(data),
-        'k6/results/digital-twin-test-summary.json': JSON.stringify({
+        'stdout': generateSummary(data) + '\n' + JSON.stringify({
             timestamp: new Date().toISOString(),
             metrics: {
                 ws_connection_time_p95: data.metrics.ws_connection_time?.values['p(95)'] || 0,

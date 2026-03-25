@@ -305,7 +305,6 @@ export function teardown(data) {
 
 export function handleSummary(data) {
     return {
-        'results/v320-operations-trading-results.json': JSON.stringify(data, null, 2),
         stdout: textSummary(data, { indent: ' ', enableColors: true }),
     };
 }

@@ -48,8 +48,18 @@ function getFallbackToken() {
   };
 }
 
+function getTestData() {
+  return config && config.testData && typeof config.testData === 'object' ? config.testData : {};
+}
+
+function getConfiguredUsers() {
+  const testData = getTestData();
+  return Array.isArray(testData.users) ? testData.users : [];
+}
+
 function getConfiguredDevices() {
-  return Array.isArray(config.testData?.devices) ? config.testData.devices : [];
+  const testData = getTestData();
+  return Array.isArray(testData.devices) ? testData.devices : [];
 }
 
 export function setup() {
@@ -58,11 +68,11 @@ export function setup() {
   console.log(`Target: 200 VUs, 500-1000 RPS`);
   
   // 预热：登录一个测试用户
-  const testUsers = Array.isArray(config.testData?.users) ? config.testData.users : [];
+  const testUsers = getConfiguredUsers();
   const testUser = testUsers[0] || null;
   let warmupToken = null;
 
-  if (testUser?.username && testUser?.password) {
+  if (testUser && testUser.username && testUser.password) {
     warmupToken = auth.login(testUser.username, testUser.password);
   }
 
@@ -98,7 +108,7 @@ export default function (data) {
   
   const authHeaders = auth.getAuthHeaders(authToken);
   const scenarioData = {
-    devices: Array.isArray(effectiveData.devices) ? effectiveData.devices : getConfiguredDevices(),
+    devices: Array.isArray(effectiveData && effectiveData.devices) ? effectiveData.devices : getConfiguredDevices(),
   };
   
   // 按迭代轮转场景，保证 mock/云端执行稳定且可复现
@@ -151,7 +161,8 @@ function chargingScenario(headers, data) {
     
     // 创建充电订单（10%概率）
     if (nextRandomInt(1, 10) === 1) {
-      const device = data.devices?.[0] || pickRandom(data.devices);
+      const primaryDevice = Array.isArray(data.devices) ? data.devices[0] : null;
+      const device = primaryDevice || pickRandom(data.devices);
       if (!device || !device.id) {
         return;
       }
@@ -188,7 +199,8 @@ function deviceScenario(headers, data) {
     sleep(0.5);
     
     // 获取设备详情
-    const device = data.devices?.[0] || pickRandom(data.devices);
+    const primaryDevice = Array.isArray(data.devices) ? data.devices[0] : null;
+    const device = primaryDevice || pickRandom(data.devices);
     if (!device || !device.id) {
       return;
     }
@@ -255,7 +267,8 @@ function workorderScenario(headers, data) {
     
     // 创建工单（3%概率）
     if (nextRandomInt(1, 33) === 1) {
-      const device = data.devices?.[0] || pickRandom(data.devices);
+      const primaryDevice = Array.isArray(data.devices) ? data.devices[0] : null;
+      const device = primaryDevice || pickRandom(data.devices);
       if (!device || !device.id) {
         return;
       }

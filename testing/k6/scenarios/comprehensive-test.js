@@ -599,9 +599,7 @@ export function handleSummary(data) {
     };
     
     return {
-        'stdout': textSummary(data, { indent: ' ', enableColors: true }),
-        'k6/results/comprehensive-test-summary.json': JSON.stringify(summary, null, 2),
-        'k6/results/comprehensive-test-report.html': htmlReport(data),
+        'stdout': textSummary(data, { indent: ' ', enableColors: true }) + '\n' + JSON.stringify(summary, null, 2) + '\n' + htmlReport(data),
     };
 }
 

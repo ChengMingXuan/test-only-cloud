@@ -241,9 +241,7 @@ export default function () {
 // 结果汇总输出为 JSON
 // ═══════════════════════════════════════════════════════════
 export function handleSummary(data) {
-  const jsonPath = 'results/full-coverage-sweep-summary.json';
   return {
     'stdout': textSummary(data, { indent: ' ', enableColors: true }),
-    [jsonPath]: JSON.stringify(data, null, 2),
   };
 }
