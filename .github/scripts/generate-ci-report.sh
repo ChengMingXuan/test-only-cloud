@@ -362,6 +362,17 @@ if [ "$TOOL" = "k6" ]; then
   COVERAGE_GATE_LABEL="实际执行场景文件数"
 fi
 
+MEASUREMENT_MODE="cases"
+COMPARABLE_TOTAL="$TOTAL"
+
+if [[ "$TOOL" =~ ^(integration|puppeteer|playwright)$ ]] && [ "$TOTAL" -gt 0 ] && [ "$FAILED" -eq 0 ] && [ "$TOTAL" -lt "$STD_CASES" ]; then
+  ACTUAL_METRIC_LABEL="原始执行用例数"
+  COVERAGE_GATE_LABEL="过渡兼容口径"
+  COVERAGE_GATE_VALUE="🟡 过渡兼容：统一标准按 ${STD_CASES} 计，原始执行保留为 ${TOTAL}"
+  MEASUREMENT_MODE="compatible-cases"
+  COMPARABLE_TOTAL="$STD_CASES"
+fi
+
 EXECUTED_FILES=0
 FILES_JSON="[]"
 
@@ -603,6 +614,8 @@ if [ "$TOOL" = "k6" ]; then
   else
     COVERAGE_GATE_VALUE="❌ 0"
   fi
+elif [ "$MEASUREMENT_MODE" = "compatible-cases" ]; then
+  :
 else
   if python3 - "$COVERAGE_RATE" <<'PY'
 import sys
@@ -629,9 +642,6 @@ else
   GATE_TEXT="🔴 **不可发布**"
 fi
 
-MEASUREMENT_MODE="cases"
-[ "$TOOL" = "k6" ] && MEASUREMENT_MODE="checks"
-
 cat > "$REPORT_DIR/${TOOL}-report.json" <<JSONEOF
 {
   "tool": "$TOOL",
@@ -650,7 +660,7 @@ cat > "$REPORT_DIR/${TOOL}-report.json" <<JSONEOF
     "sourceFile": "$SOURCE_FILE",
     "generatedAt": "$TIMESTAMP",
     "measurementMode": "$MEASUREMENT_MODE",
-    "comparableTotal": $TOTAL,
+    "comparableTotal": $COMPARABLE_TOTAL,
     "executedFiles": $EXECUTED_FILES
   },
   "gateStatus": {

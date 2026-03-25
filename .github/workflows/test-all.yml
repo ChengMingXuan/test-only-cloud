@@ -489,12 +489,19 @@ jobs:
       - name: 安装浏览器与驱动
         run: |
           sudo apt-get update
-          sudo apt-get install -y firefox
+          sudo apt-get install -y google-chrome-stable firefox || true
           google-chrome --version || true
           firefox --version || true
           sudo bash -c 'if ! command -v microsoft-edge >/dev/null 2>&1; then curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /usr/share/keyrings/microsoft-edge.gpg; echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-edge.gpg] https://packages.microsoft.com/repos/edge stable main" > /etc/apt/sources.list.d/microsoft-edge.list; apt-get update; apt-get install -y microsoft-edge-stable; fi'
           sudo ln -sf /usr/bin/google-chrome /usr/bin/chrome || true
           sudo ln -sf /usr/bin/microsoft-edge /usr/bin/msedge || true
+      - name: 安装 Selenium Python 依赖
+        run: |
+          pip install selenium pytest pytest-html webdriver-manager requests pytest-xdist
+          [ -f testing/tests/selenium-tests/requirements.txt ] && pip install -r testing/tests/selenium-tests/requirements.txt || true
+      - name: 预热 Selenium Manager
+        continue-on-error: true
+        run: |
           python - <<'PY'
           from selenium import webdriver
           from selenium.webdriver.chrome.options import Options as ChromeOptions
@@ -506,6 +513,8 @@ jobs:
               try:
                   driver = factory()
                   print(f"{label}: ok")
+              except Exception as exc:
+                  print(f"{label}: warn: {exc}")
               finally:
                   if driver is not None:
                       driver.quit()
@@ -527,9 +536,6 @@ jobs:
           warmup(lambda: webdriver.Firefox(options=firefox_options), 'firefox')
           warmup(lambda: webdriver.Edge(options=edge_options), 'edge')
           PY
-      - run: |
-          pip install selenium pytest pytest-html webdriver-manager requests pytest-xdist
-          [ -f testing/tests/selenium-tests/requirements.txt ] && pip install -r testing/tests/selenium-tests/requirements.txt || true
       - name: 运行 Selenium（并行批量执行）
         working-directory: testing/tests/selenium-tests
         continue-on-error: true
