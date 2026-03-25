@@ -18,9 +18,9 @@ import { Rate, Counter, Trend } from "k6/metrics";
 import { randomIntBetween } from "https://jslib.k6.io/k6-utils/1.4.0/index.js";
 
 // ─── 配置 ─────────────────────────────────────────────────────────
-const GATEWAY = __ENV.GATEWAY_URL || "http://localhost:8000";
-const AI_URL  = __ENV.AI_URL      || "http://localhost:8020";
-const BC_URL  = __ENV.BC_URL      || "http://localhost:8021";
+const GATEWAY = __ENV.GATEWAY_URL || __ENV.BASE_URL || "http://localhost:8000";
+const AI_URL  = __ENV.AI_URL      || GATEWAY;
+const BC_URL  = __ENV.BC_URL      || GATEWAY;
 
 // ─── 全局指标 ──────────────────────────────────────────────────────
 const globalSuccess = new Rate("global_success_rate");
@@ -434,7 +434,6 @@ export function teardown(data) {
 
 export function handleSummary(data) {
   return {
-    'results/full-service-stress.json': JSON.stringify(data, null, 2),
     stdout: textSummary(data, { indent: ' ', enableColors: true }),
   };
 }

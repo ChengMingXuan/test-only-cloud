@@ -35,6 +35,22 @@ function extractTokenPayload(body) {
   };
 }
 
+function normalizeAccessToken(token) {
+  if (!token) {
+    return '';
+  }
+
+  if (typeof token === 'string') {
+    return token;
+  }
+
+  if (typeof token === 'object') {
+    return token.accessToken || token.token?.accessToken || token.data?.accessToken || '';
+  }
+
+  return '';
+}
+
 // 登录并获取JWT Token（返回 { accessToken, refreshToken } 对象）
 export function login(username, password) {
   const url = `${config.baseUrl}/api/auth/login`;
@@ -76,9 +92,10 @@ export function login(username, password) {
 
 // 获取带认证的请求头
 export function getAuthHeaders(token) {
+  const accessToken = normalizeAccessToken(token);
   return {
     ...config.requestOptions.headers,
-    'Authorization': `Bearer ${token}`,
+    'Authorization': `Bearer ${accessToken}`,
   };
 }
 

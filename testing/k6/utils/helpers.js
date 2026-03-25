@@ -1,5 +1,18 @@
 // Helper utilities for K6 tests
-import { randomIntBetween, randomItem } from 'k6';
+
+function randomIntBetween(min, max) {
+  const lower = Math.ceil(min);
+  const upper = Math.floor(max);
+  return Math.floor(Math.random() * (upper - lower + 1)) + lower;
+}
+
+function randomItem(items) {
+  if (!Array.isArray(items) || items.length === 0) {
+    return null;
+  }
+
+  return items[randomIntBetween(0, items.length - 1)];
+}
 
 // 生成随机字符串
 export function randomString(length = 10) {

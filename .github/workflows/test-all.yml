@@ -637,6 +637,9 @@ jobs:
           if [ -f "$SCENARIO_FILE" ]; then
             k6 run \
               --env BASE_URL=http://localhost:8000 \
+              --env GATEWAY_URL=http://localhost:8000 \
+              --env AI_URL=http://localhost:8000 \
+              --env BC_URL=http://localhost:8000 \
               --duration 30s \
               --summary-export="TestResults/k6-scenarios/k6-${SCENARIO}-summary.json" \
               "$SCENARIO_FILE" 2>&1 | tee "TestResults/k6-scenarios/k6-${SCENARIO}-output.txt" || true

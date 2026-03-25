@@ -11,7 +11,7 @@ import { check, group, sleep } from 'k6';
 import { Rate, Trend, Counter } from 'k6/metrics';
 
 const BASE_URL  = __ENV.BASE_URL  || 'http://localhost:8000';
-const AI_URL    = __ENV.AI_URL    || 'http://localhost:8020';
+const AI_URL    = __ENV.AI_URL    || BASE_URL;
 const USERNAME  = __ENV.USERNAME  || 'admin';
 const PASSWORD  = __ENV.PASSWORD  || 'P@ssw0rd';
 
@@ -224,7 +224,6 @@ export function teardown(data) {
 
 export function handleSummary(data) {
   return {
-    'results/energy-load-results.json': JSON.stringify(data, null, 2),
     stdout: textSummary(data, { indent: ' ', enableColors: true }),
   };
 }

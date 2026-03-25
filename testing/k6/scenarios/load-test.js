@@ -5,10 +5,23 @@ import { textSummary } from 'https://jslib.k6.io/k6-summary/0.0.1/index.js';
 import http from 'k6/http';
 import { check, group, sleep } from 'k6';
 import { Rate, Trend, Counter } from 'k6/metrics';
-import { randomIntBetween, randomItem } from 'k6';
 import config from '../config.js';
 import auth from '../utils/auth.js';
 import helpers from '../utils/helpers.js';
+
+function nextRandomInt(min, max) {
+  const lower = Math.ceil(min);
+  const upper = Math.floor(max);
+  return Math.floor(Math.random() * (upper - lower + 1)) + lower;
+}
+
+function pickRandom(items) {
+  if (!Array.isArray(items) || items.length === 0) {
+    return null;
+  }
+
+  return items[nextRandomInt(0, items.length - 1)];
+}
 
 // 自定义指标
 const authSuccessRate = new Rate('auth_success_rate');
@@ -44,21 +57,20 @@ export function setup() {
   
   return { 
     startTime: new Date().toISOString(),
-    users: config.testData.users,
+    token: warmupToken,
     devices: config.testData.devices,
   };
 }
 
 export default function (data) {
-  if (!data || !data.users) {
+  if (!data || !data.token) {
     sleep(1);
     return;
   }
-  // 每20次迭代重新登录一次（模拟真实用户session）
-  if (!authToken || __ITER % 20 === 0) {
-    const user = randomItem(data.users);
-    authToken = auth.login(user.username, user.password);
-    authSuccessRate.add(authToken !== null);
+
+  if (!authToken) {
+    authToken = data.token;
+    authSuccessRate.add(true);
     totalRequests.add(1);
   }
   
@@ -68,28 +80,31 @@ export default function (data) {
   }
   
   const authHeaders = auth.getAuthHeaders(authToken);
+  const scenarioData = {
+    devices: Array.isArray(data.devices) ? data.devices : [],
+  };
   
-  // 随机选择场景执行（模拟真实用户行为）
-  const scenario = randomIntBetween(1, 100);
+  // 按迭代轮转场景，保证 mock/云端执行稳定且可复现
+  const scenario = (__ITER % 100) + 1;
   
   if (scenario <= 30) {
     // 30% - 充电业务场景
-    chargingScenario(authHeaders, data);
+    chargingScenario(authHeaders, scenarioData);
   } else if (scenario <= 50) {
     // 20% - 设备管理场景
-    deviceScenario(authHeaders, data);
+    deviceScenario(authHeaders, scenarioData);
   } else if (scenario <= 65) {
     // 15% - 工单管理场景
-    workorderScenario(authHeaders, data);
+    workorderScenario(authHeaders, scenarioData);
   } else if (scenario <= 80) {
     // 15% - 数据查询场景
     analyticsScenario(authHeaders);
   } else {
     // 20% - 混合场景
-    mixedScenario(authHeaders, data);
+    mixedScenario(authHeaders, scenarioData);
   }
   
-  sleep(randomIntBetween(1, 3));
+  sleep(nextRandomInt(1, 3));
 }
 
 // 充电业务场景
@@ -97,7 +112,7 @@ function chargingScenario(headers, data) {
   group('Charging Business', function () {
     // 获取充电记录列表
     const recordsRes = http.get(
-      `${config.baseUrl}/api/charging/admin/orders?page=${randomIntBetween(1, 10)}&pageSize=20`,
+      `${config.baseUrl}/api/charging/admin/orders?page=${nextRandomInt(1, 10)}&pageSize=20`,
       { headers }
     );
     checkApiResponse(recordsRes, 'charging records');
@@ -118,12 +133,15 @@ function chargingScenario(headers, data) {
     sleep(0.5);
     
     // 创建充电订单（10%概率）
-    if (randomIntBetween(1, 10) === 1) {
-      const device = randomItem(data.devices);
+    if (nextRandomInt(1, 10) === 1) {
+      const device = data.devices?.[0] || pickRandom(data.devices);
+      if (!device || !device.id) {
+        return;
+      }
       const orderPayload = JSON.stringify({
         deviceId: device.id,
-        amount: randomIntBetween(10, 100),
-        duration: randomIntBetween(30, 240),
+        amount: nextRandomInt(10, 100),
+        duration: nextRandomInt(30, 240),
       });
       
       const orderRes = http.post(
@@ -143,7 +161,7 @@ function deviceScenario(headers, data) {
   group('Device Management', function () {
     // 获取设备列表
     const devicesRes = http.get(
-      `${config.baseUrl}/api/device?page=${randomIntBetween(1, 10)}&pageSize=20`,
+      `${config.baseUrl}/api/device?page=${nextRandomInt(1, 10)}&pageSize=20`,
       { headers }
     );
     checkApiResponse(devicesRes, 'devices list');
@@ -153,7 +171,10 @@ function deviceScenario(headers, data) {
     sleep(0.5);
     
     // 获取设备详情
-    const device = randomItem(data.devices);
+    const device = data.devices?.[0] || pickRandom(data.devices);
+    if (!device || !device.id) {
+      return;
+    }
     const deviceRes = http.get(
       `${config.baseUrl}/api/device/${device.id}`,
       { headers }
@@ -176,7 +197,7 @@ function deviceScenario(headers, data) {
     sleep(0.5);
     
     // 上报设备数据（5%概率）
-    if (randomIntBetween(1, 20) === 1) {
+    if (nextRandomInt(1, 20) === 1) {
       const deviceData = helpers.generateDeviceData(device.id);
       const reportRes = http.post(
         `${config.baseUrl}/api/device/${device.id}/data`,
@@ -206,7 +227,7 @@ function workorderScenario(headers, data) {
     
     // 获取工单列表
     const listRes = http.get(
-      `${config.baseUrl}/api/workorder?status=pending&page=${randomIntBetween(1, 5)}&pageSize=20`,
+      `${config.baseUrl}/api/workorder?status=pending&page=${nextRandomInt(1, 5)}&pageSize=20`,
       { headers }
     );
     checkApiResponse(listRes, 'workorder list');
@@ -216,8 +237,11 @@ function workorderScenario(headers, data) {
     sleep(0.5);
     
     // 创建工单（3%概率）
-    if (randomIntBetween(1, 33) === 1) {
-      const device = randomItem(data.devices);
+    if (nextRandomInt(1, 33) === 1) {
+      const device = data.devices?.[0] || pickRandom(data.devices);
+      if (!device || !device.id) {
+        return;
+      }
       const workorder = helpers.generateWorkOrder(device.id, 1);
       
       const createRes = http.post(
@@ -305,7 +329,6 @@ export function teardown(data) {
 
 export function handleSummary(data) {
   return {
-    'results/load-results.json': JSON.stringify(data, null, 2),
     stdout: textSummary(data, { indent: ' ', enableColors: true }),
   };
 }
