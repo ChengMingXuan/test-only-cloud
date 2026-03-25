@@ -827,7 +827,7 @@ jobs:
 
           declare -A TOOL_CASES=(
             [pytest]=57774 [cypress]=9877 [playwright]=11093
-            [puppeteer]=8137 [selenium]=6540 [k6]=3651
+            [puppeteer]=8287 [selenium]=6540 [k6]=3651
           )
 
           TOTAL_PASS=0

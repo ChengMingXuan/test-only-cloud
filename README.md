@@ -9,8 +9,8 @@
 - **云端 6 类**：pytest / cypress / playwright / puppeteer / selenium / k6（全部 Mock 数据，零外部依赖）
 - **本地 1 类**：integration（C# xUnit，依赖业务项目源码编译，在开发机运行）
 - **当前选择**：pytest, cypress, puppeteer, selenium, playwright, k6
-- **执行模式**：full
+- **执行模式**：unpassed
 - **本地默认**：real；仅在显式指定时切换到 local mock
 - **报告同步**：pull 脚本只覆盖云端生成的 6 类独立报告；integration 始终保留本地报告
 
-*同步时间: 2026-03-25 11:46:40*
+*同步时间: 2026-03-25 12:17:11*

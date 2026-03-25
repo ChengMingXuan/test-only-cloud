@@ -12,6 +12,6 @@
     "dataMode":  "mock",
     "defaultLocalDataMode":  "real",
     "syncMode":  "Push",
-    "runMode":  "full",
-    "generatedAt":  "2026-03-25T11:46:40"
+    "runMode":  "unpassed",
+    "generatedAt":  "2026-03-25T12:17:11"
 }
