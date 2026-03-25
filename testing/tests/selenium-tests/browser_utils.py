@@ -40,6 +40,33 @@ class SyntheticResponse:
         return self._json_data
 
 
+def _finalize_driver(driver, base_url=None):
+    wrapped_driver = _wrap_driver(driver)
+
+    try:
+        wrapped_driver.implicitly_wait(5)
+    except Exception as exc:
+        logger.warning("设置隐式等待失败: %s", exc)
+
+    try:
+        wrapped_driver.set_page_load_timeout(20)
+    except Exception as exc:
+        logger.warning("设置页面加载超时失败: %s", exc)
+
+    try:
+        wrapped_driver.set_script_timeout(20)
+    except Exception as exc:
+        logger.warning("设置脚本超时失败: %s", exc)
+
+    try:
+        wrapped_driver.set_window_size(1920, 1080)
+    except Exception as exc:
+        logger.warning("设置浏览器窗口大小失败: %s", exc)
+
+    _ensure_http_origin(wrapped_driver, base_url)
+    return wrapped_driver
+
+
 def get_base_url(default=DEFAULT_BASE_URL):
     return os.getenv("TEST_BASE_URL") or os.getenv("BASE_URL") or default
 
@@ -205,62 +232,84 @@ def http_get_with_mock_fallback(url, timeout=10):
 def create_local_driver(browser_name, headless=True):
     if browser_name == "chrome":
         options = webdriver.ChromeOptions()
+        options.page_load_strategy = "eager"
+        options.accept_insecure_certs = True
         if headless:
             options.add_argument("--headless=new")
         options.add_argument("--no-sandbox")
+        options.add_argument("--disable-gpu")
         options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-extensions")
+        options.add_argument("--disable-background-networking")
+        options.add_argument("--remote-allow-origins=*")
         options.add_argument("--window-size=1920,1080")
         chrome_binary = shutil.which("chromedriver") or shutil.which("chromedriver.exe")
         if chrome_binary:
-            return _wrap_driver(webdriver.Chrome(service=ChromeService(chrome_binary), options=options))
+            return _finalize_driver(webdriver.Chrome(service=ChromeService(chrome_binary), options=options), get_base_url())
         try:
-            return _wrap_driver(webdriver.Chrome(options=options))
+            return _finalize_driver(webdriver.Chrome(options=options), get_base_url())
         except Exception:
-            return _wrap_driver(webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options))
+            return _finalize_driver(webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options), get_base_url())
 
     if browser_name == "firefox":
         options = webdriver.FirefoxOptions()
+        options.page_load_strategy = "eager"
+        options.accept_insecure_certs = True
         if headless:
             options.add_argument("-headless")
         options.add_argument("--width=1920")
         options.add_argument("--height=1080")
+        options.set_preference("dom.disable_beforeunload", True)
+        options.set_preference("browser.cache.disk.enable", False)
+        options.set_preference("browser.cache.memory.enable", False)
         gecko_binary = shutil.which("geckodriver") or shutil.which("geckodriver.exe")
         if gecko_binary:
-            return _wrap_driver(webdriver.Firefox(service=FirefoxService(gecko_binary), options=options))
+            return _finalize_driver(webdriver.Firefox(service=FirefoxService(gecko_binary), options=options), get_base_url())
         try:
-            return _wrap_driver(webdriver.Firefox(options=options))
+            return _finalize_driver(webdriver.Firefox(options=options), get_base_url())
         except Exception:
-            return _wrap_driver(webdriver.Firefox(service=FirefoxService(GeckoDriverManager().install()), options=options))
+            return _finalize_driver(webdriver.Firefox(service=FirefoxService(GeckoDriverManager().install()), options=options), get_base_url())
 
     if browser_name == "edge":
         options = webdriver.EdgeOptions()
+        options.page_load_strategy = "eager"
+        options.accept_insecure_certs = True
         if headless:
             options.add_argument("--headless=new")
         options.add_argument("--no-sandbox")
+        options.add_argument("--disable-gpu")
         options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-extensions")
+        options.add_argument("--disable-background-networking")
         options.add_argument("--window-size=1920,1080")
         edge_binary = shutil.which("msedgedriver") or shutil.which("msedgedriver.exe")
         if edge_binary:
-            return _wrap_driver(webdriver.Edge(service=EdgeService(edge_binary), options=options))
+            return _finalize_driver(webdriver.Edge(service=EdgeService(edge_binary), options=options), get_base_url())
         try:
-            return _wrap_driver(webdriver.Edge(options=options))
+            return _finalize_driver(webdriver.Edge(options=options), get_base_url())
         except Exception as edge_error:
             try:
-                return _wrap_driver(webdriver.Edge(service=EdgeService(EdgeChromiumDriverManager().install()), options=options))
+                return _finalize_driver(webdriver.Edge(service=EdgeService(EdgeChromiumDriverManager().install()), options=options), get_base_url())
             except Exception as manager_error:
                 logger.warning("Edge 驱动不可用，降级使用 Chromium 驱动: %s | %s", edge_error, manager_error)
                 chrome_options = webdriver.ChromeOptions()
+                chrome_options.page_load_strategy = "eager"
+                chrome_options.accept_insecure_certs = True
                 if headless:
                     chrome_options.add_argument("--headless=new")
                 chrome_options.add_argument("--no-sandbox")
+                chrome_options.add_argument("--disable-gpu")
                 chrome_options.add_argument("--disable-dev-shm-usage")
+                chrome_options.add_argument("--disable-extensions")
+                chrome_options.add_argument("--disable-background-networking")
+                chrome_options.add_argument("--remote-allow-origins=*")
                 chrome_options.add_argument("--window-size=1920,1080")
                 chrome_binary = shutil.which("chromedriver") or shutil.which("chromedriver.exe")
                 if chrome_binary:
-                    return _wrap_driver(webdriver.Chrome(service=ChromeService(chrome_binary), options=chrome_options))
+                    return _finalize_driver(webdriver.Chrome(service=ChromeService(chrome_binary), options=chrome_options), get_base_url())
                 try:
-                    return _wrap_driver(webdriver.Chrome(options=chrome_options))
+                    return _finalize_driver(webdriver.Chrome(options=chrome_options), get_base_url())
                 except Exception:
-                    return _wrap_driver(webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options))
+                    return _finalize_driver(webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options), get_base_url())
 
     raise ValueError(f"Unsupported browser: {browser_name}")
