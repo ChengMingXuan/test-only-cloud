@@ -245,33 +245,33 @@ jobs:
               2>&1 | tee ../../../TestResults/cypress-shards/cypress-shard-${SHARD}-output.txt || true
 
             python3 << EOF
-import glob
-import json
-import os
+            import glob
+            import json
+            import os
 
-report_files = sorted(glob.glob('reports/shard-${SHARD}/*.json'))
-aggregate = {
-    'stats': {'tests': 0, 'passes': 0, 'failures': 0, 'pending': 0, 'duration': 0},
-    'results': []
-}
+            report_files = sorted(glob.glob('reports/shard-${SHARD}/*.json'))
+            aggregate = {
+              'stats': {'tests': 0, 'passes': 0, 'failures': 0, 'pending': 0, 'duration': 0},
+              'results': []
+            }
 
-for report_file in report_files:
-    with open(report_file, encoding='utf-8') as handle:
-        data = json.load(handle)
-    stats = data.get('stats', {})
-    aggregate['stats']['tests'] += int(stats.get('tests', 0) or 0)
-    aggregate['stats']['passes'] += int(stats.get('passes', 0) or 0)
-    aggregate['stats']['failures'] += int(stats.get('failures', 0) or 0)
-    aggregate['stats']['pending'] += int(stats.get('pending', 0) or 0)
-    aggregate['stats']['duration'] += float(stats.get('duration', 0) or 0)
-    aggregate['results'].extend(data.get('results', []) or [])
+            for report_file in report_files:
+              with open(report_file, encoding='utf-8') as handle:
+                data = json.load(handle)
+              stats = data.get('stats', {})
+              aggregate['stats']['tests'] += int(stats.get('tests', 0) or 0)
+              aggregate['stats']['passes'] += int(stats.get('passes', 0) or 0)
+              aggregate['stats']['failures'] += int(stats.get('failures', 0) or 0)
+              aggregate['stats']['pending'] += int(stats.get('pending', 0) or 0)
+              aggregate['stats']['duration'] += float(stats.get('duration', 0) or 0)
+              aggregate['results'].extend(data.get('results', []) or [])
 
-output_path = '../../../TestResults/cypress-shards/cypress-shard-${SHARD}-results.json'
-with open(output_path, 'w', encoding='utf-8') as handle:
-    json.dump(aggregate, handle, ensure_ascii=False, indent=2)
+            output_path = '../../../TestResults/cypress-shards/cypress-shard-${SHARD}-results.json'
+            with open(output_path, 'w', encoding='utf-8') as handle:
+              json.dump(aggregate, handle, ensure_ascii=False, indent=2)
 
-print(f'merged {len(report_files)} mochawesome files -> {os.path.basename(output_path)}')
-EOF
+            print(f'merged {len(report_files)} mochawesome files -> {os.path.basename(output_path)}')
+            EOF
           else
             echo "分片 $SHARD: 无测试文件"
             echo '{"stats":{"tests":0,"passes":0,"failures":0,"pending":0,"duration":0},"results":[]}' > ../../../TestResults/cypress-shards/cypress-shard-${SHARD}-results.json
