@@ -776,8 +776,8 @@ cat >> "$REPORT_DIR/${TOOL}-report.md" <<GATEEOF
 
 ---
 
-*本报告由 `generate-ci-report.sh` 自动生成，结构与本地独立工具报告保持一致。*
-*如需重新生成：`.github/scripts/generate-ci-report.sh $TOOL ...`*
+*本报告由 \`generate-ci-report.sh\` 自动生成，结构与本地独立工具报告保持一致。*
+*如需重新生成：\`.github/scripts/generate-ci-report.sh $TOOL ...\`*
 GATEEOF
 
 echo "✅ 已生成 $REPORT_DIR/${TOOL}-report.{json,md}"
