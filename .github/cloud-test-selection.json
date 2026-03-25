@@ -1,8 +1,5 @@
 {
     "selectedTools":  [
-                          "pytest",
-                          "cypress",
-                          "selenium",
                           "k6"
                       ],
     "integrationLocalOnly":  true,
@@ -11,5 +8,5 @@
     "defaultLocalDataMode":  "real",
     "syncMode":  "Push",
     "runMode":  "full",
-    "generatedAt":  "2026-03-25T12:42:50"
+    "generatedAt":  "2026-03-25T13:50:42"
 }
